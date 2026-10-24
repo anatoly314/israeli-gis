@@ -1,6 +1,7 @@
 import type { ChoroplethLayer, Classification, I18n, LevelId, PopupField, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
 import { raw } from '../../lib/paths.ts';
+import { layerTitle } from '../../terminology.ts';
 import { parseAuthorities, parseLocalities, parseStatisticalAreas, type IndexRecord } from './parse.ts';
 
 const ID = 'ses-2021';
@@ -38,7 +39,7 @@ const NOT_CALCULATED: Record<SesLevel, I18n> = {
   'statistical-areas-2011': {
     he: 'הלמ"ס לא חישבה מדד לאזור זה: פחות מ-120 תושבים, אזור שאינו למגורים, או עיר שאין לה נתונים ברמת אזור סטטיסטי (בעיקר יישובים ערביים ודרוזיים).',
     en: 'CBS did not calculate the index for this area: fewer than 120 residents, a non-residential area, or a city without statistical-area data (mostly Arab and Druze cities).',
-    ru: 'ЦСБ не рассчитывало индекс для этого района: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города).',
+    ru: 'ЦСБ не рассчитывало индекс для этого участка: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города).',
   },
 };
 
@@ -97,22 +98,11 @@ const attribution: I18n = {
   ru: 'Социально-экономический индекс 2021: ЦСБ Израиля',
 };
 
-const TITLE: Record<SesLevel, I18n> = {
-  'local-authorities-2011': {
-    he: 'מדד חברתי-כלכלי 2021 – רשויות מקומיות',
-    en: 'Socio-economic index 2021 – local authorities',
-    ru: 'Социально-экономический индекс 2021 – органы местной власти',
-  },
-  'rc-localities-2011': {
-    he: 'מדד חברתי-כלכלי 2021 – יישובים במועצות אזוריות',
-    en: 'Socio-economic index 2021 – localities in regional councils',
-    ru: 'Социально-экономический индекс 2021 – населённые пункты региональных советов',
-  },
-  'statistical-areas-2011': {
-    he: 'מדד חברתי-כלכלי 2021 – אזורים סטטיסטיים',
-    en: 'Socio-economic index 2021 – statistical areas',
-    ru: 'Социально-экономический индекс 2021 – статистические районы',
-  },
+/** Dataset title; each layer title is this plus the level's plain name from pipeline/terminology.ts. */
+export const DATASET_TITLE: I18n = {
+  he: 'מדד חברתי-כלכלי 2021',
+  en: 'Socio-economic index 2021',
+  ru: 'Социально-экономический индекс 2021',
 };
 
 const dataPath = (level: SesLevel) => `datasets/${ID}/${level}.json`;
@@ -123,7 +113,7 @@ function layer(level: SesLevel, rankTotal: number): ChoroplethLayer {
     dataset: ID,
     kind: 'choropleth',
     level,
-    title: TITLE[level],
+    title: layerTitle(DATASET_TITLE, level),
     data: dataPath(level),
     valueField: 'cluster',
     classification: classification(level),
@@ -138,6 +128,7 @@ const values = (records: IndexRecord[]) =>
 
 const sesModule: DatasetModule = {
   id: ID,
+  info: { title: DATASET_TITLE },
   rawFiles: [
     {
       path: files.authorities,

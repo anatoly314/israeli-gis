@@ -30,10 +30,10 @@ Read these paths from `layers.json` (`levels[*].file`, `levels[*].object`, `leve
 
 | Level file | Raw | Gzip |
 |---|---|---|
-| local-authorities-2011 | 746 KB | 231 KB |
-| localities-2011 | 978 KB | 288 KB |
-| rc-localities-2011 | 414 KB | 113 KB |
-| statistical-areas-2011 | 1330 KB | 331 KB |
+| local-authorities-2011 | 759 KB | 232 KB |
+| localities-2011 | 1000 KB | 292 KB |
+| rc-localities-2011 | 432 KB | 117 KB |
+| statistical-areas-2011 | 1631 KB | 399 KB (incl. ~61 KB of neighborhood/street names) |
 
 Each dataset is ≤ 20 KB gzipped, and the manifest is 3 KB.
 
@@ -86,20 +86,49 @@ boundaries, not legal municipal jurisdictions.
 | `sa` | integer | statistical-areas-2011 | SA number within the city |
 | `authority_type` | `"city"` \| `"local-council"` \| `"regional-council"` | local-authorities-2011 | Municipal status: CBS status 0 (municipality), 99 (local council), or a regional council (the `55xx` codes) |
 | `population` | integer | all | Residents at the end of `levels[...].populationYear` (2020): the SA layer's `Pop_Total`, summed over every polygon the feature is made of (0 where CBS has none). For ordering places by size (label priority, search ties); it is **not** a dataset value and differs from the SES dataset's own `population` field ("index population"), which takes precedence when a viewer merges dataset records into feature properties. All localities sum to 9,217,568. |
+| `neighborhoods_he` | string[] (Hebrew) | statistical-areas-2011 | CBS neighborhood names in the SA, in CBS order. **Absent** when CBS lists none (1298 of 1917 SAs have it). |
+| `streets_he` | string[] (Hebrew) | statistical-areas-2011 | CBS main streets of the SA (up to five), in CBS order. **Absent** when none (1761 of 1917 have it). |
 
-**Feature type.** `levels[...].featureType[lang]` names what one feature of the level is ("Locality", "Statistical
-area"). When the type varies within a level, `levels[...].featureTypes` says which property holds it and labels each
-value; prefer that label when the feature has the property:
+**Extra fields.** `levels[...].extraFields` lists descriptive feature properties for the popup, in display order:
 
 ```json
-"featureType": { "en": "Local authority", "…": "…" },
+"extraFields": [
+  { "property": "neighborhoods_he", "kind": "list", "textLang": "he", "searchable": true,
+    "label": { "he": "שכונות באזור", "en": "Neighborhoods in this area", "ru": "Кварталы на участке" },
+    "shortLabel": { "he": "שכונות", "en": "Neighborhoods", "ru": "Кварталы" } },
+  { "property": "streets_he", "kind": "list", "textLang": "he", "searchable": false,
+    "label": { "he": "רחובות עיקריים", "en": "Main streets", "ru": "Главные улицы" } }
+]
+```
+
+- `kind: "list"`: the property is a non-empty `string[]` when present. When it is absent, show nothing for that field.
+- `textLang`: the language the values are written in, regardless of the UI language. Here they are Hebrew in every
+  UI.
+- `searchable`: the viewer should index the values, so typing "קרית קמניץ" finds SA 30000112.
+- `shortLabel` (optional): a compact form of `label` for passing mentions, such as the search hint "also
+  searchable: Neighborhoods". Fall back to `label` when it is absent.
+- Labels come from `pipeline/terminology.ts` (`extraFields` of the level kind), like all other level wording. A
+  future `statistical-areas-2022` with its own companion file gets the same labels.
+- **Source data.** The values come straight from CBS "רחובות עיקריים ושכונות לא"ס 2011" (28.7.2021), listed in
+  `manifest.sources`:
+  - split on commas, trimmed, deduped
+  - otherwise unchanged, including CBS abbreviations: "שכ" (neighborhood), "ש", "שד" (boulevard), and streets
+    written as "surname first-name"
+  - every SA-2011 polygon matches a row (1917/1917), and so does every SA with index data (1641/1641)
+
+**Feature type.** `levels[...].featureType[lang]` names what one feature of the level is ("Locality",
+"Area"). When the type varies within a level, `levels[...].featureTypes` says which property holds it and
+labels each value; prefer that label when the feature has the property:
+
+```json
+"featureType": { "en": "Municipality", "…": "…" },
 "featureTypes": { "property": "authority_type", "labels": { "city": { "en": "City", "…": "…" }, "local-council": { "…": "…" }, "regional-council": { "…": "…" } } }
 ```
 
 Counts on `local-authorities-2011`: 79 `city`, 124 `local-council`, 54 `regional-council`.
 
 On `statistical-areas-2011`, `name_*` holds the **city** name. Build the label from `levels[...].featureLabel[lang]`,
-replacing `{name}` with `name_<lang>` and `{sa}` with `sa`.
+replacing `{name}` with `name_<lang>` and `{sa}` with `sa` ("Tel Aviv - Yafo – area 437").
 
 **Parts of a place.** `levels[...].parentCode`, when set, names the property that holds the code of the place each
 feature is part of; the features' `name_*` are then that place's name. Only `statistical-areas-2011` sets it
@@ -201,13 +230,16 @@ type LevelId = 'local-authorities-2011' | 'localities-2011' | 'rc-localities-201
 interface Manifest {
   version: 1;
   levels: Record<LevelId, Level>;       // every level is present, even without a layer (localities-2011 has none yet)
+  datasets: Record<string, { title: I18n; description?: I18n }>;   // keyed by layer.dataset; every layer's dataset has an entry
   layers: Layer[];                      // suggested order: coarse → fine
   attribution: I18n;                    // geometry + names credit
   sources: Source[];                    // geometry + names sources
 }
 
 interface Level {
-  title: I18n;
+  kind: 'local-authorities' | 'localities' | 'rc-localities' | 'statistical-areas';   // the id is `<kind>-<vintage>`
+  title: I18n;                          // plain name for users ("Neighborhoods")
+  officialTerm?: I18n;                  // the CBS term, for small secondary text ("CBS statistical areas"); set on every shipped level
   file: string;
   object: string;                       // polygons
   placeholderObject: string;            // points, one per placeholder circle (may be empty)
@@ -215,8 +247,9 @@ interface Level {
   featureCount: number;
   placeholderCount: number;
   featureLabel?: I18n;                  // template, {name} / {<property>}
-  featureType?: I18n;                   // what one feature is called ("Statistical area"); set on every shipped level
+  featureType?: I18n;                   // what one feature is called ("Area"); set on every shipped level
   featureTypes?: { property: string; labels: Record<string, I18n> };   // per-feature type, when it varies
+  extraFields?: { property: string; kind: 'list'; textLang: 'he' | 'en' | 'ru'; label: I18n; shortLabel?: I18n; searchable: boolean }[];
   parentCode?: string;                  // property with the code of the place a feature is part of (SA → locality_code)
   populationYear?: number;              // year of the features' `population` (2020 on every shipped level)
 }
@@ -282,7 +315,7 @@ Excerpt:
   "dataset": "ses-2021",
   "kind": "choropleth",
   "level": "statistical-areas-2011",
-  "title": { "he": "מדד חברתי-כלכלי 2021 – אזורים סטטיסטיים", "en": "Socio-economic index 2021 – statistical areas", "ru": "Социально-экономический индекс 2021 – статистические районы" },
+  "title": { "he": "מדד חברתי-כלכלי 2021 – שכונות", "en": "Socio-economic index 2021 – Neighborhoods", "ru": "Социально-экономический индекс 2021 – Кварталы" },
   "data": "datasets/ses-2021/statistical-areas-2011.json",
   "valueField": "cluster",
   "classification": {
@@ -320,6 +353,36 @@ const fill = c.type === 'categorical'
 - Languages: `he` (RTL), `en`, `ru`. Every `I18n` object in the manifest has all three, none of them empty.
 - For feature names and their fallbacks, see [Names](#names).
 - UI chrome strings (legend title, "of", the language switcher) belong to the viewer.
+
+### Level wording (terminology)
+
+All level wording comes from one file, `pipeline/terminology.ts`, keyed by level **kind**. That covers `title`,
+`officialTerm`, `featureType`, `featureTypes` labels, `featureLabel`, and the level part of every layer title.
+
+| kind | title (he / en / ru) | officialTerm (he / en / ru) |
+|---|---|---|
+| `local-authorities` | רשויות מקומיות / Municipalities / Муниципалитеты | רשויות מקומיות / Local authorities / органы местного самоуправления |
+| `localities` | יישובים / Localities / Населённые пункты | יישובים (קובץ היישובים של הלמ"ס) / CBS localities / населённые пункты ЦСБ |
+| `rc-localities` | קיבוצים, מושבים ויישובים / Kibbutzim, moshavim & villages / Кибуцы, мошавы и посёлки | יישובים במועצות אזוריות / Localities in regional councils / населённые пункты в региональных советах |
+| `statistical-areas` | שכונות / Neighborhoods / Кварталы | אזורים סטטיסטיים של הלמ"ס / CBS statistical areas / статистические районы ЦСБ |
+
+- **How the build applies it.** A level's kind is its id without the vintage (`statistical-areas-2011` →
+  `statistical-areas`). The build writes the kind to `levels[*].kind` and copies that kind's wording into the level.
+- **Layer titles.** Each layer title is the dataset title, then ` – `, then the level's `title`
+  (`Socio-economic index 2021 – Neighborhoods`). Datasets only define their own title, in `DatasetModule.info`,
+  which the build writes to `manifest.datasets`.
+- **When the build fails.** It refuses a level id whose kind has no terminology entry, any terminology field missing
+  he/en/ru or with an empty value, a feature type value with no label, and a level whose wording differs from the
+  file.
+
+**Changing wording:** edit `pipeline/terminology.ts` → `npm run build:data` → `npm run build:viewer`, then commit the
+changed `dist/data`. The tests pin the approved strings, so update them in `tests/terminology.test.ts` as well.
+
+**A new vintage** (e.g. `statistical-areas-2022`) gets the same wording automatically. **A new level kind** needs
+three things:
+1. add it to `LevelKind` in `pipeline/lib/contract.ts`
+2. add a complete entry to `TERMINOLOGY` (the TypeScript type requires one per kind, and the build re-checks)
+3. add the level in `pipeline/boundaries/index.ts` with `level('<kind>-<vintage>')`
 
 ## Attribution
 
@@ -365,3 +428,74 @@ Don't imply CBS endorsement.
 - Russian names now tell apart localities that shared one: 173/2018 Гиват-Хайим (Меухад)/(Ихуд), 1084/2013
   Бен-Шемен (молодёжная деревня)/(мошав), 66/97 Мерхавия (кибуц)/(мошав), 547 Тамра (Изреэль) vs 8900 Тамра. No
   two localities share a real `name_ru` (tested). The counts in the [Names](#names) table are unchanged.
+
+### Changes for plain level names (additive, still `version: 1`)
+
+- New `levels[*].kind` (required) and `levels[*].officialTerm` (optional in the schema, set on every shipped level).
+- New wording for level `title`, `featureType` and `featureLabel`, and for layer titles. See
+  [Level wording](#level-wording-terminology). Ids, files and properties are unchanged.
+- `featureLabel` keeps the v1 placeholders `{name}` and `{sa}`. The approved "{parent} – квартал {n}" is written
+  `{name} – квартал {sa}`.
+
+**The viewer must know:**
+1. Show `levels[*].officialTerm[lang]` as small secondary text under the level name, e.g. in the layer switcher and
+   the popup header.
+2. Strings pinned to the old wording now fail and need updating:
+   - `viewer/tests/manifest.test.ts`: the layer labels are now "Municipalities", "Kibbutzim, moshavim & villages"
+     and "Neighborhoods"
+   - `viewer/tests/search.test.ts` and `viewer/tests/i18n.test.ts`: the label is now "Tel Aviv - Yafo – neighborhood
+     437", and the type is "שכונה"
+   - `viewer/e2e/smoke.spec.ts`: the radios "Статистические районы" and "Local authorities" are now "Кварталы" and
+     "Municipalities"
+3. The layer-title grouping (split on ` – `) keeps working, because titles are still `<dataset> – <level title>`.
+
+### Changes for neighborhood and street names (additive, still `version: 1`)
+
+- New `neighborhoods_he` and `streets_he` (`string[]`, absent when empty) on `statistical-areas-2011`.
+- New `levels[*].extraFields` (see [Extra fields](#polygon-properties)).
+- New source in `manifest.sources`: CBS main streets and neighborhoods by statistical area.
+- The SA file grew by about 61 KiB gzipped (345 → 408 KB, about 399 KiB) and by about 48 KiB with brotli.
+
+**The viewer must know:**
+1. Render `levels[*].extraFields` generically, without hard-coding property names:
+   - In the popup: each field present on the feature as `label[lang]` followed by the items joined with ", ".
+   - In the tooltip: the first field only, perhaps truncated to the first two or three items.
+2. Mark values with `lang={textLang}` and `dir="auto"` (or `dir="rtl"` for `he`), so they render in Hebrew in every
+   UI.
+3. When `textLang !== lang`, add a short note after the label. The note is viewer UI text keyed by `textLang`:
+   - he UI: nothing
+   - en UI: "(in Hebrew)"
+   - ru UI: "(на иврите)"
+
+   It belongs in the viewer and not in the manifest, because it depends only on the pair of UI language and
+   `textLang`, like the viewer's other chrome strings. Putting it in the manifest would repeat the same phrase on
+   every field.
+4. Fields with `searchable: true` (here `neighborhoods_he`) go into the search index. A hit should open the SA it
+   came from, and the result row should show which item matched.
+
+### Changes for dataset titles (additive, still `version: 1`)
+
+- New top-level `datasets`, keyed by dataset id:
+  `{ "ses-2021": { "title": { "he": "מדד חברתי-כלכלי 2021", "en": "Socio-economic index 2021", "ru": "Социально-экономический индекс 2021" } } }`.
+  `description` is optional and not set yet.
+- It is the single source of truth: every choropleth layer title is `datasets[layer.dataset].title[lang] + " – " +
+  levels[layer.level].title[lang]`. The build fails otherwise, and the schema requires an entry for every
+  `layer.dataset`.
+
+**The viewer must know:** take the group heading from `manifest.datasets[layer.dataset].title[lang]`, and show
+`description` when present. Stop deriving the heading from the common prefix of layer titles. The item label stays
+`levels[layer.level].title`.
+
+### Changes for statistical-area wording (additive, still `version: 1`)
+
+- `statistical-areas` kind: the level title stays שכונות / Neighborhoods / Кварталы. One feature is now an area:
+  - `featureType`: אזור / Area / Участок
+  - `featureLabel`: "{name} – אזור {sa}" / "{name} – area {sa}" / "{name} – участок {sa}"
+- `neighborhoods_he` label: שכונות באזור / Neighborhoods in this area / Кварталы на участке.
+- New optional `extraFields[*].shortLabel`, here שכונות / Neighborhoods / Кварталы.
+- The Russian CBS term is "статистические районы" everywhere: the official term is "статистические районы ЦСБ", and
+  the sources and attribution match. The build fails if the manifest mixes it with "статистические участки".
+
+**The viewer must know:**
+1. Use `shortLabel ?? label` in the "also searchable" hint.
+2. Tests pinned to "neighborhood 437" / "שכונה" now read "area 437" / "אזור".

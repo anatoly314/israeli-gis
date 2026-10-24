@@ -41,6 +41,25 @@ function visualText(page: Page, selector: string) {
   );
 }
 
+/** A one-finger drag through CDP touch events (Playwright has no touch-drag helper). */
+async function touchDrag(page: Page, x0: number, y: number, x1: number) {
+  const cdp = await page.context().newCDPSession(page);
+  const at = (x: number) => [{ x, y, id: 1 }];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(x0) });
+  for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(x0 + ((x1 - x0) * i) / 8) });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+/** Centre of the thumb for class index `v` of an `n`-class slider (thumb centres run from t/2 to width - t/2). */
+async function thumbX(page: Page, v: number, n: number) {
+  const input = page.locator('#range .hi');
+  const b = (await input.boundingBox())!;
+  const t = b.height;
+  const rtl = (await page.locator('html').getAttribute('dir')) === 'rtl';
+  const offset = t / 2 + (v * (b.width - t)) / (n - 1);
+  return { x: rtl ? b.x + b.width - offset : b.x + offset, y: b.y + b.height / 2 };
+}
+
 async function searchAndOpen(page: Page, query: string, expected: RegExp) {
   const box = page.getByRole('combobox');
   await box.fill(query);
@@ -74,11 +93,11 @@ test('loads, switches layers, searches in three scripts, flips direction', async
   await expect(page).toHaveURL(/f=5000/);
 
   // On the statistical-areas layer the same query offers the city's areas first and stays on that layer.
-  await page.getByRole('radio', { name: 'Статистические районы' }).check();
+  await page.getByRole('radio', { name: 'Кварталы' }).check();
   await ready(page, 'ses-2021-statistical-areas');
   await expect(page).toHaveURL(/layer=ses-2021-statistical-areas/);
   await page.getByRole('combobox').fill('Тель-Авив');
-  await expect(page.getByRole('option').first()).toContainText(/Статистические районы/);
+  await expect(page.getByRole('option').first()).toContainText(/Кварталы/);
   await page.getByRole('combobox').press('Enter');
   await expect(page.locator('body')).toHaveAttribute('data-layer', 'ses-2021-statistical-areas');
 
@@ -113,9 +132,184 @@ test('keyboard: search → pick → Escape closes the popup and returns to the s
   await box.fill('Haifa');
   await box.press('Enter');
   await expect(page.locator('.maplibregl-popup')).toBeVisible();
-  await page.getByRole('radio', { name: 'Local authorities' }).focus();
+  await page.getByRole('radio', { name: 'Municipalities' }).focus();
   await page.keyboard.press('Escape');
   await expect(page.locator('.maplibregl-popup')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+const pressed = (page: Page) => page.locator('#legend .legend-list [aria-pressed=true]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.key));
+
+for (const lang of ['en', 'he'] as const) {
+  test(`range slider (${lang}): keyboard and drag set a contiguous highlight; legend clicks make it custom`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(`./?lang=${lang}`);
+    await ready(page, 'ses-2021-local-authorities');
+    const rtl = lang === 'he';
+    const down = rtl ? 'ArrowRight' : 'ArrowLeft'; // towards class 1, which is on the right in Hebrew
+    const up = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const out = page.locator('#range output');
+
+    // Class 1 is at the start of the reading direction, like the strip and the legend.
+    const x1 = (await page.locator('#range .range-scale span[data-key="1"]').boundingBox())!.x;
+    const x10 = (await page.locator('#range .range-scale span[data-key="10"]').boundingBox())!.x;
+    expect(rtl ? x1 > x10 : x1 < x10).toBe(true);
+    await expect(page.locator('#range .lo')).toHaveAttribute('aria-label', rtl ? 'הקבוצה הנמוכה בטווח' : 'Minimum class');
+
+    await page.locator('#range .hi').focus();
+    for (let i = 0; i < 3; i++) await page.keyboard.press(down);
+    await expect(page).toHaveURL(/hl=1-7(&|#|$)/);
+    expect(await pressed(page)).toEqual(['1', '2', '3', '4', '5', '6', '7']);
+    await expect(page.locator('#range .hi')).toHaveAttribute('aria-valuetext', rtl ? 'אשכול 7' : 'Cluster 7');
+    await page.locator('#range .lo').focus();
+    for (let i = 0; i < 3; i++) await page.keyboard.press(up);
+    await expect(page).toHaveURL(/hl=4-7(&|#|$)/);
+    expect(bare(await out.textContent())).toBe('4–7');
+    // Handles can't cross, and may meet.
+    for (let i = 0; i < 6; i++) await page.keyboard.press(up);
+    await expect(page).toHaveURL(/hl=7(&|#|$)/);
+    expect(await pressed(page)).toEqual(['7']);
+
+    // Drag the max handle (mouse) from 7 to 9.
+    const from = await thumbX(page, 6, 10);
+    const to = await thumbX(page, 8, 10);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 8 });
+    await page.mouse.up();
+    await expect(page).toHaveURL(/hl=7-9(&|#|$)/);
+    expect(await pressed(page)).toEqual(['7', '8', '9']);
+
+    // Legend clicks make a non-contiguous ("custom") selection; the handles frame it.
+    await page.locator('#range .range-clear').click();
+    await expect(page).not.toHaveURL(/hl=/);
+    for (const k of ['1', '5', '9']) await page.locator(`#legend [data-key="${k}"]`).click();
+    await expect(page).toHaveURL(/hl=1,5,9(&|#|$)/);
+    await expect(page.locator('#range')).toHaveClass(/custom/);
+    expect(bare(await out.textContent())).toBe(`1, 5, 9 · ${rtl ? 'בחירה חופשית' : 'custom'}`);
+    await expect(page.locator('#range .lo')).toHaveValue('0');
+    await expect(page.locator('#range .hi')).toHaveValue('8');
+    // Moving a handle turns it back into a contiguous range.
+    await page.locator('#range .hi').focus();
+    await page.keyboard.press(down);
+    await expect(page).toHaveURL(/hl=1-8(&|#|$)/);
+    await expect(page.locator('#range')).not.toHaveClass(/custom/);
+    if (process.env.SCREENS && test.info().project.name === 'chromium') {
+      await page.waitForTimeout(2000);
+      await page.screenshot({ path: path.join(process.env.SCREENS, `slider-${lang}.png`) });
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test(`range slider (${lang}): collapsed handles widen both ways; a tap on the scale moves the nearer handle`, async ({ page, browserName }) => {
+    const errors = collectErrors(page);
+    await page.setViewportSize({ width: 1280, height: 700 });
+    const drag = async (from: number, to: number) => {
+      const a = await thumbX(page, from, 10);
+      const b = await thumbX(page, to, 10);
+      await page.mouse.move(a.x, a.y);
+      await page.mouse.down();
+      await page.mouse.move(b.x, b.y, { steps: 10 });
+      await page.mouse.up();
+    };
+    for (const [to, expected] of [
+      [1, '2-5'], // towards lower classes: the low handle follows
+      [7, '5-8'], // towards higher classes: the high one
+    ] as const) {
+      await page.goto(`./?lang=${lang}&hl=5`);
+      await ready(page, 'ses-2021-local-authorities');
+      // On a 700 px window the slider is visible without scrolling the panel.
+      const box = (await page.locator('#range .range-track').boundingBox())!;
+      expect(box.y + box.height).toBeLessThan(700);
+      await expect(page.locator('#range .range-track')).toBeInViewport();
+      await drag(4, to);
+      await expect(page).toHaveURL(new RegExp(`hl=${expected}(&|#|$)`));
+    }
+    // A tap on the colour scale moves the nearer handle (here the high one, 8 → 10).
+    const ten = await page.locator('#range .range-scale span[data-key="10"]').boundingBox();
+    await page.mouse.click(ten!.x + ten!.width / 2, ten!.y + ten!.height / 2);
+    await expect(page).toHaveURL(/hl=5-10(&|#|$)/);
+    // Focus order: handles, then Clear (in the DOM; WebKit on macOS doesn't Tab to buttons by default).
+    expect(await page.locator('#range .hi').evaluate((hi) => Boolean(hi.compareDocumentPosition(document.querySelector('#range .range-clear')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    if (browserName !== 'webkit') {
+      await page.locator('#range .hi').focus();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('#range .range-clear')).toBeFocused();
+    }
+    // The full range is no highlight at all, however it is reached.
+    const one = await page.locator('#range .range-scale span[data-key="1"]').boundingBox();
+    await page.mouse.click(one!.x + one!.width / 2, one!.y + one!.height / 2);
+    await expect(page).not.toHaveURL(/hl=/);
+    await expect(page.locator('#range')).toHaveClass(/empty/);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('a full selection made in the legend, or a full-range link, means no highlight', async ({ page }) => {
+  await page.goto('./?lang=en&hl=1-10');
+  await ready(page, 'ses-2021-local-authorities');
+  await expect(page).not.toHaveURL(/hl=/);
+  for (let k = 1; k <= 10; k++) await page.locator(`#legend [data-key="${k}"]`).click();
+  await expect(page).not.toHaveURL(/hl=/);
+  await expect(page.locator('#legend .legend-list')).not.toHaveClass(/filtering/);
+});
+
+for (const lang of ['he', 'ru'] as const) {
+  test(`neighborhood search (${lang}): "פלורנטין" finds its statistical area and the popup lists the neighborhood`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(`./?lang=${lang}`);
+    await ready(page, 'ses-2021-local-authorities');
+    const box = page.getByRole('combobox');
+    // With no match, the en/ru empty state says which fields are searched in Hebrew.
+    await box.fill('qqqzzz');
+    await expect(page.locator('#results .empty')).toBeVisible();
+    if (lang === 'ru') await expect(page.locator('#results .empty-hint')).toHaveText('Также ищутся: Кварталы (на иврите)');
+    else await expect(page.locator('#results .empty-hint')).toHaveCount(0);
+    await box.fill('פלורנטין');
+    const first = page.getByRole('option').first();
+    await expect(first.locator('.result-via')).toHaveText('שכ פלורנטין');
+    // The level has one feature type, so the row shows only the level title (no "Квартал · Кварталы").
+    await expect(first.locator('.result-meta')).toHaveText(lang === 'he' ? 'שכונות' : 'Кварталы');
+    await expect(first).toContainText(lang === 'he' ? 'תל אביב -יפו – אזור 813' : 'Тель-Авив – участок 813');
+    if (process.env.SCREENS && lang === 'he' && test.info().project.name === 'chromium') {
+      await page.screenshot({ path: path.join(process.env.SCREENS, 'sa-search-neighborhood.png') });
+    }
+    await box.press('Enter');
+    await ready(page, 'ses-2021-statistical-areas');
+    await expect(page).toHaveURL(/f=50000813/);
+    const line = page.locator('.popup [data-field="neighborhoods_he"]');
+    await expect(line).toContainText('שכ פלורנטין');
+    await expect(line.locator('.extra-items')).toHaveAttribute('lang', 'he');
+    await expect(line.locator('.extra-label')).toHaveText(lang === 'he' ? 'שכונות באזור' : 'Кварталы на участке (на иврите)');
+    await expect(page.locator('.popup [data-field="streets_he"]')).toBeVisible();
+    if (process.env.SCREENS && test.info().project.name === 'chromium') {
+      await page.waitForTimeout(2000);
+      await page.screenshot({ path: path.join(process.env.SCREENS, `sa-popup-${lang}.png`) });
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
+test('statistical-area tooltip shows the first neighborhoods on a second line', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en&layer=ses-2021-statistical-areas&f=50000813');
+  await ready(page, 'ses-2021-statistical-areas');
+  await expect(page.locator('.maplibregl-popup')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(1200);
+  // The area is framed in the part of the map the panel leaves free; sweep that centre until its tooltip shows.
+  const tip = page.locator('#tooltip');
+  let found = false;
+  for (let dy = -60; dy <= 60 && !found; dy += 20) {
+    for (let dx = -80; dx <= 80 && !found; dx += 20) {
+      await page.mouse.move(790 + dx, 400 + dy);
+      await page.waitForTimeout(60);
+      found = (await tip.isVisible()) && (await tip.textContent())!.includes('area 813');
+    }
+  }
+  expect(found).toBe(true);
+  await expect(tip.locator('.tip-extra')).toHaveText(/שכ פלורנטין/);
+  await expect(tip.locator('.tip-extra')).toHaveAttribute('lang', 'he');
   expect(errors).toEqual([]);
 });
 
@@ -126,7 +320,9 @@ test('embed mode is compact and links to the full map', async ({ page }) => {
   await ready(page, 'ses-2021-localities');
   await expect(page.locator('body')).toHaveClass(/compact/);
   await expect(page.locator('#strip [aria-pressed=true]')).toHaveCount(3);
-  await expect(page.locator('[data-preset=high]')).toHaveAttribute('aria-pressed', 'true');
+  // An old list link still works, and is rewritten in the compact range form.
+  await expect(page.locator('#range output')).toHaveText(/8–10/);
+  await expect(page).toHaveURL(/hl=8-10/);
   const full = page.locator('#fullscreen');
   await expect(full).toHaveAttribute('href', /layer=ses-2021-localities/);
   expect(await full.getAttribute('href')).not.toContain('embed');
@@ -149,6 +345,8 @@ test('650 px iframe in a blog post: frames Israel, and the wheel scrolls the pag
   page.on('console', (m) => m.type() === 'error' && frameErrors.push(m.text()));
   await ready(frame, 'ses-2021-local-authorities');
   await page.waitForTimeout(1500);
+  await expect(frame.locator('#range .range-track')).toBeVisible();
+  expect(await frame.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   if (process.env.SCREENS) await page.screenshot({ path: path.join(process.env.SCREENS, 'embed-650.png') });
   const hash = await frame.evaluate(() => location.hash);
   const [zoom, lat, lon] = hash.slice(1).split('/').map(Number);
@@ -185,9 +383,23 @@ test('mobile 390×844: no horizontal scroll, the sheet and popup are usable', as
   const cell = (await page.locator('#strip [data-key="1"]').boundingBox())!;
   expect(cell.height).toBeGreaterThanOrEqual(40);
 
+  // The range slider sits right under the strip, finger-sized, and works by touch.
+  const track = page.locator('#range .range-track');
+  await expect(track).toBeVisible();
+  const tb = (await track.boundingBox())!;
+  expect(tb.height).toBeGreaterThanOrEqual(40);
+  expect(tb.x + tb.width).toBeLessThanOrEqual(390);
+  // Drag the max handle from the end to about the middle with a finger.
+  const tx = (v: number) => tb.x + 20 + (v * (tb.width - 40)) / 9;
+  await touchDrag(page, tx(9), tb.y + tb.height / 2, tx(4));
+  await expect(page).toHaveURL(/hl=1-[4-6](&|#|$)/);
+  const n = Number(/hl=1-(\d+)/.exec(page.url())![1]);
+  await expect(page.locator('#strip [aria-pressed=true]')).toHaveCount(n);
+  expect(await overflow()).toBeLessThanOrEqual(0);
+
   await page.locator('#sheet-toggle').tap();
-  await expect(page.getByRole('radio', { name: 'Населённые пункты региональных советов' })).toBeVisible();
-  await page.getByRole('radio', { name: 'Населённые пункты региональных советов' }).tap();
+  await expect(page.getByRole('radio', { name: 'Кибуцы, мошавы и посёлки' })).toBeVisible();
+  await page.getByRole('radio', { name: 'Кибуцы, мошавы и посёлки' }).tap();
   await ready(page, 'ses-2021-localities');
   expect(await overflow()).toBeLessThanOrEqual(0);
 
@@ -256,6 +468,7 @@ function steppedFixture() {
     if (i % 7 !== 0) values[c] = { rate: Math.round(((i * 37) % 300) / 10 - 3) + 0.25 * (i % 4) - 0.5, count: (i * 13) % 500 };
   });
   values['6900'] = { rate: -1.5, count: 42 }; // Kfar Saba: below the first break
+  manifest.datasets['crime-2024'] = { title: { he: 'שיעור פשיעה 2024', en: 'Crime rate 2024', ru: 'Уровень преступности 2024' } };
   manifest.layers.push({
     ...manifest.layers[0],
     id: 'crime-2024-localities',
@@ -278,7 +491,7 @@ function steppedFixture() {
   return { manifest, values, topo };
 }
 
-test('a stepped layer: legend, presets and popup read correctly in Hebrew', async ({ page }) => {
+test('a stepped layer: legend, range slider and popup read correctly in Hebrew', async ({ page }) => {
   const errors = collectErrors(page);
   const { manifest, values, topo } = steppedFixture();
   await page.route('**/data/layers.json', (r) => r.fulfill({ json: manifest }));
@@ -297,9 +510,18 @@ test('a stepped layer: legend, presets and popup read correctly in Hebrew', asyn
     '≥ 20',
     'בשוח אל', // "לא חושב", Hebrew in visual (right-to-left) order
   ]);
-  expect((await page.locator('.legend-actions button').allTextContents()).map(bare).slice(0, 2)).toEqual(['נמוכים < 5', 'גבוהים ≥ 5']);
-  // Visual order in RTL: the isolated range sits left of the Hebrew word and reads "< 5", not "5 >".
-  expect(await visualText(page, '[data-preset]')).toEqual(['< 5 םיכומנ', '≥ 5 םיהובג']);
+  await expect(page.locator('[data-preset]')).toHaveCount(0); // the slider replaced the presets
+  // The slider covers the six bins, not "not calculated"; its label reads left-to-right inside Hebrew.
+  await expect(page.locator('#range .range-scale span')).toHaveCount(6);
+  await page.locator('#range .hi').focus();
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight'); // RTL: right lowers the value
+  await expect(page).toHaveURL(/hl=s0-s2/);
+  expect(await visualText(page, '#range output')).toEqual(['< 5']);
+  await page.locator('#range .lo').focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page).toHaveURL(/hl=s1-s2/);
+  expect(await visualText(page, '#range output')).toEqual(['-1 – 5']);
+  await page.locator('#range .range-clear').click();
 
   await page.getByRole('combobox').fill('כפר סבא');
   await expect(page.getByRole('option').first()).toContainText('כפר סבא');
@@ -325,7 +547,9 @@ test('screenshots', async ({ page }) => {
   await ready(page, 'ses-2021-local-authorities');
   await shot('desktop-he.png');
   await page.getByRole('combobox').fill('באר שבע');
+  await expect(page.getByRole('option').first()).toContainText('באר שבע');
   await page.getByRole('combobox').press('Enter');
+  await expect(page.locator('.maplibregl-popup')).toBeVisible();
   await shot('desktop-he-popup.png');
 
   await page.goto('./?lang=en&layer=ses-2021-statistical-areas&hl=1,2,3#11/32.08/34.8');
@@ -342,4 +566,8 @@ test('screenshots', async ({ page }) => {
   await shot('mobile-ru-popup.png');
   await page.locator('#sheet-toggle').click();
   await shot('mobile-ru-sheet.png');
+
+  await page.goto('./?lang=ru&layer=ses-2021-localities&hl=3-6#8.6/32.75/35.3');
+  await ready(page, 'ses-2021-localities');
+  await shot('slider-mobile-ru.png');
 });

@@ -19,22 +19,27 @@ export function detectLang(param: string | null, navigatorLangs: readonly string
 
 const UI = {
   title: { he: 'מפת הנתונים הפתוחים של ישראל', en: 'Israel open data map', ru: 'Карта открытых данных Израиля' },
-  searchPlaceholder: { he: 'חיפוש יישוב, רשות או אזור', en: 'Search a place, authority or area', ru: 'Поиск населённого пункта или района' },
+  searchPlaceholder: { he: 'חיפוש יישוב או שכונה', en: 'Search place or neighborhood', ru: 'Поиск: город, посёлок, квартал' },
+  alsoSearchable: { he: 'אפשר לחפש גם: {fields}', en: 'Also searchable: {fields}', ru: 'Также ищутся: {fields}' },
   searchLabel: { he: 'חיפוש', en: 'Search', ru: 'Поиск' },
   noResults: { he: 'לא נמצאו תוצאות', en: 'No matches', ru: 'Ничего не найдено' },
   searching: { he: 'טוען…', en: 'Loading…', ru: 'Загрузка…' },
   layers: { he: 'שכבות', en: 'Layers', ru: 'Слои' },
   legend: { he: 'מקרא', en: 'Legend', ru: 'Легенда' },
   legendHint: {
-    he: 'לחצו על קבוצה כדי להדגיש אותה במפה',
-    en: 'Tap a class to highlight it on the map',
-    ru: 'Нажмите на класс, чтобы выделить его на карте',
+    he: 'לחצו על קבוצות כדי להדגיש אותן במפה, או גררו את קצות הטווח',
+    en: 'Tap classes to highlight them on the map, or drag the range ends',
+    ru: 'Нажимайте на классы, чтобы выделить их на карте, или двигайте края диапазона',
   },
   clear: { he: 'ניקוי', en: 'Clear', ru: 'Сбросить' },
   low: { he: 'נמוך', en: 'Low', ru: 'Низкий' },
   high: { he: 'גבוה', en: 'High', ru: 'Высокий' },
-  presetLow: { he: 'נמוכים', en: 'Lowest', ru: 'Низшие' },
-  presetHigh: { he: 'גבוהים', en: 'Highest', ru: 'Высшие' },
+  range: { he: 'הדגשת טווח', en: 'Highlight range', ru: 'Выделить диапазон' },
+  rangeMin: { he: 'הקבוצה הנמוכה בטווח', en: 'Minimum class', ru: 'Минимальный класс' },
+  rangeMax: { he: 'הקבוצה הגבוהה בטווח', en: 'Maximum class', ru: 'Максимальный класс' },
+  rangeAll: { he: 'הכול', en: 'all', ru: 'все' },
+  rangeCustom: { he: 'בחירה חופשית', en: 'custom', ru: 'выборочно' },
+  more: { he: 'עוד {n}', en: '+{n} more', ru: 'ещё {n}' },
   of: { he: 'מתוך', en: 'of', ru: 'из' },
   about: { he: 'אודות ומקורות', en: 'About & sources', ru: 'О карте и источники' },
   close: { he: 'סגירה', en: 'Close', ru: 'Закрыть' },
@@ -48,7 +53,6 @@ const UI = {
     ru: 'Примерное место: ЦСБ не публикует границу',
   },
   noRuName: { he: '', en: '', ru: 'нет русского названия' },
-  areas: { he: '{n} אזורים', en: '{n} areas', ru: 'районов: {n}' },
   basemap: { he: 'מפת רקע', en: 'Basemap', ru: 'Подложка' },
   noEndorsement: {
     he: 'המפה אינה מטעם הלמ"ס, והלמ"ס אינה תומכת בה. הנתונים מוצגים כמות שהם.',
@@ -66,6 +70,17 @@ export type UiKey = keyof typeof UI;
 /** UI string; `{var}` placeholders take already formatted values (see format.ts for numbers). */
 export const t = (key: UiKey, lang: Lang, vars: Record<string, string> = {}) =>
   UI[key][lang].replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? vars[k] : m));
+
+/**
+ * Note after a label whose values are in another language than the UI ("Районы (на иврите)"), keyed by the values'
+ * language, then the UI language. Empty when they match.
+ */
+const IN_LANG: Record<Lang, I18n> = {
+  he: { he: '', en: '(in Hebrew)', ru: '(на иврите)' },
+  en: { he: '(באנגלית)', en: '', ru: '(на английском)' },
+  ru: { he: '(ברוסית)', en: '(in Russian)', ru: '' },
+};
+export const inLangNote = (textLang: Lang, lang: Lang) => (textLang === lang ? '' : IN_LANG[textLang][lang]);
 
 /** MapLibre's own UI strings; `en` repeats MapLibre's defaults so switching back to English restores them. */
 export const MAP_LOCALE: Record<Lang, Record<string, string>> = {

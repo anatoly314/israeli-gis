@@ -1,5 +1,5 @@
 import { basemap } from './config.ts';
-import { legendEntries, presets, textOn } from './classify.ts';
+import { legendEntries, textOn } from './classify.ts';
 import { LANGS, t, type Lang } from './i18n.ts';
 import type { Layer, LayerGroup, Manifest } from './manifest.ts';
 import { esc, swatch } from './html.ts';
@@ -34,11 +34,17 @@ export function renderLayers(el: HTMLElement, groups: LayerGroup[], current: str
       .map(
         (g) =>
           `<fieldset><legend>${esc(g.title[lang])}</legend>` +
+          (g.description ? `<p class="note">${esc(g.description[lang])}</p>` : '') +
           g.items
             .map(
-              ({ layer, label }) =>
-                `<label class="layer-item"><input type="radio" name="layer" value="${esc(layer.id)}"${layer.id === current ? ' checked' : ''}>` +
-                `<span>${esc(label[lang])}</span></label>`,
+              ({ layer, label, official }) => {
+                // The official CBS term as small secondary text, unless it says the same as the plain name.
+                const term = official && official[lang] !== label[lang] ? `<small class="official">${esc(official[lang])}</small>` : '';
+                return (
+                  `<label class="layer-item"><input type="radio" name="layer" value="${esc(layer.id)}"${layer.id === current ? ' checked' : ''}>` +
+                  `<span class="layer-name"><span>${esc(label[lang])}</span>${term}</span></label>`
+                );
+              },
             )
             .join('') +
           `</fieldset>`,
@@ -56,23 +62,14 @@ export function renderLegend(el: HTMLElement, strip: HTMLElement, layer: Layer, 
   const c = layer.classification;
   const { classes, missing } = legendEntries(c, lang);
   const on = (k: string) => hl.includes(k);
-  const p = presets(c, lang);
-  const isPreset = (keys: string[]) => hl.length === keys.length && keys.every(on);
   const item = (e: { key: string; color: string; label: string; description?: string }, isMissing = false) =>
     `<li><button type="button" data-key="${esc(e.key)}" aria-pressed="${on(e.key)}"${e.description ? ` title="${esc(e.description)}"` : ''}>` +
     `${swatch(e.color, isMissing)}<span>${esc(e.label)}</span></button></li>`;
 
   el.innerHTML =
-    `<h2>${esc(t('legend', lang))}</h2>` +
     (c.note ? `<p class="note">${esc(c.note[lang])}</p>` : '') +
     `<ul class="legend-list${hl.length ? ' filtering' : ''}">${classes.map((e) => item(e)).join('')}${item(missing, true)}</ul>` +
-    `<div class="legend-actions">` +
-    (p
-      ? `<button type="button" data-preset="low" aria-pressed="${isPreset(p.low.keys)}">${esc(t('presetLow', lang))} ${esc(p.low.range)}</button>` +
-        `<button type="button" data-preset="high" aria-pressed="${isPreset(p.high.keys)}">${esc(t('presetHigh', lang))} ${esc(p.high.range)}</button>`
-      : '') +
-    `<button type="button" data-clear ${hl.length ? '' : 'disabled'}>${esc(t('clear', lang))}</button>` +
-    `</div><p class="hint">${esc(t('legendHint', lang))}</p>`;
+    `<p class="hint">${esc(t('legendHint', lang))}</p>`;
 
   // One grid: the class cells, the "not calculated" cell, the clear button; the low/high caption spans the classes only.
   strip.innerHTML =
@@ -90,12 +87,6 @@ export function renderLegend(el: HTMLElement, strip: HTMLElement, layer: Layer, 
   for (const root of [el, strip]) {
     root.querySelectorAll<HTMLButtonElement>('[data-key]').forEach((b) => b.addEventListener('click', () => h.toggle(b.dataset.key!)));
     root.querySelectorAll<HTMLButtonElement>('[data-clear]').forEach((b) => b.addEventListener('click', () => h.set([])));
-    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) =>
-      b.addEventListener('click', () => {
-        const keys = (b.dataset.preset === 'low' ? p!.low : p!.high).keys;
-        h.set(isPreset(keys) ? [] : keys);
-      }),
-    );
   }
 }
 

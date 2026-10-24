@@ -8,6 +8,8 @@ export interface ResultView {
   meta: string;
   /** Trusted HTML (swatch + value) for results on the current layer. */
   value?: string;
+  /** The item a result was found by (a neighborhood), shown before the name in its own language. */
+  via?: { text: string; lang: Lang };
 }
 
 export interface SearchBoxOptions {
@@ -16,6 +18,8 @@ export interface SearchBoxOptions {
   find: (query: string) => SearchEntry[];
   view: (e: SearchEntry, lang: Lang) => ResultView;
   onSelect: (e: SearchEntry) => void;
+  /** Extra text for the "no matches" state, e.g. which fields are searched in which language. */
+  hint?: (lang: Lang) => string;
 }
 
 /** WAI-ARIA combobox with a listbox popup: arrows move, Enter picks, Escape closes then clears. */
@@ -49,7 +53,8 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
     }
     if (!results.length) {
       const msg = t(loading ? 'searching' : 'noResults', lang);
-      list.innerHTML = `<li class="empty" role="presentation">${esc(msg)}</li>`;
+      const hint = loading ? '' : (o.hint?.(lang) ?? '');
+      list.innerHTML = `<li class="empty" role="presentation">${esc(msg)}${hint ? `<span class="empty-hint">${esc(hint)}</span>` : ''}</li>`;
       live.textContent = msg;
       open(true);
       input.removeAttribute('aria-activedescendant');
@@ -60,7 +65,11 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
         const v = o.view(e, lang);
         return (
           `<li role="option" id="opt-${i}" aria-selected="${i === active}" data-i="${i}">` +
-          `<span class="result-name" dir="auto">${esc(v.name)}</span>` +
+          `<span class="result-name">` +
+          (v.via
+            ? `<bdi class="result-via" lang="${v.via.lang}" dir="${v.via.lang === 'he' ? 'rtl' : 'auto'}">${esc(v.via.text)}</bdi> · `
+            : '') +
+          `<bdi dir="auto">${esc(v.name)}</bdi></span>` +
           `<span class="result-meta"><span>${esc(v.meta)}</span>${v.value ? `<span class="result-class">${v.value}</span>` : ''}</span></li>`
         );
       })

@@ -16,11 +16,25 @@ function inside([x, y]: number[], ring: number[][]): boolean {
 }
 
 describe('layer grouping', () => {
-  it('groups the shipped layers under one dataset, titled by the shared prefix, items by level', () => {
+  it('groups the shipped layers by dataset, items by level title with the official term', () => {
     const groups = groupLayers(manifest());
     expect(groups).toHaveLength(1);
     expect(groups[0].title).toEqual({ he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic index 2021', ru: 'Социально-экономический индекс 2021' });
-    expect(groups[0].items.map((i) => i.label.en)).toEqual(['Local authorities', 'Localities in regional councils', 'Statistical areas']);
+    expect(groups[0].items.map((i) => i.label.en)).toEqual(['Municipalities', 'Kibbutzim, moshavim & villages', 'Neighborhoods']);
+    expect(groups[0].items.map((i) => i.label.he)).toEqual(['רשויות מקומיות', 'קיבוצים, מושבים ויישובים', 'שכונות']);
+    expect(groups[0].items.map((i) => i.label.ru)).toEqual(['Муниципалитеты', 'Кибуцы, мошавы и посёлки', 'Кварталы']);
+    expect(groups[0].items[2].official?.en).toBe('CBS statistical areas');
+  });
+
+  it('heads groups with datasets[id].title (and description), never with text taken from layer titles', () => {
+    const m = manifest();
+    const renamed = m.layers.map((l, i) => ({ ...l, title: { he: `x${i}`, en: `Layer ${i}`, ru: `y${i}` } }));
+    const description = { he: 'תיאור', en: 'About it', ru: 'Описание' };
+    const withTitle: Manifest = { ...m, layers: renamed, datasets: { 'ses-2021': { title: { he: 'מדד', en: 'SES index', ru: 'Индекс' }, description } } };
+    const [g] = groupLayers(withTitle);
+    expect([g.title.en, g.description?.ru]).toEqual(['SES index', 'Описание']);
+    // Item labels come from the levels, not the layer titles.
+    expect(g.items[0].label.en).toBe('Municipalities');
   });
 
   it('adds a group per new dataset, in manifest order, with nothing hard-coded', () => {
@@ -30,10 +44,11 @@ describe('layer grouping', () => {
       ...base,
       id: 'crime-2024',
       dataset: 'crime-2024',
-      title: { he: 'פשיעה 2024', en: 'Crime 2024', ru: 'Преступность 2024' },
+      title: { he: 'פשיעה 2024 – יישובים', en: 'Crime 2024 – Localities', ru: 'Преступность 2024 – Населённые пункты' },
       level: 'localities-2011',
     };
-    const extended: Manifest = { ...m, layers: [crime, ...m.layers] };
+    const datasets = { ...m.datasets, 'crime-2024': { title: { he: 'פשיעה 2024', en: 'Crime 2024', ru: 'Преступность 2024' } } };
+    const extended: Manifest = { ...m, datasets, layers: [crime, ...m.layers] };
     const groups = groupLayers(extended);
     expect(groups.map((g) => g.dataset)).toEqual(['crime-2024', 'ses-2021']);
     expect(groups[0].title.en).toBe('Crime 2024');

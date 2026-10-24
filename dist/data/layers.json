@@ -2,10 +2,16 @@
   "version": 1,
   "levels": {
     "local-authorities-2011": {
+      "kind": "local-authorities",
       "title": {
         "he": "רשויות מקומיות",
+        "en": "Municipalities",
+        "ru": "Муниципалитеты"
+      },
+      "officialTerm": {
+        "he": "רשויות מקומיות",
         "en": "Local authorities",
-        "ru": "Органы местной власти"
+        "ru": "органы местного самоуправления"
       },
       "file": "geometry/local-authorities-2011.topo.json",
       "object": "local-authorities-2011",
@@ -16,8 +22,8 @@
       "populationYear": 2020,
       "featureType": {
         "he": "רשות מקומית",
-        "en": "Local authority",
-        "ru": "Орган местной власти"
+        "en": "Municipality",
+        "ru": "Муниципалитет"
       },
       "featureTypes": {
         "property": "authority_type",
@@ -41,10 +47,16 @@
       }
     },
     "localities-2011": {
+      "kind": "localities",
       "title": {
         "he": "יישובים",
         "en": "Localities",
         "ru": "Населённые пункты"
+      },
+      "officialTerm": {
+        "he": "יישובים (קובץ היישובים של הלמ\"ס)",
+        "en": "CBS localities",
+        "ru": "населённые пункты ЦСБ"
       },
       "file": "geometry/localities-2011.topo.json",
       "object": "localities-2011",
@@ -60,10 +72,16 @@
       }
     },
     "rc-localities-2011": {
+      "kind": "rc-localities",
       "title": {
+        "he": "קיבוצים, מושבים ויישובים",
+        "en": "Kibbutzim, moshavim & villages",
+        "ru": "Кибуцы, мошавы и посёлки"
+      },
+      "officialTerm": {
         "he": "יישובים במועצות אזוריות",
         "en": "Localities in regional councils",
-        "ru": "Населённые пункты региональных советов"
+        "ru": "населённые пункты в региональных советах"
       },
       "file": "geometry/rc-localities-2011.topo.json",
       "object": "rc-localities-2011",
@@ -79,10 +97,16 @@
       }
     },
     "statistical-areas-2011": {
+      "kind": "statistical-areas",
       "title": {
-        "he": "אזורים סטטיסטיים",
-        "en": "Statistical areas",
-        "ru": "Статистические районы"
+        "he": "שכונות",
+        "en": "Neighborhoods",
+        "ru": "Кварталы"
+      },
+      "officialTerm": {
+        "he": "אזורים סטטיסטיים של הלמ\"ס",
+        "en": "CBS statistical areas",
+        "ru": "статистические районы ЦСБ"
       },
       "file": "geometry/statistical-areas-2011.topo.json",
       "object": "statistical-areas-2011",
@@ -91,16 +115,54 @@
       "featureCount": 1917,
       "placeholderCount": 0,
       "featureLabel": {
-        "he": "{name} – אזור סטטיסטי {sa}",
-        "en": "{name} – statistical area {sa}",
-        "ru": "{name} – статистический район {sa}"
+        "he": "{name} – אזור {sa}",
+        "en": "{name} – area {sa}",
+        "ru": "{name} – участок {sa}"
       },
       "parentCode": "locality_code",
       "populationYear": 2020,
       "featureType": {
-        "he": "אזור סטטיסטי",
-        "en": "Statistical area",
-        "ru": "Статистический район"
+        "he": "אזור",
+        "en": "Area",
+        "ru": "Участок"
+      },
+      "extraFields": [
+        {
+          "property": "neighborhoods_he",
+          "kind": "list",
+          "textLang": "he",
+          "label": {
+            "he": "שכונות באזור",
+            "en": "Neighborhoods in this area",
+            "ru": "Кварталы на участке"
+          },
+          "shortLabel": {
+            "he": "שכונות",
+            "en": "Neighborhoods",
+            "ru": "Кварталы"
+          },
+          "searchable": true
+        },
+        {
+          "property": "streets_he",
+          "kind": "list",
+          "textLang": "he",
+          "label": {
+            "he": "רחובות עיקריים",
+            "en": "Main streets",
+            "ru": "Главные улицы"
+          },
+          "searchable": false
+        }
+      ]
+    }
+  },
+  "datasets": {
+    "ses-2021": {
+      "title": {
+        "he": "מדד חברתי-כלכלי 2021",
+        "en": "Socio-economic index 2021",
+        "ru": "Социально-экономический индекс 2021"
       }
     }
   },
@@ -110,8 +172,8 @@
       "dataset": "ses-2021",
       "title": {
         "he": "מדד חברתי-כלכלי 2021 – רשויות מקומיות",
-        "en": "Socio-economic index 2021 – local authorities",
-        "ru": "Социально-экономический индекс 2021 – органы местной власти"
+        "en": "Socio-economic index 2021 – Municipalities",
+        "ru": "Социально-экономический индекс 2021 – Муниципалитеты"
       },
       "data": "datasets/ses-2021/local-authorities-2011.json",
       "valueField": "cluster",
@@ -299,9 +361,9 @@
       "id": "ses-2021-localities",
       "dataset": "ses-2021",
       "title": {
-        "he": "מדד חברתי-כלכלי 2021 – יישובים במועצות אזוריות",
-        "en": "Socio-economic index 2021 – localities in regional councils",
-        "ru": "Социально-экономический индекс 2021 – населённые пункты региональных советов"
+        "he": "מדד חברתי-כלכלי 2021 – קיבוצים, מושבים ויישובים",
+        "en": "Socio-economic index 2021 – Kibbutzim, moshavim & villages",
+        "ru": "Социально-экономический индекс 2021 – Кибуцы, мошавы и посёлки"
       },
       "data": "datasets/ses-2021/rc-localities-2011.json",
       "valueField": "cluster",
@@ -489,9 +551,9 @@
       "id": "ses-2021-statistical-areas",
       "dataset": "ses-2021",
       "title": {
-        "he": "מדד חברתי-כלכלי 2021 – אזורים סטטיסטיים",
-        "en": "Socio-economic index 2021 – statistical areas",
-        "ru": "Социально-экономический индекс 2021 – статистические районы"
+        "he": "מדד חברתי-כלכלי 2021 – שכונות",
+        "en": "Socio-economic index 2021 – Neighborhoods",
+        "ru": "Социально-экономический индекс 2021 – Кварталы"
       },
       "data": "datasets/ses-2021/statistical-areas-2011.json",
       "valueField": "cluster",
@@ -598,7 +660,7 @@
           "description": {
             "he": "הלמ\"ס לא חישבה מדד לאזור זה: פחות מ-120 תושבים, אזור שאינו למגורים, או עיר שאין לה נתונים ברמת אזור סטטיסטי (בעיקר יישובים ערביים ודרוזיים).",
             "en": "CBS did not calculate the index for this area: fewer than 120 residents, a non-residential area, or a city without statistical-area data (mostly Arab and Druze cities).",
-            "ru": "ЦСБ не рассчитывало индекс для этого района: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города)."
+            "ru": "ЦСБ не рассчитывало индекс для этого участка: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города)."
           },
           "color": "#c8c8c8"
         },
@@ -692,6 +754,17 @@
       "license": "CBS open licence",
       "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
       "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), שכבת אזורים סטטיסטיים 2011 – דמוגרפיה 2020 וקובץ יישובים 2021, (נשלף 24.10.2026), זמין ב: https://www.cbs.gov.il/he/Pages/geo-layers.aspx, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+    },
+    {
+      "name": {
+        "he": "הלמ\"ס, רחובות עיקריים ושכונות לפי אזור סטטיסטי (חלוקת 2011)",
+        "en": "CBS, main streets and neighborhoods by statistical area (2011 division)",
+        "ru": "ЦСБ, главные улицы и кварталы по статистическим районам (деление 2011 года)"
+      },
+      "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2021/%D7%A8%D7%97%D7%95%D7%91%D7%95%D7%AA%20%D7%A2%D7%99%D7%A7%D7%A8%D7%99%D7%99%D7%9D%20%D7%95%D7%A9%D7%9B%D7%95%D7%A0%D7%95%D7%AA%20%D7%9C%D7%90%D7%A1%202011.xlsx",
+      "license": "CBS open licence",
+      "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+      "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), רחובות עיקריים ושכונות לא\"ס 2011 (הופק 28.7.2021), (נשלף 24.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2021/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
     },
     {
       "name": {

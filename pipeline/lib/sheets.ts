@@ -4,9 +4,9 @@ import { readSheet } from 'read-excel-file/node';
 
 export type Row = unknown[];
 
-/** First sheet as an array of rows; empty cells are null. Formula cells yield their cached value. */
-export async function readSheetRows(file: string): Promise<Row[]> {
-  return (await readSheet(file, { trim: false })) as Row[];
+/** A sheet (default: the first) as an array of rows; empty cells are null. Formula cells yield their cached value. */
+export async function readSheetRows(file: string, sheet?: string): Promise<Row[]> {
+  return (await (sheet ? readSheet(file, sheet, { trim: false }) : readSheet(file, { trim: false }))) as Row[];
 }
 
 /** CSV as objects keyed by header; every cell stays a string, so "0046" stays "0046". */

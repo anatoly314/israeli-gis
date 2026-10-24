@@ -31,6 +31,14 @@ for (const j of report.joins) {
   console.log(`  ✓ ${j.label.padEnd(28)} ${`${j.matched}/${j.rows}`.padEnd(10)} ${parts ? `(${parts}) ` : ''}` +
     `— ${j.geometryWithoutData} ${j.level} features without data → "not calculated"`);
 }
+for (const c of report.companions) {
+  const layers = c.layers.map((l) => `${l.id} ${l.matched}/${l.rows}`).join(', ');
+  console.log(
+    `  ✓ ${c.label.padEnd(28)} ${`${c.matched}/${c.rows}`.padEnd(10)} — ${c.featuresMatched}/${c.features} ${c.level} features` +
+      `${layers ? `, ${layers}` : ''}; ${c.withNeighborhoods} with neighborhoods, ${c.withStreets} with streets, ${c.withNeither} with neither`,
+  );
+  if (c.unmatched.length) console.log(`      unmatched: ${c.unmatched.join(', ')}`);
+}
 
 console.log('\nnames per level (features: ru from Wikidata / ru = en fallback / en is Hebrew because no source has one):');
 for (const id of LEVEL_IDS) {
@@ -50,5 +58,5 @@ for (const f of report.written) console.log(`  ${f.path.padEnd(48)} ${kb(f.bytes
 const joined = report.joins.reduce((n, j) => n + j.matched, 0);
 console.log(
   `\nchecks passed: checksums OK (${report.checks.rawFiles} files), datum shift OK, joins OK (${joined} rows), ` +
-    `geometry valid (${report.checks.validFeatures} features), manifest OK; done in ${((Date.now() - t0) / 1000).toFixed(1)} s`,
+    `geometry valid (${report.checks.validFeatures} features), manifest and terminology OK; done in ${((Date.now() - t0) / 1000).toFixed(1)} s`,
 );

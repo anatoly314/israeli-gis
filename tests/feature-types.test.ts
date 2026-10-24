@@ -5,7 +5,7 @@ import { byCode, levelFeatures, manifest } from './dist.ts';
 describe('feature types', () => {
   it('names the feature type of every level', () => {
     for (const id of LEVEL_IDS) expect(manifest().levels[id].featureType?.en).toBeTruthy();
-    expect(manifest().levels['statistical-areas-2011'].featureType?.en).toBe('Statistical area');
+    expect(manifest().levels['statistical-areas-2011'].featureType?.en).toBe('Area');
   });
 
   it('splits local authorities into 79 cities, 124 local councils and 54 regional councils', () => {

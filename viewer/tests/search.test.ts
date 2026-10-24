@@ -61,9 +61,53 @@ describe('search over the shipped levels', () => {
     });
   });
 
-  it('indexes each (level, code) once', () => {
-    const keys = entries.map((e) => `${e.level}/${e.code ?? e.codes[0]}/${e.code == null}`);
+  it('indexes each (level, code) once by name, and once more by its neighborhoods', () => {
+    const keys = entries.map((e) => `${e.level}/${e.code ?? e.codes[0]}/${e.code == null}/${Boolean(e.via)}`);
     expect(new Set(keys).size).toBe(keys.length);
+    // 1298 statistical areas have neighborhood names (contract); one entry each, whatever the number of names.
+    expect(entries.filter((e) => e.via)).toHaveLength(1298);
+  });
+
+  it('finds statistical areas by neighborhood, after direct name matches, showing the neighborhood that matched', () => {
+    const [florentin] = find('פלורנטין');
+    expect([florentin.level, florentin.code, florentin.matched]).toEqual([SA, '50000813', 'שכ פלורנטין']);
+    expect(florentin.names.en).toBe('Tel Aviv - Yafo – area 813');
+    const ramat = find('רמת אביב');
+    expect(ramat.filter((e) => e.via).map((e) => e.code).sort()).toEqual(['50000113', '50000122', '50000133']);
+    // Direct names first: "רמת" finds localities and cities before any neighborhood.
+    const ramatOnly = find('רמת');
+    const firstVia = ramatOnly.findIndex((e) => e.via);
+    expect(firstVia === -1 || ramatOnly.slice(firstVia).every((e) => e.via)).toBe(true);
+    expect(ramatOnly[0].via).toBeUndefined();
+  });
+
+  it('matches neighborhood spelling variants and drops a leading ה', () => {
+    // CBS writes both נוה and נווה, קרית and קריית, with or without the article.
+    expect(find('נוה צדק').find((e) => e.via)?.matched).toBe('שכ נווה צדק');
+    expect(find('נווה צדק').find((e) => e.via)?.matched).toBe('שכ נווה צדק');
+    expect(find('קרית יובל').find((e) => e.via)?.matched).toBe('קרית היובל');
+    expect(find('קריית היובל').find((e) => e.via)?.matched).toBe('קרית היובל');
+    // Place names still win: "נווה" lists places called נווה …, "קרית" the קריית cities, no neighborhoods.
+    expect(find('נווה')[0].names.he).toBe('נווה');
+    expect(find('קרית').some((e) => e.via)).toBe(false);
+  });
+
+  it('puts a whole-word neighborhood match above a word-prefix place match, below exact and prefix place matches', () => {
+    const results = find('הדר');
+    const hadar = results.findIndex((e) => e.matched === 'הדר הכרמל');
+    const ganHadarom = results.findIndex((e) => e.names.he === 'גן הדרום');
+    expect(hadar).toBeGreaterThan(-1);
+    expect(ganHadarom === -1 || ganHadarom > hadar).toBe(true);
+    expect(results[0].names.he).toBe('הדר עם'); // a place whose name starts with the query stays first
+    expect(find('תל')[0].code).toBe('5000');
+  });
+
+  it('lists an area once when several of its neighborhoods match, with the best match shown', () => {
+    // SA 30000112 is Kiryat Kamenitz, among others; any word they share must not repeat the area.
+    const all = search(entries, 'שכ', { levelRank: rankFor(SA), limit: 5000 }).filter((e) => e.via);
+    const codes = all.map((e) => e.code);
+    expect(new Set(codes).size).toBe(codes.length);
+    expect(find('קרית קמניץ').find((e) => e.via)?.code).toBe('30000112');
   });
 
   it.each(['תל אביב', 'Tel Aviv', 'Тель-Авив', 'tel-aviv', 'תל-אביב יפו', 'tel', 'תל'])('%s finds Tel Aviv-Yafo first', (q) => {
@@ -82,7 +126,7 @@ describe('search over the shipped levels', () => {
   it('finds a single statistical area when a number is typed', () => {
     const [sa] = find('tel aviv 437');
     expect(sa.code).toBe('50000437');
-    expect(sa.names.en).toBe('Tel Aviv - Yafo – statistical area 437');
+    expect(sa.names.en).toBe('Tel Aviv - Yafo – area 437');
   });
 
   it('"קרית" finds the קריית cities, Qiryat Shemona among the first eight', () => {

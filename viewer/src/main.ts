@@ -1,9 +1,9 @@
 import { Popup, type MapGeoJSONFeature, type PointLike } from 'maplibre-gl';
-import { MISSING, legendEntries } from './classify.ts';
+import { classKeys } from './classify.ts';
 import { MANIFEST_URL } from './config.ts';
 import { joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
 import { formatNumber } from './format.ts';
-import { detectLang, dirOf, featureName, t, type Lang } from './i18n.ts';
+import { detectLang, dirOf, featureName, inLangNote, t, type Lang } from './i18n.ts';
 import { groupLayers, isChoropleth, loadManifest, type Layer, type Level, type Manifest } from './manifest.ts';
 import {
   addDataLayer,
@@ -20,7 +20,9 @@ import {
   setMapLocale,
 } from './map.ts';
 import { featureTitle, featureType, popupHtml, tooltipHtml, valueHtml } from './popup.ts';
+import { compactHl, expandHl, normalizeSelection } from './range.ts';
 import { createSearchBox } from './search-box.ts';
+import { createSlider } from './slider.ts';
 import { buildEntries, search, type SearchEntry } from './search.ts';
 import { $, renderAbout, renderLang, renderLayers, renderLegend } from './ui.ts';
 import { parseUrl, serializeUrl } from './url.ts';
@@ -44,9 +46,11 @@ const popup = new Popup({ closeOnClick: false, maxWidth: '320px', focusAfterOpen
 const searchBox = createSearchBox($('search'), {
   ensureIndex,
   find: (q) => searchEntries(q),
+  hint: searchHint,
   view: resultView,
   onSelect: selectEntry,
 });
+const slider = createSlider($('range'), (keys, done) => setClasses(keys, done));
 
 let manifest: Manifest;
 let base: URL;
@@ -72,9 +76,15 @@ function status(text: string | null) {
   el.textContent = text ?? '';
 }
 
+/** `hl` for the URL: runs of classes compacted to "4-7". */
+function hlTokens() {
+  const layer = manifest && layerById(state.layerId);
+  return layer ? compactHl(state.hl, classKeys(layer.classification)) : state.hl;
+}
+
 function syncUrl() {
   const s = serializeUrl(
-    { lang: state.lang, layer: state.layerId || null, hl: state.hl, feature: state.selected?.codes.length === 1 ? state.selected.codes[0] : null, embed: state.embed },
+    { lang: state.lang, layer: state.layerId || null, hl: hlTokens(), feature: state.selected?.codes.length === 1 ? state.selected.codes[0] : null, embed: state.embed },
     location.search,
   );
   history.replaceState(history.state, '', `${location.pathname}${s}${location.hash}`);
@@ -96,6 +106,9 @@ function applyLayout() {
   state.compact = state.embed || narrow.matches;
   document.body.classList.toggle('compact', state.compact);
   document.body.classList.toggle('embed', state.embed);
+  // The slider sits under the legend on desktop and right under the colour strip in the compact sheet.
+  if (state.compact) $('strip').after($('range'));
+  else $('legend-title').after($('range'));
   if (manifest) refreshControls();
 }
 
@@ -125,9 +138,30 @@ function renderChrome() {
     const item = g.items.find((i) => i.layer.id === layer.id)!;
     $('sheet-title').textContent = item.label[lang];
     $('sheet-toggle').title = `${g.title[lang]} · ${item.label[lang]}`;
-    renderLegend($('legend'), $('strip'), layer, state.hl, lang, { toggle: toggleClass, set: setClasses });
   }
+  renderSelection();
   renderAbout($<HTMLDialogElement>('about'), manifest, lang);
+}
+
+/** Legend, colour strip and range slider: everything that shows the highlighted classes. */
+function renderSelection() {
+  const layer = manifest && layerById(state.layerId);
+  if (!layer) return;
+  $('legend-title').textContent = t('legend', state.lang);
+  renderLegend($('legend'), $('strip'), layer, state.hl, state.lang, { toggle: toggleClass, set: setClasses });
+  slider.update(layer, state.hl, state.lang);
+}
+
+/** While a handle moves: only the pressed/dimmed state of the legend and strip, no re-render. */
+function markSelection() {
+  const layer = layerById(state.layerId);
+  if (!layer) return;
+  const on = new Set(state.hl);
+  for (const b of document.querySelectorAll<HTMLElement>('#legend [data-key], #strip [data-key]')) b.setAttribute('aria-pressed', String(on.has(b.dataset.key!)));
+  for (const list of document.querySelectorAll('#legend .legend-list, #strip .strip-row')) list.classList.toggle('filtering', on.size > 0);
+  const clear = document.querySelector<HTMLElement>('#strip .strip-clear');
+  if (clear) clear.hidden = on.size === 0;
+  slider.update(layer, state.hl, state.lang);
 }
 
 function setLang(lang: Lang) {
@@ -142,10 +176,13 @@ function setLang(lang: Lang) {
   syncUrl();
 }
 
-function setClasses(keys: string[]) {
-  state.hl = keys;
-  setHighlight(map, state.layerId, keys);
-  renderChrome();
+/** Highlights `keys` (paint only). While a slider handle moves (`final` false) the URL waits for the release. */
+function setClasses(keys: string[], final = true) {
+  const layer = layerById(state.layerId);
+  state.hl = layer ? normalizeSelection(keys, classKeys(layer.classification)) : keys;
+  setHighlight(map, state.layerId, state.hl);
+  if (!final) return markSelection();
+  renderSelection();
   syncUrl();
 }
 
@@ -169,8 +206,8 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   const token = ++switching;
   const previous = state.layerId;
   state.layerId = layer.id;
-  const valid = new Set([...legendEntries(layer.classification, state.lang).classes.map((c) => c.key), MISSING]);
-  state.hl = state.hl.filter((k) => valid.has(k));
+  // Accepts URL tokens ("4-7", "1,5,9", "na") as well as keys already expanded for another layer.
+  state.hl = expandHl(state.hl, classKeys(layer.classification));
   if (previous !== layer.id) clearSelection();
   renderChrome();
   syncUrl();
@@ -321,12 +358,28 @@ function searchEntries(q: string) {
   return search(entries, q, { levelRank: (k) => (k === current ? 0 : 1 + order.indexOf(k)) });
 }
 
+/**
+ * "Also searchable: Neighborhoods (in Hebrew)": the searchable extra fields whose values are in another language than
+ * the UI, from the levels of the layers. Empty when there are none (always in the Hebrew UI today).
+ */
+function searchHint(lang: Lang): string {
+  if (!manifest) return '';
+  const fields = new Map<string, string>();
+  for (const l of manifest.layers) {
+    for (const f of levelOf(l)?.extraFields ?? []) {
+      const note = inLangNote(f.textLang, lang);
+      if (f.searchable && note) fields.set(f.property, `${(f.shortLabel ?? f.label)[lang]} ${note}`);
+    }
+  }
+  return fields.size ? t('alsoSearchable', lang, { fields: [...fields.values()].join(', ') }) : '';
+}
+
 function resultView(e: SearchEntry, lang: Lang) {
   const level = levelByKey(e.level);
   const levelTitle = level?.title[lang] ?? layerById(e.level.slice('layer:'.length))?.title[lang] ?? '';
   if (e.code == null) {
     const name = featureName({ name_he: e.names.he, name_en: e.names.en, name_ru: e.names.ru }, lang).text;
-    return { name, meta: `${levelTitle} · ${t('areas', lang, { n: formatNumber(e.codes.length, lang) })}` };
+    return { name, meta: `${levelTitle} · ${formatNumber(e.codes.length, lang)}` };
   }
   const props = levelData.get(e.level)?.features.get(e.code)?.props;
   if (!props) return { name: e.names[lang], meta: levelTitle };
@@ -337,8 +390,10 @@ function resultView(e: SearchEntry, lang: Lang) {
   const joined = onCurrent ? layerData.get(cur.id)?.byCode.get(e.code) : undefined;
   return {
     name: featureTitle(props, level, lang).text,
-    meta: onCurrent ? type : [type, levelTitle].filter(Boolean).join(' · '),
+    // The type only says more than the level title where it varies within the level ("City · Municipalities").
+    meta: level?.featureTypes ? (onCurrent ? type : [type, levelTitle].filter(Boolean).join(' · ')) : levelTitle,
     value: joined ? valueHtml(cur, joined, lang) : undefined,
+    via: e.matched && e.via ? { text: e.matched, lang: e.via.lang } : undefined,
   };
 }
 

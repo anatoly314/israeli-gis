@@ -1,4 +1,4 @@
-import type { Layer, LevelId } from './contract.ts';
+import type { DatasetInfo, Layer, LevelId } from './contract.ts';
 import type { RawFile } from './download.ts';
 
 export interface JoinCount {
@@ -31,6 +31,8 @@ export interface BuildContext {
 /** A dataset lives in pipeline/datasets/<id>/ and default-exports one of these. */
 export interface DatasetModule {
   id: string;
+  /** Written to `manifest.datasets[id]`; layer titles are composed from `info.title` + the level title. */
+  info: DatasetInfo;
   rawFiles: RawFile[];
   build(ctx: BuildContext): Promise<DatasetOutput> | DatasetOutput;
 }

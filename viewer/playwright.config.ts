@@ -12,11 +12,20 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
-  use: {
-    baseURL: `http://127.0.0.1:${PORT}${BASE_PATH}`,
-    launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] },
-  },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } }],
+  use: { baseURL: `http://127.0.0.1:${PORT}${BASE_PATH}` },
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+        launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] },
+      },
+    },
+    // Range input and RTL handling differ between engines: the slider specs also run in Firefox and WebKit.
+    { name: 'firefox', grep: /range slider|full selection/, use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 } } },
+    { name: 'webkit', grep: /range slider|full selection/, use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } } },
+  ],
   webServer: {
     command: `npx vite preview --host 127.0.0.1 --port ${PORT} --strictPort --base ${BASE_PATH}`,
     url: `http://127.0.0.1:${PORT}${BASE_PATH}`,

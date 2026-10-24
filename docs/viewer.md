@@ -12,15 +12,18 @@ search all come from the manifest and the files it points to.
 | `config.ts` | Basemap config (below), initial view, manifest URL. The only provider-specific file. |
 | `manifest.ts` | Loads `layers.json`; `groupLayers()` groups layers by `dataset` for the switcher |
 | `data.ts` | Fetches and caches TopoJSON levels and dataset files, decodes with `topojson-client`, joins values on `code`, computes per-feature bbox, size (`geometry `population``, else area) and a label point (pole of inaccessibility via `polylabel`) |
-| `classify.ts` | Class key per value (categorical value, `s<i>` stepped bin, `na`), colours, legend entries and presets, MapLibre expressions, highlight opacity |
+| `classify.ts` | Class key per value (categorical value, `s<i>` stepped bin, `na`), colours, legend entries, scale order and run labels ("4–7", "< 5"), MapLibre expressions, highlight opacity |
 | `format.ts` | The one number formatter: `Intl.NumberFormat` without its bidi marks, wrapped in a left-to-right isolate (U+2066…U+2069); stepped ranges are isolated as a whole so "< -1" never mirrors in Hebrew |
 | `html.ts` | `esc` and the colour swatch |
 | `map.ts` | MapLibre: map creation, MapLibre UI strings per language, basemap language and hidden labels, sources/layers per data layer, feature-state, controls |
+| `extras.ts` | `levels[*].extraFields` in the popup and tooltip (generic: label, language note, values in their own language) |
 | `popup.ts` | Popup and tooltip HTML, field formats (`integer`, `decimal`, `rank` "N of M"), feature title/type; stepped layers show the actual value with the bin as secondary text |
 | `search.ts` | Normalisation, per-level index entries, ranking |
 | `search-box.ts` | ARIA combobox (arrows, Enter, Escape), result count in a polite live region |
 | `i18n.ts` | All UI strings (he/en/ru), MapLibre's own UI strings, language detection, name fallbacks |
 | `url.ts` | Query-string state parse/serialise |
+| `range.ts` | Highlight selection ↔ slider handles (contiguous / custom / empty), `hl` ranges ("4-7") ↔ class keys |
+| `slider.ts` | The two-handle range slider (two native `<input type="range">` over the class scale) |
 | `ui.ts` | Layer switcher, legend + compact legend strip, language switch, About dialog |
 
 Types come from `pipeline/lib/contract.ts` with `import type`, so the viewer and the pipeline share one contract
@@ -63,14 +66,32 @@ Normalisation: case, niqqud, maqaf, geresh/gershayim and quotes, hyphens vs spac
 Variants: Latin and Cyrillic without vowels, b/v/w, kh/ch/h, tz/ts/z; Hebrew without ו/י ("קרית" finds "קריית").
 A variant counts only when the query's skeleton has 3+ letters and matches as a whole, a prefix or a word prefix.
 
+Searchable extra fields (`levels[*].extraFields` with `searchable: true`, e.g. neighborhood names) add one entry per
+feature that has values, holding all its items: an area is listed once however many of its neighborhoods match.
+Items match by whole words (tiers 0–3, no substrings) and rank after every direct name match. The row shows the
+item that matched before the place, in the item's language: "שכ פלורנטין · Tel Aviv - Yafo – neighborhood 813".
+For the statistical areas that is 1298 more entries; building the level's index takes about 20 ms.
+
+## Extra fields
+
+`levels[*].extraFields` are rendered generically (`extras.ts`); nothing in the viewer names a property.
+- Popup, under the type line: one line per field the feature has, "Label (in Hebrew): a, b, c". Lists longer than
+  eight items show the first eight and a "+N more" disclosure (`<details>`).
+- Tooltip: the first field the feature has, its first three items, "…" if there are more.
+- Values carry `lang={textLang}` and `dir="rtl"` for Hebrew (`auto` otherwise) and are joined inside that span, so
+  the commas follow the values' own direction in any UI.
+- The "(in Hebrew)" / "(на иврите)" note is viewer text keyed by the values' language and the UI language; none when
+  they match.
+
 ## A new dataset
 
 Add it to the pipeline (README, "Adding a dataset"). On the next `build:viewer` it appears:
 
-- in the switcher, grouped by `layer.dataset`; the group title is the part of the layer titles before " – ", the item
-  label is the level title
-- with its classification (`categorical` or `stepped`), legend, `note`, presets (first/last three classes when there
-  are at least six) and `missing` style
+- in the switcher, grouped by `layer.dataset`; each item is labelled with its level's `title`, and the level's
+  `officialTerm` as small secondary text (also in the popup, after the feature type); the group is headed by
+  `datasets[id].title`, with `datasets[id].description` under it when set
+- with its classification (`categorical` or `stepped`), legend, `note`, range slider over its classes or bins, and
+  `missing` style
 - with its `popup` fields and formats, and `levels[...].featureType`/`featureTypes` for the type line
 - in search, by `name_he/en/ru` of its level (see above)
 
@@ -106,15 +127,38 @@ OpenFreeMap Noto Sans glyph ranges cover Hebrew (U+0590–05FF) and Cyrillic; th
 
 ## URL
 
-Query: `lang`, `layer`, `hl` (class keys, comma-separated), `f` (selected feature code), `embed=1`. Hash:
-`#zoom/lat/lon` (MapLibre `hash: true`). See the README table. The URL is rewritten with `history.replaceState`
-on every change, so the address bar is always a shareable link.
+Query: `lang`, `layer`, `hl` (class keys; runs as ranges, `4-7`, others listed, `1,5,9`; old list links still
+read), `f` (selected feature code), `embed=1`. Hash: `#zoom/lat/lon` (MapLibre `hash: true`). See the README table.
+The URL is rewritten with `history.replaceState` on every change (a slider drag writes it once, on release), so the
+address bar is always a shareable link.
+
+## Highlight: legend and range slider
+
+Both set the same selection of class keys, applied as a paint-opacity expression (no data re-sent). Legend items
+toggle single classes, "not calculated" included, so a selection can have gaps. Every class without "not calculated"
+is the same as no selection (one "everything" state, also for `hl=1-10`).
+
+The slider (under the legend title on desktop, under the colour strip in the compact sheet) covers the classes in
+scale order; "not calculated" is not on it. Two native range inputs draw the thumbs and carry focus, ARIA
+(`aria-label`, `aria-valuetext`) and keys; pointer input is handled on the track, identically in every engine:
+- a press moves the nearer handle to the class under it, so a tap on the colour scale works; drag on from there;
+- when both handles sit on one class, the first movement picks the handle (towards lower classes: the low one);
+- the handles can meet but not cross.
+
+While a handle moves the map updates once per animation frame, and the legend and strip only flip their pressed and
+dimmed states; they re-render and the URL is written when the move ends. A selection with gaps or with "not
+calculated" shows as "custom": the handles frame it and the label lists it ("1, 5, 9 · custom"); moving a handle
+makes it contiguous again. The slider follows the page direction, so in Hebrew class 1 is on the right (like the
+strip and legend). ← and → always step the way they point: the viewer handles them itself, because engines disagree
+for right-to-left range inputs (WebKit reverses them). ↑/↓, Home/End are native. The e2e slider specs run in
+Chromium, Firefox and WebKit.
 
 ## Layout
 
 - Desktop: a column of cards at the inline start (left in en/ru, right in he; CSS logical properties throughout).
 - Compact (`embed=1`, or narrower than 720 px): search and language on top; a bottom sheet with an always-visible
-  legend strip (tap a class to highlight) that expands to the layer list, presets and About. The map ends above the
+  legend strip (tap a class to highlight) and the range slider under it, expanding to the layer list, legend notes
+  and About. The map ends above the
   collapsed sheet. In embed mode the map needs two fingers / Ctrl+scroll so the blog page still scrolls, and an
   "Open full map" link opens the same view without `embed`. Zoom buttons show on desktop, and in a desktop embed
   (pointer that can hover); on touch devices pinch is enough. Touch targets are 40–44 px.
@@ -132,6 +176,7 @@ on every change, so the address bar is always a shareable link.
   - keyboard: search → pick → Escape
   - embed: compact layout, full-map link, a 650 px iframe in a blog page framing Israel while the wheel scrolls the page
   - phone 390×844: no horizontal scroll, sheet, tap a result, popup inside the screen
-  - an injected stepped layer (negative breaks): legend, presets and popup checked in visual order in Hebrew
+  - an injected stepped layer (negative breaks): legend, slider and popup checked in visual order in Hebrew
+  - the range slider in en and he: keyboard, mouse drag, legend clicks → custom → drag back to a range, URL `hl`
 
   `SCREENS=<dir> npm run test:e2e` also saves screenshots.

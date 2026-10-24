@@ -18,35 +18,26 @@ export const isChoropleth = (l: Layer): l is ChoroplethLayer => l.kind === 'chor
 export interface LayerGroup {
   dataset: string;
   title: I18n;
-  items: { layer: Layer; label: I18n }[];
+  description?: I18n;
+  items: { layer: Layer; label: I18n; official?: I18n }[];
 }
 
-const SEP = ' – ';
-
 /**
- * Layers grouped by dataset, in manifest order. The group title is what the layer titles share before " – "
- * ("Socio-economic index 2021"); each item is labelled by its level ("Statistical areas"), or by the rest of
- * its own title when it has no level or the titles share nothing.
+ * Layers grouped by their `dataset`, in manifest order, headed by `datasets[id].title` (and `description` when
+ * set). Items are labelled by their level's title, with the level's `officialTerm` as secondary text; points
+ * layers by their own title.
  */
 export function groupLayers(m: Manifest): LayerGroup[] {
   const groups = new Map<string, Layer[]>();
   for (const l of m.layers) groups.set(l.dataset, [...(groups.get(l.dataset) ?? []), l]);
   return [...groups].map(([dataset, layers]) => {
-    const title = {} as I18n;
-    const prefixes = {} as Record<keyof I18n, string | null>;
-    for (const lang of LANGS) {
-      const heads = layers.map((l) => (l.title[lang].includes(SEP) ? l.title[lang].split(SEP)[0] : null));
-      prefixes[lang] = heads.every((h) => h != null && h === heads[0]) ? heads[0] : null;
-      title[lang] = prefixes[lang] ?? (layers.length === 1 ? layers[0].title[lang] : dataset);
-    }
+    const info = m.datasets[dataset];
+    const title = info?.title ?? (Object.fromEntries(LANGS.map((l) => [l, dataset])) as I18n);
     const items = layers.map((layer) => {
-      const label = {} as I18n;
-      for (const lang of LANGS) {
-        const own = prefixes[lang] ? layer.title[lang].slice(prefixes[lang]!.length + SEP.length) : layer.title[lang];
-        label[lang] = isChoropleth(layer) ? m.levels[layer.level].title[lang] : own;
-      }
-      return { layer, label };
+      if (!isChoropleth(layer)) return { layer, label: layer.title };
+      const level = m.levels[layer.level];
+      return { layer, label: level.title, official: level.officialTerm };
     });
-    return { dataset, title, items };
+    return { dataset, title, description: info?.description, items };
   });
 }

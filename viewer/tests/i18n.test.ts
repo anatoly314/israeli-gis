@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { detectLang, dirOf, featureName, fillTemplate, t } from '../src/i18n.ts';
-import { featureTitle, featureType, formatField, popupHtml } from '../src/popup.ts';
+import { detectLang, dirOf, featureName, fillTemplate, inLangNote, t } from '../src/i18n.ts';
+import { featureTitle, featureType, formatField, headerLines, popupHtml } from '../src/popup.ts';
 import { layer } from './fixtures.ts';
 
 const bare = (s: string) => s.replace(/[⁦⁩]/g, '');
@@ -20,7 +20,8 @@ describe('language choice', () => {
   });
 
   it('interpolates UI strings', () => {
-    expect(t('areas', 'en', { n: '3' })).toBe('3 areas');
+    expect(t('alsoSearchable', 'en', { fields: 'Neighborhoods (in Hebrew)' })).toBe('Also searchable: Neighborhoods (in Hebrew)');
+    expect([inLangNote('he', 'he'), inLangNote('he', 'en'), inLangNote('he', 'ru')]).toEqual(['', '(in Hebrew)', '(на иврите)']);
     expect(t('of', 'ru')).toBe('из');
   });
 });
@@ -45,7 +46,7 @@ describe('feature names', () => {
   });
 
   it('fills label templates with the localized name and other properties', () => {
-    expect(fillTemplate('{name} – statistical area {sa}', { ...telAviv, sa: 437 }, 'en')).toBe('Tel Aviv - Yafo – statistical area 437');
+    expect(fillTemplate('{name} – area {sa}', { ...telAviv, sa: 437 }, 'en')).toBe('Tel Aviv - Yafo – area 437');
     expect(fillTemplate('{name} {missing}', telAviv, 'ru')).toBe('Тель-Авив {missing}');
   });
 });
@@ -85,8 +86,14 @@ describe('popup', () => {
     expect(featureType(tlv, authorities.level, 'en')).toBe('City');
     expect(featureType(authorities.data.features.get('5501')!.props, authorities.level, 'ru')).toBe('Региональный совет');
     const sa = areas.data.features.get('50000437')!.props;
-    expect(featureType(sa, areas.level, 'he')).toBe('אזור סטטיסטי');
-    expect(featureTitle(sa, areas.level, 'en').text).toBe('Tel Aviv - Yafo – statistical area 437');
+    expect(featureType(sa, areas.level, 'he')).toBe('אזור');
+    expect(featureTitle(sa, areas.level, 'en').text).toBe('Tel Aviv - Yafo – area 437');
+    // Under the title: the type, then the level's official CBS term.
+    expect(headerLines(sa, areas.level, 'he')).toEqual(['אזור · אזורים סטטיסטיים של הלמ"ס']);
+    expect(headerLines(tlv, authorities.level, 'en')).toEqual(['City · Local authorities']);
+    expect(headerLines(tlv, authorities.level, 'he')).toEqual(['עירייה · רשויות מקומיות']);
+    // No level (a points layer): just the type, here none.
+    expect(headerLines(tlv, undefined, 'en')).toEqual([]);
   });
 
   it('shows values, or the "not calculated" text, and escapes names', () => {

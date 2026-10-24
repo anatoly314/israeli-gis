@@ -20,7 +20,39 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "local-authorities",
+              "localities",
+              "rc-localities",
+              "statistical-areas"
+            ]
+          },
           "title": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ru": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          },
+          "officialTerm": {
             "type": "object",
             "properties": {
               "he": {
@@ -166,9 +198,91 @@
               "labels"
             ],
             "additionalProperties": false
+          },
+          "extraFields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "property": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "type": "string",
+                  "const": "list"
+                },
+                "textLang": {
+                  "type": "string",
+                  "enum": [
+                    "he",
+                    "en",
+                    "ru"
+                  ]
+                },
+                "label": {
+                  "type": "object",
+                  "properties": {
+                    "he": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ru": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "he",
+                    "en",
+                    "ru"
+                  ],
+                  "additionalProperties": false
+                },
+                "shortLabel": {
+                  "type": "object",
+                  "properties": {
+                    "he": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ru": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "he",
+                    "en",
+                    "ru"
+                  ],
+                  "additionalProperties": false
+                },
+                "searchable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "property",
+                "kind",
+                "textLang",
+                "label",
+                "searchable"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
+          "kind",
           "title",
           "file",
           "object",
@@ -185,6 +299,68 @@
         "rc-localities-2011",
         "statistical-areas-2011"
       ]
+    },
+    "datasets": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ru": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          },
+          "description": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ru": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      }
     },
     "layers": {
       "type": "array",
@@ -1273,6 +1449,7 @@
   "required": [
     "version",
     "levels",
+    "datasets",
     "layers",
     "attribution",
     "sources"

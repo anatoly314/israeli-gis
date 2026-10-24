@@ -2,6 +2,7 @@ import type { PopupField } from '../../pipeline/lib/contract.ts';
 import { CLASS_PROP, MISSING, classLabel, colorOf } from './classify.ts';
 import type { Props } from './data.ts';
 import { formatNumber } from './format.ts';
+import { extraFieldsHtml, extraTooltipHtml } from './extras.ts';
 import { esc, swatch } from './html.ts';
 import { featureName, fillTemplate, t, type Lang } from './i18n.ts';
 import type { Layer, Level } from './manifest.ts';
@@ -28,6 +29,16 @@ export function featureType(p: Props, level: Level | undefined, lang: Lang): str
   const types = level?.featureTypes;
   const own = types && types.labels[String(p[types.property])];
   return (own ?? level?.featureType)?.[lang] ?? '';
+}
+
+/**
+ * Secondary lines under the popup title: "Area · CBS statistical areas" (feature type, then the level's
+ * official term when it differs). More per-feature lines go here.
+ */
+export function headerLines(p: Props, level: Level | undefined, lang: Lang): string[] {
+  const type = featureType(p, level, lang);
+  const official = level?.officialTerm?.[lang];
+  return [[type, official !== type ? official : ''].filter(Boolean).join(' · ')].filter(Boolean);
 }
 
 const keyOf = (p: Props) => String(p[CLASS_PROP] ?? MISSING);
@@ -65,7 +76,10 @@ export function popupHtml(layer: Layer, level: Level | undefined, p: Props, lang
   return (
     `<div class="popup" lang="${lang}">` +
     `<h3 dir="auto"${fallback}>${esc(title.text)}</h3>` +
-    `<p class="popup-type">${esc(featureType(p, level, lang))}</p>` +
+    headerLines(p, level, lang)
+      .map((line) => `<p class="popup-type">${esc(line)}</p>`)
+      .join('') +
+    extraFieldsHtml(level, p, lang) +
     rows +
     note +
     `</div>`
@@ -74,5 +88,5 @@ export function popupHtml(layer: Layer, level: Level | undefined, p: Props, lang
 
 /** Hover tooltip: name and value. */
 export function tooltipHtml(layer: Layer, level: Level | undefined, p: Props, lang: Lang): string {
-  return `<b dir="auto">${esc(featureTitle(p, level, lang).text)}</b><span>${valueHtml(layer, p, lang)}</span>`;
+  return `<b dir="auto">${esc(featureTitle(p, level, lang).text)}</b>${extraTooltipHtml(level, p)}<span>${valueHtml(layer, p, lang)}</span>`;
 }

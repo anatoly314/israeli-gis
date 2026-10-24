@@ -15,10 +15,34 @@ export const LevelId = z.enum(['local-authorities-2011', 'localities-2011', 'rc-
 export type LevelId = z.infer<typeof LevelId>;
 export const LEVEL_IDS = LevelId.options;
 
+/** What a level is, independent of vintage: the level id is `<kind>-<vintage>`. Wording is keyed by it. */
+export const LevelKind = z.enum(['local-authorities', 'localities', 'rc-localities', 'statistical-areas']);
+export type LevelKind = z.infer<typeof LevelKind>;
+
 const color = z.string().regex(/^#[0-9a-f]{6}$/i);
 
+/**
+ * A descriptive feature property to show in the popup (the first one also in the tooltip). `list`: the property
+ * is a non-empty string[] when present and absent otherwise. `textLang` is the language the values are written in,
+ * whatever the UI language; `searchable` asks the viewer to index the values for search.
+ */
+export const ExtraField = z.strictObject({
+  property: text,
+  kind: z.literal('list'),
+  textLang: z.enum(LANGS),
+  label: I18n,
+  /** Compact form of `label` for passing mentions (e.g. a search hint: "also searchable: Neighborhoods"). */
+  shortLabel: I18n.optional(),
+  searchable: z.boolean(),
+});
+export type ExtraField = z.infer<typeof ExtraField>;
+
 export const Level = z.strictObject({
+  kind: LevelKind,
+  /** Plain user-facing name ("Neighborhoods"). */
   title: I18n,
+  /** The official CBS term for the level ("CBS statistical areas"), for small secondary text. */
+  officialTerm: I18n.optional(),
   /** TopoJSON file, relative to layers.json. */
   file: text,
   /** Name of the polygon object inside the TopoJSON `objects`. */
@@ -42,6 +66,8 @@ export const Level = z.strictObject({
   featureType: I18n.optional(),
   /** When the type varies within the level: the feature property holding it and a label per value. */
   featureTypes: z.strictObject({ property: text, labels: z.record(z.string(), I18n) }).optional(),
+  /** Descriptive properties on the features (e.g. neighbourhood and street names), in display order. */
+  extraFields: z.array(ExtraField).optional(),
 });
 export type Level = z.infer<typeof Level>;
 
@@ -118,16 +144,26 @@ export type PointsLayer = z.infer<typeof PointsLayer>;
 export const Layer = z.discriminatedUnion('kind', [ChoroplethLayer, PointsLayer]);
 export type Layer = z.infer<typeof Layer>;
 
+/** A dataset (pipeline/datasets/<id>): its title heads the group of its layers. */
+export const DatasetInfo = z.strictObject({ title: I18n, description: I18n.optional() });
+export type DatasetInfo = z.infer<typeof DatasetInfo>;
+
 export const Manifest = z
   .strictObject({
     version: z.literal(1),
     levels: z.record(LevelId, Level),
+    /** Keyed by dataset id; every `layers[*].dataset` has an entry. */
+    datasets: z.record(z.string().regex(/^[a-z0-9-]+$/), DatasetInfo),
     layers: z.array(Layer),
     /** Credit for the geometry and names, shown whenever any level is on the map. */
     attribution: I18n,
     sources: z.array(Source),
   })
-  .refine((m) => new Set(m.layers.map((l) => l.id)).size === m.layers.length, { message: 'layer ids must be unique' });
+  .refine((m) => new Set(m.layers.map((l) => l.id)).size === m.layers.length, { message: 'layer ids must be unique' })
+  .refine((m) => m.layers.every((l) => m.datasets[l.dataset]), { message: 'every layer.dataset must have a datasets entry' })
+  .refine((m) => Object.entries(m.levels).every(([id, l]) => id.startsWith(`${l.kind}-`)), {
+    message: 'each level id must be <kind>-<vintage>',
+  });
 export type Manifest = z.infer<typeof Manifest>;
 
 /** Dataset file for a choropleth layer: code → record. A code without a record is "not calculated". */

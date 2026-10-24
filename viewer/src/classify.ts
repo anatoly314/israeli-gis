@@ -1,6 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Classification } from '../../pipeline/lib/contract.ts';
-import { formatNumber, rangeLabel, spanLabel } from './format.ts';
+import { formatNumber, ltr, rangeLabel, spanLabel } from './format.ts';
 import type { Lang } from './i18n.ts';
 
 /** Feature property the viewer writes with the class key, so styling is the same for every classification. */
@@ -25,7 +25,8 @@ export function classKey(c: Classification, value: number | undefined): string {
   return `s${i}`;
 }
 
-const classKeys = (c: Classification) => (c.type === 'categorical' ? c.classes.map((k) => String(k.value)) : c.colors.map((_, i) => `s${i}`));
+/** Class keys in scale order (low → high), without "not calculated". */
+export const classKeys = (c: Classification) => (c.type === 'categorical' ? c.classes.map((k) => String(k.value)) : c.colors.map((_, i) => `s${i}`));
 
 export function colorOf(c: Classification, key: string): string {
   if (key === MISSING) return c.missing.color;
@@ -81,23 +82,17 @@ export function textOn(hex: string): '#000000' | '#ffffff' {
   return (l + 0.05) / 0.05 > 1.05 / (l + 0.05) ? '#000000' : '#ffffff';
 }
 
-export interface Preset {
-  keys: string[];
-  /** Covered range: "1–3" for clusters, "< 5" / "≥ 5" for stepped bins. */
-  range: string;
-}
-
-/** First and last three classes, offered as one-click highlights when there are at least six. */
-export function presets(c: Classification, lang: Lang): { low: Preset; high: Preset } | null {
-  const keys = classKeys(c);
-  if (keys.length < 6) return null;
-  const range = (ks: string[]): string => {
-    if (c.type === 'categorical') return spanLabel(Number(ks[0]), Number(ks[ks.length - 1]), lang);
-    const first = Number(ks[0].slice(1));
-    const last = Number(ks[ks.length - 1].slice(1));
-    return rangeLabel(c.breaks[first - 1], c.breaks[last], lang);
-  };
-  const low = keys.slice(0, 3);
-  const high = keys.slice(-3);
-  return { low: { keys: low, range: range(low) }, high: { keys: high, range: range(high) } };
+/**
+ * Text for a run of classes from `first` to `last` (keys, scale order): "4–7" or "4" for clusters; the covered
+ * values for stepped bins ("< 5", "0 – 10", "≥ 5"). Bidi-isolated.
+ */
+export function spanText(c: Classification, first: string, last: string, lang: Lang): string {
+  if (c.type === 'categorical') return first === last ? formatNumber(Number(first), lang) : spanLabel(Number(first), Number(last), lang);
+  const lo = c.breaks[Number(first.slice(1)) - 1];
+  const hi = c.breaks[Number(last.slice(1))];
+  if (lo == null && hi == null) {
+    const [a, b] = [rangeLabel(undefined, c.breaks[0], lang), rangeLabel(c.breaks[c.breaks.length - 1], undefined, lang)];
+    return ltr(`${a} … ${b}`);
+  }
+  return rangeLabel(lo, hi, lang);
 }

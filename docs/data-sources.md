@@ -89,7 +89,7 @@ No bot protection had to be bypassed beyond setting a normal UA on data.gov.il.
 | `cbs-socioeconomic-2021/24_24_230t4.xlsx` | 227,167 | L3 |
 | `cbs-socioeconomic-2021/24_24_230t5.xlsx` | 67,419 | chart data |
 | `cbs-socioeconomic-2021/24_24_230b.pdf`, `…nispach.pdf` | 296,768 / 134,416 | release text, FAQ |
-| `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | 225,840 | SA-2011 → main streets/neighbourhoods (Hebrew only), 1,917 rows |
+| `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | 225,840 | SA-2011 → main streets/neighbourhoods (Hebrew only), 1,917 rows. **Used** (committed): becomes `neighborhoods_he` / `streets_he` on `statistical-areas-2011`; 1917/1917 SA polygons match. |
 | `cbs-socioeconomic-2021-publication-1955/t01…t14.xlsx, appendix.xlsx` | 25 KB–998 KB | full publication tables |
 | `cbs-socioeconomic-2021-publication-1955/intro_e.pdf`, `intro_h.pdf`, `symbol_*.pdf`, `preface_e.pdf` | | methodology |
 | `cbs-socioeconomic-2021-publication-1955/1.zip, 2.zip, 3.zip` | 3.6 / 1.9 / 5.5 MB | PDF charts and city maps only. **Not needed; suggest not committing.** |
@@ -202,7 +202,7 @@ Other findings from the joins:
 | L2 RC name | `t3` col B | `t3` col C |
 | L3 parent locality | `t4` col C | `t4` col D (Title Case) |
 
-Better-cased English for every locality is in `bycode2021.xlsx` column `שם יישוב באנגלית`. SAs have **no names**. Label them "‹city› – SA ‹n›". Optionally add the main neighbourhoods from `streets_neighborhoods_sa2011.xlsx`, which has 1,917 rows and is Hebrew only.
+Better-cased English for every locality is in `bycode2021.xlsx` column `שם יישוב באנגלית`. SAs have **no names**. Label them "‹city› – SA ‹n›". Optionally add the main neighbourhoods from `streets_neighborhoods_sa2011.xlsx`, which has 1,917 rows and is Hebrew only. (Done: the pipeline ships them as `neighborhoods_he` and `streets_he`; see `docs/data-contract.md`.)
 
 **Russian:**
 - **Wikidata P3466 "Israeli CBS municipal ID"** is the only Russian source joinable by CBS code at scale. 1,340 items carry it.

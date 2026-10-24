@@ -10,7 +10,7 @@ describe('layers.json', () => {
   it('ships a JSON Schema derived from the same contract', () => {
     const schema = readBuilt<{ $schema: string; properties: Record<string, unknown> }>('layers.schema.json');
     expect(schema.$schema).toMatch(/json-schema/);
-    expect(Object.keys(schema.properties).sort()).toEqual(['attribution', 'layers', 'levels', 'sources', 'version']);
+    expect(Object.keys(schema.properties).sort()).toEqual(['attribution', 'datasets', 'layers', 'levels', 'sources', 'version']);
   });
 
   it('describes the three SES 2021 choropleths with a "not calculated" state', () => {
@@ -55,6 +55,8 @@ describe('layers.json', () => {
       classification: { type: 'stepped', breaks: [10, 20], colors: ['#000000', '#777777', '#ffffff'], missing: base.classification.missing },
     };
     const m: Manifest = { ...manifest(), layers: [points] };
+    expect(validateManifest(m).join()).toMatch(/datasets entry/);
+    m.datasets['schools-2025'] = { title: { he: 'בתי ספר', en: 'Schools', ru: 'Школы' } };
     expect(validateManifest(m)).toEqual([]);
   });
 

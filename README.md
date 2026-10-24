@@ -76,6 +76,7 @@ pipeline/
     index.ts                  dataset registry
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
+  terminology.ts              user-facing level wording (he/en/ru), keyed by level kind
 tests/                        vitest (global setup runs the pipeline)
 viewer/                       the map page (Vite + TypeScript + MapLibre); see docs/viewer.md
   src/                        modules; config.ts holds the basemap config
@@ -126,7 +127,7 @@ Keep the trailing slash in `/maps/israel/`: the page loads `data/` and `assets/`
 |---|---|---|
 | `lang` | `he`, `en`, `ru` | browser language if it is one of these, else `he` |
 | `layer` | a layer `id` from `layers.json` | the first layer |
-| `hl` | highlighted classes, comma-separated: cluster values (`1,2,3`), `s0…sN` for stepped bins, `na` for "not calculated" | none |
+| `hl` | highlighted classes: a range `4-7`, a list `1,5,9`, or both `1-3,9,na`. Keys are cluster values, `s0…sN` for stepped bins, `na` for "not calculated". The page writes runs as ranges. | none |
 | `f` | a feature code to select and open | none |
 | `embed` | `1`: compact layout for a 600–700 px iframe, map gestures need two fingers / Ctrl+scroll, "Open full map" link | off |
 | `#zoom/lat/lon` | map position (hash) | fit the layer |
@@ -144,6 +145,8 @@ A dataset is joined to one of the existing geometry levels by code (a choropleth
    - `build({ geometryCodes })` returns three things:
      - `files`: `{ "datasets/<id>/<level>.json": { [code]: { field: number } } }`
      - `layers`: a `ChoroplethLayer` per level, or a `PointsLayer`. Use a `categorical` or `stepped` classification.
+       Build each title with `layerTitle(DATASET_TITLE, level)` from `pipeline/terminology.ts`; don't write level
+       names yourself.
      - `joins`: one `join()` per level, so the build reports and enforces matches
 3. Register it in `pipeline/datasets/index.ts`.
 4. Add tests that pin the join counts and a few values copied by hand from the raw rows. Then run
@@ -162,14 +165,28 @@ Pick the level by key:
 Never use a bare RC number as a key. All keys are strings. If a dataset needs something the contract can't express,
 extend the schemas in `pipeline/lib/contract.ts` and `docs/data-contract.md` together.
 
+## Changing wording
+
+Level names, official CBS terms, feature types and feature labels all live in `pipeline/terminology.ts`, keyed by level
+kind (`local-authorities`, `localities`, `rc-localities`, `statistical-areas`).
+
+1. Edit `pipeline/terminology.ts`.
+2. Run `npm run build:data`, then `npm run build:viewer`.
+3. Commit `dist/data`, after updating the pinned strings in `tests/terminology.test.ts`.
+
+A new vintage (`statistical-areas-2022`) picks up its kind's wording automatically. A new level kind needs an entry in
+`LevelKind` (`pipeline/lib/contract.ts`) and in `TERMINOLOGY`. The build fails if any level's kind has no complete
+he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
+
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 9.8 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 10 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
 | `cbs-statistical-areas-2011-demography-2020/*.gdb.zip` | All geometry. Only the zip is committed; gdal3.js reads it via `/vsizip/`. |
 | `cbs-socioeconomic-2021/24_24_230t{1,3,4}.xlsx` | Index tables A1, B and C |
+| `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | Neighborhood and main-street names per statistical area (Hebrew) → `neighborhoods_he`, `streets_he` |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
 | `datagov-municipal-authorities/localauthorities.csv` | Tests cross-check the `5500+n` authority codes against it |
@@ -183,7 +200,7 @@ Ignored:
 - the SA-2022 layer, which is for a future index edition
 - the publication-1955 folder
 - the OSM dump (ODbL)
-- `24_24_230t2.xlsx`, `24_24_230t5.xlsx`, `streets_neighborhoods_sa2011.xlsx`, `index2021.xlsx`
+- `24_24_230t2.xlsx`, `24_24_230t5.xlsx`, `index2021.xlsx`
 - the data.gov.il multilingual list
 - the superseded `p3466_labels.csv`
 

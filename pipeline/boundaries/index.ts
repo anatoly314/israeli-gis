@@ -1,5 +1,5 @@
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
-import type { I18n, Level, LevelId, Source } from '../lib/contract.ts';
+import type { ExtraField, I18n, Level, LevelId, Source } from '../lib/contract.ts';
 import { BOT_UA, BROWSER_UA, sparqlUrl, type RawFile } from '../lib/download.ts';
 import { toWgs84 } from '../lib/gdal.ts';
 import { authorityCode, isRegionalCouncilCode, isRegionalCouncilStatus, LOCAL_COUNCIL, MUNICIPALITY, saKey } from '../lib/keys.ts';
@@ -8,11 +8,14 @@ import { raw } from '../lib/paths.ts';
 import { addPointObject, toTopoJSON, type Topology } from '../lib/topology.ts';
 import { labelsMatch, pickItem, readLocalitiesFile, readWikidataItems, regionalCouncilHe } from './names.ts';
 import { placeholderCentre } from './placeholders.ts';
+import { readSaNames } from './sa-names.ts';
+import { levelKind, termsFor } from '../terminology.ts';
 
 const SA_ZIP = 'cbs-statistical-areas-2011-demography-2020/statisticalareas_2020_demography.gdb.zip';
 const LOCALITIES_FILE = 'cbs-localities-file/bycode2021.xlsx';
 const WD_ITEMS = 'wikidata-p3466/p3466_items.csv';
 const WD_COUNCILS = 'wikidata-p3466/regional_councils_Q1022469.csv';
+const SA_NAMES = 'cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx';
 
 const labels = `
   OPTIONAL { ?item rdfs:label ?he FILTER(LANG(?he) = "he") }
@@ -30,6 +33,12 @@ export const rawFiles: RawFile[] = [
     path: LOCALITIES_FILE,
     url: 'https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2021.xlsx',
     sha256: 'bfd76fae74326c15ffca9dc9e06213525c4489eea5b9c6ee1766c3e82d44719a',
+  },
+  {
+    // "Main streets and neighbourhoods of statistical areas, 2011 division" (linked from the 2021 index release).
+    path: SA_NAMES,
+    url: 'https://www.cbs.gov.il/he/publications/LochutTlushim/2021/%D7%A8%D7%97%D7%95%D7%91%D7%95%D7%AA%20%D7%A2%D7%99%D7%A7%D7%A8%D7%99%D7%99%D7%9D%20%D7%95%D7%A9%D7%9B%D7%95%D7%A0%D7%95%D7%AA%20%D7%9C%D7%90%D7%A1%202011.xlsx',
+    sha256: '3c077516152e5b1133ad51c262f8f1546fa3a69ee66b8074f5e585d12a158db5',
   },
   {
     path: WD_ITEMS,
@@ -109,6 +118,20 @@ export const sources: Source[] = [
       'בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
   },
   {
+    name: {
+      he: 'הלמ"ס, רחובות עיקריים ושכונות לפי אזור סטטיסטי (חלוקת 2011)',
+      en: 'CBS, main streets and neighborhoods by statistical area (2011 division)',
+      ru: 'ЦСБ, главные улицы и кварталы по статистическим районам (деление 2011 года)',
+    },
+    url: 'https://www.cbs.gov.il/he/publications/LochutTlushim/2021/%D7%A8%D7%97%D7%95%D7%91%D7%95%D7%AA%20%D7%A2%D7%99%D7%A7%D7%A8%D7%99%D7%99%D7%9D%20%D7%95%D7%A9%D7%9B%D7%95%D7%A0%D7%95%D7%AA%20%D7%9C%D7%90%D7%A1%202011.xlsx',
+    license: 'CBS open licence',
+    licenseUrl: 'https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
+    citation:
+      'הלשכה המרכזית לסטטיסטיקה (הלמ"ס), רחובות עיקריים ושכונות לא"ס 2011 (הופק 28.7.2021), (נשלף 24.10.2026), ' +
+      'זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2021/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש ' +
+      'של הלמ"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
+  },
+  {
     name: { he: 'ויקינתונים (P3466)', en: 'Wikidata (P3466)', ru: 'Викиданные (P3466)' },
     url: 'https://www.wikidata.org/wiki/Property:P3466',
     license: 'CC0 1.0',
@@ -143,6 +166,8 @@ export interface LevelBuild {
   points: { coordinates: [number, number]; properties: { code: string } }[];
   copyFields: string[];
   simplify: string;
+  /** Properties added to the output features by code after topology building (lists don't go through mapshaper). */
+  extraProps?: Map<string, Record<string, string[]>>;
 }
 
 export interface NameStats {
@@ -161,58 +186,79 @@ export interface Boundaries {
   /** Lone Wikidata items whose labels differ from the CBS name, with the verdict applied. */
   review: string[];
   dropped: { noJurisdiction: number; noStatus: number };
+  /** Companion attribute files joined onto a level (the SA streets/neighbourhoods list). */
+  companions: CompanionJoin[];
 }
-
-const level = (id: LevelId, title: I18n, extra: Partial<LevelMeta> = {}): LevelMeta => ({
-  title,
-  file: `geometry/${id}.topo.json`,
-  object: id,
-  placeholderObject: `${id}-placeholders`,
-  idProperty: 'code',
-  populationYear: POPULATION_YEAR,
-  ...extra,
-});
 
 /** The SA layer's demography edition: the year of every feature's `population`. */
 const POPULATION_YEAR = 2020;
 
 export type AuthorityType = 'city' | 'local-council' | 'regional-council';
 
-const LOCALITY: I18n = { he: 'יישוב', en: 'Locality', ru: 'Населённый пункт' };
+/**
+ * Structure of a level (files, properties); every user-facing string comes from pipeline/terminology.ts by the
+ * level's kind. `typeProperty` names the feature property whose values key `featureTypes` in the terminology.
+ */
+function level(
+  id: LevelId,
+  extra: { parentCode?: string; typeProperty?: string; extraFields?: Omit<ExtraField, 'label' | 'shortLabel'>[] } = {},
+): LevelMeta {
+  const terms = termsFor(id);
+  if (extra.typeProperty && !terms.featureTypes) throw new Error(`${id}: terminology has no featureTypes for ${extra.typeProperty}`);
+  const extraFields = extra.extraFields?.map((f) => {
+    const t = terms.extraFields?.[f.property];
+    if (!t) throw new Error(`${id}: terminology has no extraFields label for ${f.property}`);
+    return { ...f, label: t.label, ...(t.shortLabel && { shortLabel: t.shortLabel }) };
+  });
+  return {
+    kind: levelKind(id),
+    title: terms.title,
+    officialTerm: terms.officialTerm,
+    file: `geometry/${id}.topo.json`,
+    object: id,
+    placeholderObject: `${id}-placeholders`,
+    idProperty: 'code',
+    populationYear: POPULATION_YEAR,
+    featureType: terms.featureType,
+    ...(terms.featureLabel && { featureLabel: terms.featureLabel }),
+    ...(extra.parentCode && { parentCode: extra.parentCode }),
+    ...(extra.typeProperty && { featureTypes: { property: extra.typeProperty, labels: terms.featureTypes! } }),
+    ...(extraFields && { extraFields }),
+  };
+}
 
 const LEVEL_META: Record<LevelId, LevelMeta> = {
-  'local-authorities-2011': level(
-    'local-authorities-2011',
-    { he: 'רשויות מקומיות', en: 'Local authorities', ru: 'Органы местной власти' },
-    {
-      featureType: { he: 'רשות מקומית', en: 'Local authority', ru: 'Орган местной власти' },
-      featureTypes: {
-        property: 'authority_type',
-        labels: {
-          city: { he: 'עירייה', en: 'City', ru: 'Город' },
-          'local-council': { he: 'מועצה מקומית', en: 'Local council', ru: 'Местный совет' },
-          'regional-council': { he: 'מועצה אזורית', en: 'Regional council', ru: 'Региональный совет' },
-        } satisfies Record<AuthorityType, I18n>,
-      },
-    },
-  ),
-  'localities-2011': level('localities-2011', { he: 'יישובים', en: 'Localities', ru: 'Населённые пункты' }, { featureType: LOCALITY }),
-  'rc-localities-2011': level(
-    'rc-localities-2011',
-    { he: 'יישובים במועצות אזוריות', en: 'Localities in regional councils', ru: 'Населённые пункты региональных советов' },
-    { featureType: LOCALITY },
-  ),
-  'statistical-areas-2011': level(
-    'statistical-areas-2011',
-    { he: 'אזורים סטטיסטיים', en: 'Statistical areas', ru: 'Статистические районы' },
-    {
-      featureLabel: { he: '{name} – אזור סטטיסטי {sa}', en: '{name} – statistical area {sa}', ru: '{name} – статистический район {sa}' },
-      parentCode: 'locality_code',
-      featureType: { he: 'אזור סטטיסטי', en: 'Statistical area', ru: 'Статистический район' },
-    },
-  ),
+  'local-authorities-2011': level('local-authorities-2011', { typeProperty: 'authority_type' }),
+  'localities-2011': level('localities-2011'),
+  'rc-localities-2011': level('rc-localities-2011'),
+  'statistical-areas-2011': level('statistical-areas-2011', {
+    parentCode: 'locality_code',
+    extraFields: [
+      { property: 'neighborhoods_he', kind: 'list', textLang: 'he', searchable: true },
+      { property: 'streets_he', kind: 'list', textLang: 'he', searchable: false },
+    ],
+  }),
 };
 
+/** Share of SA-2011 polygons that must find a row in the streets/neighbourhoods file, or the build fails. */
+export const SA_NAMES_MIN_MATCH = 0.95;
+
+export interface CompanionJoin {
+  label: string;
+  level: LevelId;
+  rows: number;
+  /** Rows whose code is a feature of the level. */
+  matched: number;
+  /** Features of the level that found a row. */
+  featuresMatched: number;
+  features: number;
+  unmatched: string[];
+  /** Feature codes that found a row. */
+  matchedCodes: string[];
+  withNeighborhoods: number;
+  withStreets: number;
+  withNeither: number;
+}
 function authorityType(status: number | null, code: number): AuthorityType {
   if (isRegionalCouncilCode(code) || isRegionalCouncilStatus(status)) return 'regional-council';
   if (status === MUNICIPALITY) return 'city';
@@ -379,7 +425,40 @@ export async function buildBoundaries(): Promise<Boundaries> {
     };
   }
 
-  return { levels, names, placeholders: [...centres.values()].filter(Boolean).length, dropped, review };
+  // Neighbourhood and main-street names per statistical area, as lists; empty lists are left out.
+  const saLevel = levels['statistical-areas-2011'];
+  const saNames = await readSaNames(raw(SA_NAMES));
+  const saCodes = new Set(saLevel.features.map((f) => String(f.properties?.code)));
+  const extraProps = new Map<string, Record<string, string[]>>();
+  for (const [code, n] of saNames) {
+    if (!saCodes.has(code)) continue;
+    const props: Record<string, string[]> = {};
+    if (n.neighborhoods.length) props.neighborhoods_he = n.neighborhoods;
+    if (n.streets.length) props.streets_he = n.streets;
+    if (Object.keys(props).length) extraProps.set(code, props);
+  }
+  saLevel.extraProps = extraProps;
+  const rows = [...saNames];
+  const companion: CompanionJoin = {
+    label: 'SA streets/neighborhoods',
+    level: 'statistical-areas-2011',
+    rows: rows.length,
+    matched: rows.filter(([c]) => saCodes.has(c)).length,
+    featuresMatched: [...saCodes].filter((c) => saNames.has(c)).length,
+    features: saCodes.size,
+    unmatched: rows.filter(([c]) => !saCodes.has(c)).map(([c]) => c),
+    matchedCodes: rows.filter(([c]) => saCodes.has(c)).map(([c]) => c),
+    withNeighborhoods: rows.filter(([, n]) => n.neighborhoods.length).length,
+    withStreets: rows.filter(([, n]) => n.streets.length).length,
+    withNeither: rows.filter(([, n]) => !n.neighborhoods.length && !n.streets.length).length,
+  };
+  if (companion.featuresMatched < SA_NAMES_MIN_MATCH * companion.features) {
+    throw new Error(
+      `${SA_NAMES}: only ${companion.featuresMatched}/${companion.features} SA polygons matched (need ${SA_NAMES_MIN_MATCH * 100}%)`,
+    );
+  }
+
+  return { levels, names, placeholders: [...centres.values()].filter(Boolean).length, dropped, review, companions: [companion] };
 }
 
 // 2e5 (~2 m grid) + fix-geometry is the smallest setting that leaves 0 invalid geometries on every level;
@@ -399,6 +478,12 @@ export async function levelTopology(level: LevelBuild): Promise<Topology> {
       quantization: QUANTIZATION,
     },
   );
+  if (level.extraProps) {
+    for (const g of topo.objects[level.meta.object].geometries) {
+      const extra = level.extraProps.get(String(g.properties?.code));
+      if (extra) g.properties = { ...g.properties, ...extra };
+    }
+  }
   addPointObject(topo, level.meta.placeholderObject, level.points);
   return topo;
 }

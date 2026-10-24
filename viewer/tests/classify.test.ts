@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Classification } from '../../pipeline/lib/contract.ts';
-import { MISSING, classKey, classLabel, colorExpression, colorOf, highlightOpacity, legendEntries, presets, textOn } from '../src/classify.ts';
+import { MISSING, classKey, classKeys, classLabel, colorExpression, colorOf, highlightOpacity, legendEntries, spanText, textOn } from '../src/classify.ts';
 import { manifest } from './fixtures.ts';
 
 /** Drops the LRI/PDI isolates so assertions read like the rendered text. */
@@ -56,11 +56,11 @@ describe('categorical (CBS clusters)', () => {
     expect(classLabel(categorical(), '7', 'ru')).toBe('Кластер 7');
   });
 
-  it('offers the lowest and highest three as presets', () => {
-    const p = presets(categorical(), 'he')!;
-    expect([p.low.keys, p.high.keys]).toEqual([['1', '2', '3'], ['8', '9', '10']]);
-    expect([bare(p.low.range), bare(p.high.range)]).toEqual(['1–3', '8–10']);
-    expect(isolated(p.low.range)).toBe(true);
+  it('orders the slider classes low → high and labels a run of them', () => {
+    expect(classKeys(categorical())).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+    expect(bare(spanText(categorical(), '4', '7', 'he'))).toBe('4–7');
+    expect(isolated(spanText(categorical(), '4', '7', 'he'))).toBe(true);
+    expect(bare(spanText(categorical(), '5', '5', 'en'))).toBe('5');
   });
 });
 
@@ -81,11 +81,13 @@ describe('stepped', () => {
     expect(classes.map((c) => bare(c.short))).toEqual(['< -1', '-1', '0', '5', '10', '20']);
   });
 
-  it('labels stepped presets by the range they cover', () => {
-    const p = presets(crime, 'en')!;
-    expect([p.low.keys, p.high.keys]).toEqual([['s0', 's1', 's2'], ['s3', 's4', 's5']]);
-    expect([bare(p.low.range), bare(p.high.range)]).toEqual(['< 5', '≥ 5']);
-    expect(presets(stepped, 'en')).toBeNull();
+  it('labels a run of stepped bins by the values it covers', () => {
+    expect(classKeys(crime)).toEqual(['s0', 's1', 's2', 's3', 's4', 's5']);
+    expect(bare(spanText(crime, 's0', 's2', 'en'))).toBe('< 5');
+    expect(bare(spanText(crime, 's3', 's5', 'he'))).toBe('≥ 5');
+    expect(bare(spanText(crime, 's1', 's3', 'en'))).toBe('-1 – 10');
+    // The whole scale is open at both ends.
+    expect(bare(spanText(crime, 's0', 's5', 'en'))).toBe('< -1 … ≥ 20');
   });
 
   it('colours by bin key', () => {
