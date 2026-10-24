@@ -1,5 +1,6 @@
 import type { ChoroplethLayer, Classification, I18n, LevelId, PopupField, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
+import { palette10 } from '../../lib/palettes.ts';
 import { raw } from '../../lib/paths.ts';
 import { layerTitle } from '../../terminology.ts';
 import { parseAuthorities, parseLocalities, parseStatisticalAreas, type IndexRecord } from './parse.ts';
@@ -22,8 +23,8 @@ const LEVELS = {
 } as const satisfies Partial<Record<LevelId, string>>;
 type SesLevel = keyof typeof LEVELS;
 
-// viridis, 10 stops: cluster 1 (lowest socio-economic level) dark → cluster 10 (highest) light.
-const PALETTE = ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725'];
+// ColorBrewer RdYlBu (colourblind-safe, owner's choice): cluster 1 (lowest socio-economic level) red → 10 (highest) blue.
+const PALETTE = palette10('RdYlBu');
 
 const NOT_CALCULATED: Record<SesLevel, I18n> = {
   'local-authorities-2011': {

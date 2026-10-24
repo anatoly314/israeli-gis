@@ -10,6 +10,7 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { CLASS_PROP, MISSING, colorExpression, highlightOpacity } from './classify.ts';
+import { BORDER, CASING, DIM, DIM_COLOR, FILL, MARKER_STROKE, MARKER_STROKE_WIDTH, OUTLINE, active } from './paint.ts';
 import { basemap, initialView } from './config.ts';
 import type { LayerData } from './data.ts';
 import { MAP_LOCALE, type Lang } from './i18n.ts';
@@ -17,8 +18,6 @@ import type { Layer } from './manifest.ts';
 
 setWorkerUrl(workerUrl);
 
-const FILL = 0.78;
-const DIM = 0.12;
 const HATCH = 'missing-hatch';
 
 export function createMap(container: HTMLElement, opts: { cooperative: boolean; lang: Lang }): MlMap {
@@ -98,7 +97,7 @@ function addHatch(map: MlMap) {
     for (let x = 0; x < size; x++) {
       if ((x + y) % size > 1) continue;
       const i = (y * size + x) * 4;
-      data.set([110, 110, 110, 150], i);
+      data.set([90, 90, 90, 190], i);
     }
   }
   map.addImage(HATCH, { width: size, height: size, data }, { pixelRatio: 1 });
@@ -111,6 +110,7 @@ export const ids = (layerId: string) => ({
   fill: `${layerId}-fill`,
   hatch: `${layerId}-hatch`,
   line: `${layerId}-line`,
+  casing: `${layerId}-casing`,
   outline: `${layerId}-outline`,
   markerLayer: `${layerId}-marker-circles`,
   labelLayer: `${layerId}-label-text`,
@@ -118,8 +118,6 @@ export const ids = (layerId: string) => ({
 
 const firstSymbolId = (map: MlMap) => layoutLayers(map).find((l) => l.type === 'symbol')?.id;
 
-const state = (key: string): ExpressionSpecification => ['boolean', ['feature-state', key], false];
-const active: ExpressionSpecification = ['any', state('hover'), state('selected')];
 
 /** Adds the sources and style layers of one data layer, hidden. Safe to call once per layer. */
 export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { labels: boolean; lang: Lang }) {
@@ -144,24 +142,23 @@ export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { 
       type: 'line',
       source: id.polygons,
       layout: { ...hidden, 'line-join': 'round' },
-      paint: {
-        'line-color': '#ffffff',
-        'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.45, 12, 0.85],
-        'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.25, 9, 0.6, 12, 1.2, 15, 2],
-      },
+      paint: { ...BORDER },
     },
     before,
   );
+  map.addLayer({
+    id: id.casing,
+    type: 'line',
+    source: id.polygons,
+    layout: { ...hidden, 'line-join': 'round' },
+    paint: { 'line-color': CASING.color, 'line-width': CASING.width, 'line-opacity': ['case', active, 0.9, 0] },
+  });
   map.addLayer({
     id: id.outline,
     type: 'line',
     source: id.polygons,
     layout: { ...hidden, 'line-join': 'round' },
-    paint: {
-      'line-color': '#111111',
-      'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.6, 12, 3],
-      'line-opacity': ['case', active, 1, 0],
-    },
+    paint: { 'line-color': OUTLINE.color, 'line-width': OUTLINE.width, 'line-opacity': ['case', active, 1, 0] },
   });
   map.addLayer({
     id: id.markerLayer,
@@ -171,8 +168,8 @@ export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { 
     paint: {
       'circle-color': color,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 3.5, 10, 5, 14, 7],
-      'circle-stroke-color': ['case', active, '#111111', '#ffffff'],
-      'circle-stroke-width': ['case', active, 2.5, 1],
+      'circle-stroke-color': MARKER_STROKE,
+      'circle-stroke-width': MARKER_STROKE_WIDTH,
       'circle-opacity': 0.95,
     },
   });
@@ -189,6 +186,8 @@ export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { 
         'text-font': basemap.labelFont,
         'text-size': ['interpolate', ['linear'], ['zoom'], 7, 10.5, 10, 12.5, 14, 15],
         'text-max-width': 7,
+        // A placeholder's label sits on its marker point: move it below, so the marker stays visible.
+        'text-offset': ['case', ['==', ['get', 'placeholder'], true], ['literal', [0, 0.9]], ['literal', [0, 0]]],
         'text-padding': 3,
         'symbol-sort-key': ['-', 0, ['to-number', ['get', '_w'], 0]],
       },
@@ -206,18 +205,22 @@ export function setLabelLanguage(map: MlMap, layerId: string, lang: Lang) {
 
 export function setDataLayerVisible(map: MlMap, layerId: string, visible: boolean) {
   const id = ids(layerId);
-  for (const l of [id.fill, id.hatch, id.line, id.outline, id.markerLayer, id.labelLayer]) {
+  for (const l of [id.fill, id.hatch, id.line, id.casing, id.outline, id.markerLayer, id.labelLayer]) {
     if (map.getLayer(l)) map.setLayoutProperty(l, 'visibility', visible ? 'visible' : 'none');
   }
 }
 
-/** Dims every class outside `selected` (paint only: the data is not touched). */
-export function setHighlight(map: MlMap, layerId: string, selected: readonly string[]) {
-  const id = ids(layerId);
+/** Dims every class outside `selected` to a flat grey (paint only: the data is not touched). */
+export function setHighlight(map: MlMap, layer: Layer, selected: readonly string[]) {
+  const id = ids(layer.id);
   if (!map.getLayer(id.fill)) return;
+  const color = colorExpression(layer.classification);
+  const dimmed = selected.length ? (['case', ['in', ['get', CLASS_PROP], ['literal', [...selected]]], color, DIM_COLOR] as ExpressionSpecification) : color;
+  map.setPaintProperty(id.fill, 'fill-color', dimmed);
   map.setPaintProperty(id.fill, 'fill-opacity', highlightOpacity(selected, FILL, DIM));
-  map.setPaintProperty(id.hatch, 'fill-opacity', highlightOpacity(selected, 1, 0.2));
-  map.setPaintProperty(id.markerLayer, 'circle-opacity', highlightOpacity(selected, 0.95, 0.2));
+  map.setPaintProperty(id.hatch, 'fill-opacity', highlightOpacity(selected, 1, 0.15));
+  map.setPaintProperty(id.markerLayer, 'circle-color', dimmed);
+  map.setPaintProperty(id.markerLayer, 'circle-opacity', highlightOpacity(selected, 0.95, 0.5));
   map.setPaintProperty(id.markerLayer, 'circle-stroke-opacity', highlightOpacity(selected, 1, 0.3));
   if (map.getLayer(id.labelLayer)) map.setPaintProperty(id.labelLayer, 'text-opacity', highlightOpacity(selected, 1, 0.45));
 }

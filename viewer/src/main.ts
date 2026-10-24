@@ -180,7 +180,7 @@ function setLang(lang: Lang) {
 function setClasses(keys: string[], final = true) {
   const layer = layerById(state.layerId);
   state.hl = layer ? normalizeSelection(keys, classKeys(layer.classification)) : keys;
-  setHighlight(map, state.layerId, state.hl);
+  if (layer) setHighlight(map, layer, state.hl);
   if (!final) return markSelection();
   renderSelection();
   syncUrl();
@@ -227,7 +227,7 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   for (const l of manifest.layers) if (l.id !== layer.id) setDataLayerVisible(map, l.id, false);
   setDataLayerVisible(map, layer.id, true);
   setBasemapPlaceLabels(map, !ownLabels(layer));
-  setHighlight(map, layer.id, state.hl);
+  setHighlight(map, layer, state.hl);
   refreshControls();
   status(null);
   document.body.dataset.layer = layer.id;

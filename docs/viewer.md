@@ -35,9 +35,21 @@ Per data layer (`<id>` = layer id), added once on first use and then only shown/
 
 - sources `<id>` (polygons) and `<id>-markers` (placeholder points), `promoteId: 'code'`; `<id>-labels` (label points)
 - `fill` coloured by `['match', ['get', '_k'], …]`, where `_k` is the class key the viewer writes at join time. This
-  makes categorical and stepped classifications style the same way.
-- `hatch`: a grey diagonal pattern over "not calculated" features (`_k = na`), so missing data never reads as a low class
-- `line`: white borders, wider and more opaque with zoom
+  makes categorical and stepped classifications style the same way. Opacity 0.85. While classes are highlighted,
+  the others turn a flat grey (`#c4c4c4` at 0.45) rather than a faded class colour: with a diverging palette
+  (RdYlBu) a faded red or blue would read as one of the pale middle classes. The grey is darker than a highlighted
+  pale class and lighter than the dark ones.
+- `hatch`: a dark-grey diagonal pattern over "not calculated" features (`_k = na`), so missing data never reads as a
+  class, also not as the pale RdYlBu middle (cluster 6) or a dimmed feature
+- `line`: dark translucent borders (`#3a3a3a`; 0.6 px at 0.45 opacity at zoom 6, up to 2 px at 0.55), so pale classes
+  keep an edge on the light basemap, also at country zoom
+- `casing` + `outline`: hover/selection is a near-black line over a white casing, ≥ 3:1 against every class
+- placeholder markers have a dark translucent ring (`rgba(58,58,58,0.65)`, 1.2 px), so pale-class markers stay
+  visible on the basemap
+- All of these values live in `paint.ts` and are unit-tested for contrast. Caveat: 10-class RdYlBu is
+  colourblind-safe, but ColorBrewer rates it "screen-friendly" only up to 8 classes; the borders compensate.
+- Text on colour (strip numbers) is black or white by WCAG contrast (`textOn` in `classify.ts`), computed from the
+  hex for any palette; RdYlBu reaches at least 4.6:1 on every class.
 - `outline`: black, visible only for `feature-state` `hover` or `selected`
 - `circle` markers for placeholder points (West Bank 50 m circles), fixed pixel radius, class colour
 - `symbol` labels from our own names, bigger places (by `geometry `population``) winning collisions; not on levels with a

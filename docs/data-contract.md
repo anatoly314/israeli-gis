@@ -303,8 +303,12 @@ Popup formats:
 | `ses-2021-localities` | `rc-localities-2011` | `datasets/ses-2021/rc-localities-2011.json` |
 | `ses-2021-statistical-areas` | `statistical-areas-2011` | `datasets/ses-2021/statistical-areas-2011.json` |
 
-All three use the same classification: categorical clusters 1–10, viridis from cluster 1 (dark) to 10 (light),
-missing `#c8c8c8`. They also share the popup fields `cluster`, `index` (3 decimals), `rank` and `population`. The
+All three use the same classification: categorical clusters 1–10 coloured with ColorBrewer RdYlBu (10-class,
+colourblind-safe, diverging): cluster 1 `#a50026` (red, lowest) through pale yellow and pale blue (5 `#fee090`,
+6 `#e0f3f8`) to cluster 10 `#313695` (blue, highest); missing `#c8c8c8`. Palettes are named in
+`pipeline/lib/palettes.ts` (`palette10('RdYlBu')`, `palette10('viridis')`). Caveat: 10-class RdYlBu is
+colourblind-safe, but ColorBrewer rates RdYlBu "screen-friendly" only up to 8 classes; the viewer compensates with
+dark borders around the pale middle classes. They also share the popup fields `cluster`, `index` (3 decimals), `rank` and `population`. The
 full JSON is in `dist/data/layers.json`.
 
 Excerpt:
@@ -320,7 +324,7 @@ Excerpt:
   "valueField": "cluster",
   "classification": {
     "type": "categorical",
-    "classes": [{ "value": 1, "color": "#440154", "label": { "he": "אשכול 1", "en": "Cluster 1", "ru": "Кластер 1" } }, "… 2–10 …"],
+    "classes": [{ "value": 1, "color": "#a50026", "label": { "he": "אשכול 1", "en": "Cluster 1", "ru": "Кластер 1" } }, "… 2–10 …"],
     "missing": { "color": "#c8c8c8", "label": { "he": "לא חושב", "en": "Not calculated", "ru": "Не рассчитан" }, "description": { "…": "…" } },
     "note": { "en": "1 = lowest socio-economic level, 10 = highest", "…": "…" }
   },

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { palette10 } from '../pipeline/lib/palettes.ts';
 import { Classification, LEVEL_IDS, validateManifest, type ChoroplethLayer, type Manifest, type PointsLayer } from '../pipeline/lib/contract.ts';
 import { manifest, readBuilt } from './dist.ts';
 
@@ -28,6 +29,14 @@ describe('layers.json', () => {
       if (l.classification.type === 'categorical') expect(l.classification.classes.map((c) => c.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
       expect(l.classification.missing.label.en).toBe('Not calculated');
       expect(l.popup.map((p) => p.field)).toEqual(['cluster', 'index', 'rank', 'population']);
+    }
+  });
+
+  it('colours the SES clusters with ColorBrewer RdYlBu, red (1) → blue (10)', () => {
+    const rdylbu = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'];
+    expect(palette10('RdYlBu')).toEqual(rdylbu);
+    for (const l of manifest().layers) {
+      if (l.classification.type === 'categorical') expect(l.classification.classes.map((c) => c.color)).toEqual(rdylbu);
     }
   });
 

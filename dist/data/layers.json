@@ -187,7 +187,7 @@
               "en": "Cluster 1",
               "ru": "Кластер 1"
             },
-            "color": "#440154"
+            "color": "#a50026"
           },
           {
             "value": 2,
@@ -196,7 +196,7 @@
               "en": "Cluster 2",
               "ru": "Кластер 2"
             },
-            "color": "#482878"
+            "color": "#d73027"
           },
           {
             "value": 3,
@@ -205,7 +205,7 @@
               "en": "Cluster 3",
               "ru": "Кластер 3"
             },
-            "color": "#3e4989"
+            "color": "#f46d43"
           },
           {
             "value": 4,
@@ -214,7 +214,7 @@
               "en": "Cluster 4",
               "ru": "Кластер 4"
             },
-            "color": "#31688e"
+            "color": "#fdae61"
           },
           {
             "value": 5,
@@ -223,7 +223,7 @@
               "en": "Cluster 5",
               "ru": "Кластер 5"
             },
-            "color": "#26828e"
+            "color": "#fee090"
           },
           {
             "value": 6,
@@ -232,7 +232,7 @@
               "en": "Cluster 6",
               "ru": "Кластер 6"
             },
-            "color": "#1f9e89"
+            "color": "#e0f3f8"
           },
           {
             "value": 7,
@@ -241,7 +241,7 @@
               "en": "Cluster 7",
               "ru": "Кластер 7"
             },
-            "color": "#35b779"
+            "color": "#abd9e9"
           },
           {
             "value": 8,
@@ -250,7 +250,7 @@
               "en": "Cluster 8",
               "ru": "Кластер 8"
             },
-            "color": "#6ece58"
+            "color": "#74add1"
           },
           {
             "value": 9,
@@ -259,7 +259,7 @@
               "en": "Cluster 9",
               "ru": "Кластер 9"
             },
-            "color": "#b5de2b"
+            "color": "#4575b4"
           },
           {
             "value": 10,
@@ -268,7 +268,7 @@
               "en": "Cluster 10",
               "ru": "Кластер 10"
             },
-            "color": "#fde725"
+            "color": "#313695"
           }
         ],
         "missing": {
@@ -377,7 +377,7 @@
               "en": "Cluster 1",
               "ru": "Кластер 1"
             },
-            "color": "#440154"
+            "color": "#a50026"
           },
           {
             "value": 2,
@@ -386,7 +386,7 @@
               "en": "Cluster 2",
               "ru": "Кластер 2"
             },
-            "color": "#482878"
+            "color": "#d73027"
           },
           {
             "value": 3,
@@ -395,7 +395,7 @@
               "en": "Cluster 3",
               "ru": "Кластер 3"
             },
-            "color": "#3e4989"
+            "color": "#f46d43"
           },
           {
             "value": 4,
@@ -404,7 +404,7 @@
               "en": "Cluster 4",
               "ru": "Кластер 4"
             },
-            "color": "#31688e"
+            "color": "#fdae61"
           },
           {
             "value": 5,
@@ -413,7 +413,7 @@
               "en": "Cluster 5",
               "ru": "Кластер 5"
             },
-            "color": "#26828e"
+            "color": "#fee090"
           },
           {
             "value": 6,
@@ -422,7 +422,7 @@
               "en": "Cluster 6",
               "ru": "Кластер 6"
             },
-            "color": "#1f9e89"
+            "color": "#e0f3f8"
           },
           {
             "value": 7,
@@ -431,7 +431,7 @@
               "en": "Cluster 7",
               "ru": "Кластер 7"
             },
-            "color": "#35b779"
+            "color": "#abd9e9"
           },
           {
             "value": 8,
@@ -440,7 +440,7 @@
               "en": "Cluster 8",
               "ru": "Кластер 8"
             },
-            "color": "#6ece58"
+            "color": "#74add1"
           },
           {
             "value": 9,
@@ -449,7 +449,7 @@
               "en": "Cluster 9",
               "ru": "Кластер 9"
             },
-            "color": "#b5de2b"
+            "color": "#4575b4"
           },
           {
             "value": 10,
@@ -458,7 +458,7 @@
               "en": "Cluster 10",
               "ru": "Кластер 10"
             },
-            "color": "#fde725"
+            "color": "#313695"
           }
         ],
         "missing": {
@@ -567,7 +567,7 @@
               "en": "Cluster 1",
               "ru": "Кластер 1"
             },
-            "color": "#440154"
+            "color": "#a50026"
           },
           {
             "value": 2,
@@ -576,7 +576,7 @@
               "en": "Cluster 2",
               "ru": "Кластер 2"
             },
-            "color": "#482878"
+            "color": "#d73027"
           },
           {
             "value": 3,
@@ -585,7 +585,7 @@
               "en": "Cluster 3",
               "ru": "Кластер 3"
             },
-            "color": "#3e4989"
+            "color": "#f46d43"
           },
           {
             "value": 4,
@@ -594,7 +594,7 @@
               "en": "Cluster 4",
               "ru": "Кластер 4"
             },
-            "color": "#31688e"
+            "color": "#fdae61"
           },
           {
             "value": 5,
@@ -603,7 +603,7 @@
               "en": "Cluster 5",
               "ru": "Кластер 5"
             },
-            "color": "#26828e"
+            "color": "#fee090"
           },
           {
             "value": 6,
@@ -612,7 +612,7 @@
               "en": "Cluster 6",
               "ru": "Кластер 6"
             },
-            "color": "#1f9e89"
+            "color": "#e0f3f8"
           },
           {
             "value": 7,
@@ -621,7 +621,7 @@
               "en": "Cluster 7",
               "ru": "Кластер 7"
             },
-            "color": "#35b779"
+            "color": "#abd9e9"
           },
           {
             "value": 8,
@@ -630,7 +630,7 @@
               "en": "Cluster 8",
               "ru": "Кластер 8"
             },
-            "color": "#6ece58"
+            "color": "#74add1"
           },
           {
             "value": 9,
@@ -639,7 +639,7 @@
               "en": "Cluster 9",
               "ru": "Кластер 9"
             },
-            "color": "#b5de2b"
+            "color": "#4575b4"
           },
           {
             "value": 10,
@@ -648,7 +648,7 @@
               "en": "Cluster 10",
               "ru": "Кластер 10"
             },
-            "color": "#fde725"
+            "color": "#313695"
           }
         ],
         "missing": {

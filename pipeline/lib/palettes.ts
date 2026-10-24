@@ -1,0 +1,22 @@
+// Named colour scales for classifications, so a dataset picks one by name instead of copying hex lists.
+// Values are the published 10-class schemes, checked against d3-scale-chromatic (src/diverging/RdYlBu.js,
+// src/sequential-multi/viridis.js sampled at 10) and the ColorBrewer export (colorbrewer.json).
+
+const PALETTES = {
+  /**
+   * ColorBrewer RdYlBu, diverging and colourblind-safe: red (low) → pale yellow/blue (middle) → blue (high). Note:
+   * ColorBrewer rates RdYlBu "screen-friendly" only up to 8 classes; the 10-class version relies on borders to keep
+   * its pale middle readable on screen.
+   */
+  RdYlBu: ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'],
+  /**
+   * viridis, sequential: dark purple (low) → yellow (high). Kept on purpose as the second named palette, for
+   * one-directional data (rates, counts) where a diverging scale's middle would suggest a meaningful midpoint.
+   */
+  viridis: ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725'],
+} as const;
+
+export type PaletteName = keyof typeof PALETTES;
+
+/** The 10 colours of a named palette, low → high. */
+export const palette10 = (name: PaletteName): string[] => [...PALETTES[name]];

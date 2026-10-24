@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Frame, type Page } from '@playwright/test';
+import { contrast } from '../src/classify.ts';
 
 const DATA = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../dist/data');
 
@@ -570,4 +571,68 @@ test('screenshots', async ({ page }) => {
   await page.goto('./?lang=ru&layer=ses-2021-localities&hl=3-6#8.6/32.75/35.3');
   await ready(page, 'ses-2021-localities');
   await shot('slider-mobile-ru.png');
+});
+
+// Colour-vision deficiency, simulated with Machado et al. (2009) matrices at full severity, applied in linear RGB
+// to the whole page (the map canvas included) through an SVG filter.
+const CVD = {
+  deuteranopia: '0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0',
+  protanopia: '0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0',
+};
+
+const RDYLBU = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'];
+const toHex = (css: string) => {
+  const [r, g, b] = css.match(/\d+(\.\d+)?/g)!.map(Number);
+  return `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+};
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`palette (${lang}): legend, slider and strip show RdYlBu, strip numbers at ≥ 4.5:1`, async ({ page }) => {
+    await page.goto(`./?lang=${lang}`);
+    await ready(page, 'ses-2021-local-authorities');
+    const bg = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor));
+    expect((await bg('#legend .legend-list li:not(:last-child) .swatch')).map(toHex)).toEqual(RDYLBU);
+    expect((await bg('#range .range-scale span')).map(toHex)).toEqual(RDYLBU);
+
+    // The compact strip (embed): every number readable on its colour.
+    await page.setViewportSize({ width: 390, height: 760 });
+    await page.goto(`./?lang=${lang}&embed=1`);
+    await ready(page, 'ses-2021-local-authorities');
+    const cells = await page
+      .locator('#strip .strip-row button[data-key]:not(.swatch-missing)')
+      .evaluateAll((els) => els.map((e) => [getComputedStyle(e).backgroundColor, getComputedStyle(e).color]));
+    expect(cells.map(([b]) => toHex(b))).toEqual(RDYLBU);
+    for (const [b, fg] of cells) expect(contrast(toHex(b), toHex(fg)), `${b} / ${fg}`).toBeGreaterThanOrEqual(4.5);
+  });
+}
+
+test('palette screenshots: zoom 7 and 12, and under simulated colour-vision deficiency', async ({ page }) => {
+  const dir = process.env.SCREENS;
+  test.skip(!dir || test.info().project.name !== 'chromium', 'set SCREENS=<dir> to capture (Chromium)');
+  const shot = async (name: string) => {
+    await page.waitForTimeout(2500);
+    await page.screenshot({ path: path.join(dir!, name) });
+  };
+  await page.goto('./?lang=en#7/31.75/35.0');
+  await ready(page, 'ses-2021-local-authorities');
+  await shot('palette-z7.png');
+  for (const [name, matrix] of Object.entries(CVD)) {
+    await page.evaluate(([id, m]) => {
+      document.getElementById('cvd')?.remove();
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        `<svg id="cvd" width="0" height="0" style="position:absolute"><filter id="cvd-${id}" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="${m}"/></filter></svg>`,
+      );
+      document.documentElement.style.filter = `url(#cvd-${id})`;
+    }, [name, matrix]);
+    await shot(`palette-${name}.png`);
+  }
+  await page.evaluate(() => (document.documentElement.style.filter = ''));
+  await page.goto('./?lang=he&layer=ses-2021-statistical-areas#12.3/32.07/34.79');
+  await ready(page, 'ses-2021-statistical-areas');
+  await shot('palette-z12.png');
+  // West Bank placeholder markers (Rimmonim, Pesagot…), pale classes included, on the localities layer.
+  await page.goto('./?lang=en&layer=ses-2021-localities#10/31.92/35.27');
+  await ready(page, 'ses-2021-localities');
+  await shot('palette-z10-westbank.png');
 });

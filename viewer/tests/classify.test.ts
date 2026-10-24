@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Classification } from '../../pipeline/lib/contract.ts';
-import { MISSING, classKey, classKeys, classLabel, colorExpression, colorOf, highlightOpacity, legendEntries, spanText, textOn } from '../src/classify.ts';
+import { MISSING, classKey, classKeys, classLabel, colorExpression, colorOf, contrast, highlightOpacity, legendEntries, spanText, textOn } from '../src/classify.ts';
 import { manifest } from './fixtures.ts';
 
 /** Drops the LRI/PDI isolates so assertions read like the rendered text. */
@@ -34,14 +34,14 @@ describe('categorical (CBS clusters)', () => {
 
   it('takes colours from the manifest, missing grey for no data', () => {
     const c = categorical();
-    expect(colorOf(c, '1')).toBe('#440154');
-    expect(colorOf(c, '10')).toBe('#fde725');
+    expect(colorOf(c, '1')).toBe('#a50026');
+    expect(colorOf(c, '10')).toBe('#313695');
     expect(colorOf(c, MISSING)).toBe('#c8c8c8');
   });
 
   it('builds a match expression on the class property', () => {
     const e = colorExpression(categorical()) as unknown[];
-    expect(e.slice(0, 4)).toEqual(['match', ['get', '_k'], '1', '#440154']);
+    expect(e.slice(0, 4)).toEqual(['match', ['get', '_k'], '1', '#a50026']);
     expect(e.at(-1)).toBe('#c8c8c8');
     expect(e).toHaveLength(2 + 20 + 1);
   });
@@ -105,5 +105,16 @@ describe('highlight and contrast', () => {
     expect(textOn('#440154')).toBe('#ffffff');
     expect(textOn('#fde725')).toBe('#000000');
     expect(textOn('#c8c8c8')).toBe('#000000');
+    expect(contrast('#000000', '#ffffff')).toBeCloseTo(21, 5);
+    expect(contrast('#777777', '#777777')).toBe(1);
+  });
+
+  it('gives every RdYlBu class text with at least 4.5:1 contrast', () => {
+    const rdylbu = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'];
+    const c = categorical();
+    expect(c.type === 'categorical' ? c.classes.map((k) => k.color) : []).toEqual(rdylbu);
+    for (const c of rdylbu) expect(contrast(c, textOn(c)), c).toBeGreaterThanOrEqual(4.5);
+    // Dark ends and the two mid-dark ones take white text, the pale middle black.
+    expect(rdylbu.map(textOn)).toEqual(['#ffffff', '#ffffff', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff']);
   });
 });
