@@ -12,7 +12,33 @@
       "placeholderObject": "local-authorities-2011-placeholders",
       "idProperty": "code",
       "featureCount": 257,
-      "placeholderCount": 18
+      "placeholderCount": 18,
+      "populationYear": 2020,
+      "featureType": {
+        "he": "רשות מקומית",
+        "en": "Local authority",
+        "ru": "Орган местной власти"
+      },
+      "featureTypes": {
+        "property": "authority_type",
+        "labels": {
+          "city": {
+            "he": "עירייה",
+            "en": "City",
+            "ru": "Город"
+          },
+          "local-council": {
+            "he": "מועצה מקומית",
+            "en": "Local council",
+            "ru": "Местный совет"
+          },
+          "regional-council": {
+            "he": "מועצה אזורית",
+            "en": "Regional council",
+            "ru": "Региональный совет"
+          }
+        }
+      }
     },
     "localities-2011": {
       "title": {
@@ -25,7 +51,13 @@
       "placeholderObject": "localities-2011-placeholders",
       "idProperty": "code",
       "featureCount": 1283,
-      "placeholderCount": 126
+      "placeholderCount": 126,
+      "populationYear": 2020,
+      "featureType": {
+        "he": "יישוב",
+        "en": "Locality",
+        "ru": "Населённый пункт"
+      }
     },
     "rc-localities-2011": {
       "title": {
@@ -38,7 +70,13 @@
       "placeholderObject": "rc-localities-2011-placeholders",
       "idProperty": "code",
       "featureCount": 1074,
-      "placeholderCount": 114
+      "placeholderCount": 114,
+      "populationYear": 2020,
+      "featureType": {
+        "he": "יישוב",
+        "en": "Locality",
+        "ru": "Населённый пункт"
+      }
     },
     "statistical-areas-2011": {
       "title": {
@@ -56,6 +94,13 @@
         "he": "{name} – אזור סטטיסטי {sa}",
         "en": "{name} – statistical area {sa}",
         "ru": "{name} – статистический район {sa}"
+      },
+      "parentCode": "locality_code",
+      "populationYear": 2020,
+      "featureType": {
+        "he": "אזור סטטיסטי",
+        "en": "Statistical area",
+        "ru": "Статистический район"
       }
     }
   },

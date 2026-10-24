@@ -3,6 +3,11 @@ node_modules/
 *.part
 *.unverified
 
+# Viewer build (reproducible with `npm run build:viewer`, see README) and Playwright output
+dist/site/
+test-results/
+playwright-report/
+
 # Build staging (pipeline/build.ts swaps it into dist/data only after every check passes)
 dist/.data-staging-*/
 dist/data.previous-*/

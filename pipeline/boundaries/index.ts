@@ -2,7 +2,7 @@ import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from
 import type { I18n, Level, LevelId, Source } from '../lib/contract.ts';
 import { BOT_UA, BROWSER_UA, sparqlUrl, type RawFile } from '../lib/download.ts';
 import { toWgs84 } from '../lib/gdal.ts';
-import { authorityCode, isRegionalCouncilCode, isRegionalCouncilStatus, saKey } from '../lib/keys.ts';
+import { authorityCode, isRegionalCouncilCode, isRegionalCouncilStatus, LOCAL_COUNCIL, MUNICIPALITY, saKey } from '../lib/keys.ts';
 import { cleanEn, cleanHe, withRuFallback } from '../lib/names.ts';
 import { raw } from '../lib/paths.ts';
 import { addPointObject, toTopoJSON, type Topology } from '../lib/topology.ts';
@@ -68,6 +68,15 @@ const NAME_OVERRIDES: Record<number, { he?: string; en?: string; ru?: string }> 
   // Renamed from Sedot Dan; the 2021 index (table A1) already says עמק לוד / EMEQ LOD, the 2021 localities file and
   // the SA layer still have the old name.
   5540: { he: 'עמק לוד', en: 'Emek Lod', ru: 'Эмек-Лод' },
+  // Pairs of localities whose Wikidata ru names collide (cleanRu drops the disambiguator, or the labels are equal).
+  // The CBS Hebrew names tell them apart in parentheses; the Russian ones now do too.
+  173: { ru: 'Гиват-Хайим (Меухад)' },
+  2018: { ru: 'Гиват-Хайим (Ихуд)' },
+  1084: { ru: 'Бен-Шемен (молодёжная деревня)' },
+  2013: { ru: 'Бен-Шемен (мошав)' },
+  66: { ru: 'Мерхавия (кибуц)' },
+  97: { ru: 'Мерхавия (мошав)' },
+  547: { ru: 'Тамра (Изреэль)' },
 };
 
 /**
@@ -122,6 +131,7 @@ interface SaProps {
   YISHUV_STAT11: number;
   SHEM_YISHUV: string | null;
   SHEM_YISHUV_ENGLISH: string | null;
+  Pop_Total: number | null;
 }
 
 type LevelMeta = Omit<Level, 'featureCount' | 'placeholderCount'>;
@@ -159,25 +169,63 @@ const level = (id: LevelId, title: I18n, extra: Partial<LevelMeta> = {}): LevelM
   object: id,
   placeholderObject: `${id}-placeholders`,
   idProperty: 'code',
+  populationYear: POPULATION_YEAR,
   ...extra,
 });
 
+/** The SA layer's demography edition: the year of every feature's `population`. */
+const POPULATION_YEAR = 2020;
+
+export type AuthorityType = 'city' | 'local-council' | 'regional-council';
+
+const LOCALITY: I18n = { he: 'יישוב', en: 'Locality', ru: 'Населённый пункт' };
+
 const LEVEL_META: Record<LevelId, LevelMeta> = {
-  'local-authorities-2011': level('local-authorities-2011', { he: 'רשויות מקומיות', en: 'Local authorities', ru: 'Органы местной власти' }),
-  'localities-2011': level('localities-2011', { he: 'יישובים', en: 'Localities', ru: 'Населённые пункты' }),
-  'rc-localities-2011': level('rc-localities-2011', {
-    he: 'יישובים במועצות אזוריות',
-    en: 'Localities in regional councils',
-    ru: 'Населённые пункты региональных советов',
-  }),
+  'local-authorities-2011': level(
+    'local-authorities-2011',
+    { he: 'רשויות מקומיות', en: 'Local authorities', ru: 'Органы местной власти' },
+    {
+      featureType: { he: 'רשות מקומית', en: 'Local authority', ru: 'Орган местной власти' },
+      featureTypes: {
+        property: 'authority_type',
+        labels: {
+          city: { he: 'עירייה', en: 'City', ru: 'Город' },
+          'local-council': { he: 'מועצה מקומית', en: 'Local council', ru: 'Местный совет' },
+          'regional-council': { he: 'מועצה אזורית', en: 'Regional council', ru: 'Региональный совет' },
+        } satisfies Record<AuthorityType, I18n>,
+      },
+    },
+  ),
+  'localities-2011': level('localities-2011', { he: 'יישובים', en: 'Localities', ru: 'Населённые пункты' }, { featureType: LOCALITY }),
+  'rc-localities-2011': level(
+    'rc-localities-2011',
+    { he: 'יישובים במועצות אזוריות', en: 'Localities in regional councils', ru: 'Населённые пункты региональных советов' },
+    { featureType: LOCALITY },
+  ),
   'statistical-areas-2011': level(
     'statistical-areas-2011',
     { he: 'אזורים סטטיסטיים', en: 'Statistical areas', ru: 'Статистические районы' },
-    { featureLabel: { he: '{name} – אזור סטטיסטי {sa}', en: '{name} – statistical area {sa}', ru: '{name} – статистический район {sa}' } },
+    {
+      featureLabel: { he: '{name} – אזור סטטיסטי {sa}', en: '{name} – statistical area {sa}', ru: '{name} – статистический район {sa}' },
+      parentCode: 'locality_code',
+      featureType: { he: 'אזור סטטיסטי', en: 'Statistical area', ru: 'Статистический район' },
+    },
   ),
 };
 
+function authorityType(status: number | null, code: number): AuthorityType {
+  if (isRegionalCouncilCode(code) || isRegionalCouncilStatus(status)) return 'regional-council';
+  if (status === MUNICIPALITY) return 'city';
+  if (status === LOCAL_COUNCIL) return 'local-council';
+  throw new Error(`No authority type for ${code} (status ${status})`);
+}
+
 const COPY = ['name_he', 'name_en', 'name_ru', 'placeholder'];
+/** Level-specific properties carried through the dissolve, besides COPY. */
+const EXTRA_FIELDS: Partial<Record<LevelId, string[]>> = {
+  'statistical-areas-2011': ['locality_code', 'sa'],
+  'local-authorities-2011': ['authority_type'],
+};
 const HEBREW = /[\u{5D0}-\u{5EA}]/u;
 
 /** Reads the SA-2011 layer and the name sources, and derives the geometry levels (docs/data-sources.md §11). */
@@ -185,7 +233,7 @@ export async function buildBoundaries(): Promise<Boundaries> {
   const sa = await toWgs84<FeatureCollection<Geom, SaProps>>(raw(SA_ZIP), {
     zipped: true,
     multiPolygon: true,
-    select: ['SEMEL_YISHUV', 'STAT11', 'YISHUV_STAT11', 'SHEM_YISHUV', 'SHEM_YISHUV_ENGLISH'],
+    select: ['SEMEL_YISHUV', 'STAT11', 'YISHUV_STAT11', 'SHEM_YISHUV', 'SHEM_YISHUV_ENGLISH', 'Pop_Total'],
   });
   const localities = await readLocalitiesFile(raw(LOCALITIES_FILE));
   const rcHe = regionalCouncilHe(localities);
@@ -275,7 +323,9 @@ export async function buildBoundaries(): Promise<Boundaries> {
     else if (status != null) code = authorityCode(status, loc);
     else if (!info) dropped.noJurisdiction++;
     else dropped.noStatus++;
-    if (code != null) drafts['local-authorities-2011'].push({ code, nameCode: Number(code), props: {}, f });
+    if (code != null) {
+      drafts['local-authorities-2011'].push({ code, nameCode: Number(code), props: { authority_type: authorityType(status, loc) }, f });
+    }
   }
 
   const centres = new Map(sa.features.map((f) => [f, placeholderCentre(f.geometry)]));
@@ -306,7 +356,14 @@ export async function buildBoundaries(): Promise<Boundaries> {
       return {
         type: 'Feature' as const,
         geometry: d.f.geometry,
-        properties: { code: d.code, ...d.props, ...n, placeholder: allPlaceholder.get(d.code)! },
+        properties: {
+          code: d.code,
+          ...d.props,
+          ...n,
+          placeholder: allPlaceholder.get(d.code)!,
+          // Residents in POPULATION_YEAR (SA layer Pop_Total), summed by the dissolve; lets the viewer rank places by size.
+          population: Math.round(d.f.properties.Pop_Total ?? 0),
+        },
       };
     });
     names[id] = stats;
@@ -317,7 +374,7 @@ export async function buildBoundaries(): Promise<Boundaries> {
         const c = centres.get(d.f);
         return c ? [{ coordinates: c, properties: { code: d.code } }] : [];
       }),
-      copyFields: id === 'statistical-areas-2011' ? ['locality_code', 'sa', ...COPY] : COPY,
+      copyFields: [...(EXTRA_FIELDS[id] ?? []), ...COPY],
       simplify: simplify[id],
     };
   }
@@ -333,7 +390,14 @@ export const QUANTIZATION = 200_000;
 export async function levelTopology(level: LevelBuild): Promise<Topology> {
   const topo = await toTopoJSON(
     { type: 'FeatureCollection', features: level.features },
-    { object: level.meta.object, dissolve: 'code', copyFields: level.copyFields, simplify: level.simplify, quantization: QUANTIZATION },
+    {
+      object: level.meta.object,
+      dissolve: 'code',
+      copyFields: level.copyFields,
+      sumFields: ['population'],
+      simplify: level.simplify,
+      quantization: QUANTIZATION,
+    },
   );
   addPointObject(topo, level.meta.placeholderObject, level.points);
   return topo;

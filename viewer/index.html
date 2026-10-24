@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <title>מפת הנתונים הפתוחים של ישראל</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="ui">
+      <div id="top" class="card">
+        <div class="top-row">
+          <h1 id="title"></h1>
+          <div id="lang" class="lang" role="group"></div>
+        </div>
+        <div class="search" id="search"></div>
+      </div>
+      <div id="sheet" class="card" data-open="false">
+        <button id="sheet-toggle" class="sheet-toggle" type="button" aria-expanded="false" aria-controls="sheet-body">
+          <span class="grip" aria-hidden="true"></span>
+          <span id="sheet-title"></span>
+        </button>
+        <div id="sheet-body" class="sheet-body">
+          <section id="layers" class="layers"></section>
+          <section id="legend" class="legend"></section>
+          <footer class="foot">
+            <button id="about-open" type="button" class="link"></button>
+            <a id="fullscreen" class="link" target="_blank" rel="noopener" hidden></a>
+          </footer>
+        </div>
+        <div id="strip" class="strip"></div>
+      </div>
+    </div>
+    <div id="map" role="region" aria-label="מפה אינטראקטיבית"></div>
+    <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+    <dialog id="about" class="about"></dialog>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

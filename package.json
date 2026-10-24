@@ -3,27 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Data pipeline for an embeddable multi-layer map of Israel (CBS socio-economic index and future layers)",
+  "description": "Data pipeline and embeddable web viewer for a multi-layer map of Israel (CBS socio-economic index and future layers)",
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
     "download": "tsx pipeline/download.ts",
-    "build": "tsx pipeline/build.ts",
-    "test": "tsc --noEmit && vitest run",
-    "typecheck": "tsc --noEmit"
+    "build:data": "tsx pipeline/build.ts",
+    "build:viewer": "vite build viewer",
+    "build": "npm run build:data && npm run build:viewer",
+    "dev": "vite viewer",
+    "preview": "vite preview viewer",
+    "test": "npm run typecheck && vitest run",
+    "test:e2e": "npm run build:viewer && playwright test -c viewer/playwright.config.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p viewer"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^26.6.5",
     "@types/topojson-client": "^3.1.5",
     "csv-parse": "^7.0.3",
     "gdal3.js": "^2.8.1",
+    "maplibre-gl": "6.15.0",
     "mapshaper": "^0.7.98",
+    "polylabel": "^2.1.0",
     "read-excel-file": "^9.3.12",
     "topojson-client": "^3.1.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
+    "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "zod": "^4.6.7"
   }

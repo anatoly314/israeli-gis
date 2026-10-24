@@ -31,6 +31,17 @@ export const Level = z.strictObject({
   placeholderCount: z.number().int().nonnegative(),
   /** Label template; `{name}` and other `{prop}` placeholders refer to feature properties. */
   featureLabel: I18n.optional(),
+  /**
+   * Set when features are parts of a larger named place: the property holding that place's code. `name_*` then hold
+   * the place's name, shared by all its parts (statistical areas → `locality_code`, the city).
+   */
+  parentCode: text.optional(),
+  /** Year of the features' `population` property (residents, for ordering places by size). */
+  populationYear: z.number().int().optional(),
+  /** What one feature of this level is called ("Statistical area"). */
+  featureType: I18n.optional(),
+  /** When the type varies within the level: the feature property holding it and a label per value. */
+  featureTypes: z.strictObject({ property: text, labels: z.record(z.string(), I18n) }).optional(),
 });
 export type Level = z.infer<typeof Level>;
 

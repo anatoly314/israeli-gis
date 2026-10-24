@@ -91,6 +91,81 @@
               "ru"
             ],
             "additionalProperties": false
+          },
+          "parentCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "populationYear": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "featureType": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ru": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          },
+          "featureTypes": {
+            "type": "object",
+            "properties": {
+              "property": {
+                "type": "string",
+                "minLength": 1
+              },
+              "labels": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "he": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ru": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "he",
+                    "en",
+                    "ru"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "property",
+              "labels"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

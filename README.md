@@ -1,8 +1,10 @@
 # israeli-gis
 
-The data pipeline for an embeddable, multi-layer web map of Israel. It turns raw CBS spreadsheets and the CBS
-statistical-areas geodatabase into small TopoJSON boundaries, per-dataset value files, and a `layers.json` manifest
-that the viewer reads.
+An embeddable, multi-layer web map of Israel's open data, in two parts:
+- **pipeline**: turns raw CBS spreadsheets and the CBS statistical-areas geodatabase into small TopoJSON boundaries,
+  per-dataset value files, and a `layers.json` manifest (`dist/data/`).
+- **viewer**: a static MapLibre page that reads `dist/data/layers.json` and shows every layer in it, in Hebrew, English
+  and Russian (`viewer/`, built to `dist/site/`).
 
 Layer 1 is the CBS socio-economic index 2021, coloured by cluster (1–10) at three levels: local authorities,
 localities in regional councils, and statistical areas. A fourth geometry level, all localities, is there for future
@@ -10,13 +12,15 @@ datasets keyed by locality code.
 
 - `docs/data-sources.md`: research notes covering where every file comes from, its schemas, join keys, and licensing.
 - `docs/data-contract.md`: the spec for `dist/data/` that the viewer codes against.
+- `docs/viewer.md`: the viewer's architecture, basemap config and URL params.
 
 ## Setup
 
-Node.js ≥ 20.
+Node.js 20.19+ or 22.12+ (Vite 8).
 
 ```sh
 npm install
+npx playwright install chromium   # only for the browser smoke test
 ```
 
 GDAL runs as WebAssembly through [`gdal3.js`](https://github.com/bugra9/gdal3.js), using the OpenFileGDB driver plus
@@ -30,12 +34,17 @@ pipeline never uses. Spreadsheets are read with `read-excel-file`, CSV with `csv
 ## Usage
 
 ```sh
-npm run download   # fetch missing raw files into data/raw/ and verify every file's sha256
-npm run build      # data/raw → dist/data (offline; ~20 s)
-npm test           # type-check, then rebuild into a temp dir and test that build (~40 s)
+npm run download       # fetch missing raw files into data/raw/ and verify every file's sha256
+npm run build:data     # pipeline: data/raw → dist/data (offline; ~20 s)
+npm run build:viewer   # viewer: viewer/ + dist/data → dist/site (~2 s)
+npm run build          # both, in that order
+npm run dev            # viewer dev server on http://localhost:5173, serving dist/data at /data/
+npm run preview        # serve the built dist/site
+npm test               # type-check pipeline + viewer, viewer unit tests, rebuild into a temp dir and test that build
+npm run test:e2e       # build the viewer, then a Playwright/Chromium smoke test against it under /maps/israel/
 ```
 
-`build` writes to a staging directory and checks everything there. If all checks pass, it swaps the staging
+`build:data` writes to a staging directory and checks everything there. If all checks pass, it swaps the staging
 directory in for `dist/data`. If any check fails, `dist/data` is left untouched. The checks are:
 - every raw file matches its pinned sha256
 - the datum shift is within 1 m on control points
@@ -53,7 +62,7 @@ Output:
 
 The tests never read a stale `dist/data`. `tests/global-setup.ts` builds a fresh copy into a temp dir, and every test
 reads that copy. `tests/dist-fresh.test.ts` then fails if the committed `dist/data` differs from it by one byte, so
-re-run `npm run build` after changing code or raw data.
+re-run `npm run build:data` after changing pipeline code or raw data.
 
 ## Layout
 
@@ -68,9 +77,61 @@ pipeline/
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
 tests/                        vitest (global setup runs the pipeline)
+viewer/                       the map page (Vite + TypeScript + MapLibre); see docs/viewer.md
+  src/                        modules; config.ts holds the basemap config
+  tests/                      vitest unit tests (no browser)
+  e2e/                        Playwright smoke test
 data/raw/<source>/            raw downloads (partly committed, see below)
-dist/data/                    build output (committed)
+dist/data/                    pipeline output (committed)
+dist/site/                    viewer build: the deployable folder (not committed)
 ```
+
+## Viewer
+
+```sh
+npm run dev            # edit viewer/src, reloads live
+npm run build:viewer   # → dist/site/
+```
+
+**Deployable folder: `dist/site/`.** It is self-contained: `index.html`, `assets/` (hashed JS/CSS and the MapLibre
+worker) and `data/` (a copy of `dist/data` without the JSON Schema). Every URL in it is relative (`base: './'`), so
+the same folder works at any path and inside an iframe. For the Hugo site, copy it as is:
+
+```sh
+npm ci && npm run build:viewer
+rsync -a --delete dist/site/ ../anatoly.dev/static/maps/israel/
+```
+
+The viewer build never writes into `dist/data`: Vite's output directory is `dist/site`, `publicDir` is off, and a small
+plugin copies `dist/data` into `dist/site/data` after bundling (and serves it at `/data/` in dev).
+
+`dist/site` is **not committed**. It is rebuilt from committed inputs in about two seconds with no GDAL step (`npm ci &&
+npm run build:viewer`), while committing it would add a new set of hashed bundle files on every change. `dist/data`
+stays committed because it is the expensive, reviewed part.
+
+### Embedding
+
+```html
+<iframe
+  src="/maps/israel/?embed=1&lang=he&layer=ses-2021-localities&hl=1,2,3#8/32.1/34.9"
+  title="מדד חברתי-כלכלי 2021"
+  width="100%" height="640" style="border:0" loading="lazy"
+  allow="fullscreen"></iframe>
+```
+
+Keep the trailing slash in `/maps/israel/`: the page loads `data/` and `assets/` relative to its own URL, so
+`/maps/israel?embed=1` would look for them under `/maps/`.
+
+| Param | Values | Default |
+|---|---|---|
+| `lang` | `he`, `en`, `ru` | browser language if it is one of these, else `he` |
+| `layer` | a layer `id` from `layers.json` | the first layer |
+| `hl` | highlighted classes, comma-separated: cluster values (`1,2,3`), `s0…sN` for stepped bins, `na` for "not calculated" | none |
+| `f` | a feature code to select and open | none |
+| `embed` | `1`: compact layout for a 600–700 px iframe, map gestures need two fingers / Ctrl+scroll, "Open full map" link | off |
+| `#zoom/lat/lon` | map position (hash) | fit the layer |
+
+The page keeps the URL in sync as you use it, so any view can be shared by copying the address bar.
 
 ## Adding a dataset
 
@@ -86,7 +147,9 @@ A dataset is joined to one of the existing geometry levels by code (a choropleth
      - `joins`: one `join()` per level, so the build reports and enforces matches
 3. Register it in `pipeline/datasets/index.ts`.
 4. Add tests that pin the join counts and a few values copied by hand from the raw rows. Then run
-   `npm run build && npm test` and commit the code, the raw files and `dist/data` together.
+   `npm run build:data && npm test` and commit the code, the raw files and `dist/data` together.
+
+The viewer needs no change: it lists, colours, labels and searches whatever `layers.json` contains.
 
 Pick the level by key:
 

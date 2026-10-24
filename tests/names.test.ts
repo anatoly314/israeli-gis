@@ -109,6 +109,29 @@ describe('names in the built localities', () => {
     expect(name('1770')).toEqual({ he: 'נאות חובב', en: 'Neot Hovav', ru: 'Неот-Ховав' });
   });
 
+  it.each([
+    ['173', 'Гиват-Хайим (Меухад)'],
+    ['2018', 'Гиват-Хайим (Ихуд)'],
+    ['1084', 'Бен-Шемен (молодёжная деревня)'],
+    ['2013', 'Бен-Шемен (мошав)'],
+    ['66', 'Мерхавия (кибуц)'],
+    ['97', 'Мерхавия (мошав)'],
+    ['547', 'Тамра (Изреэль)'],
+    ['8900', 'Тамра'],
+  ])('tells apart localities sharing a Russian name: %s → %s', (code, ru) => {
+    expect(name(code).ru).toBe(ru);
+  });
+
+  it('gives no two localities the same real Russian name', () => {
+    const seen = new Map<string, string>();
+    for (const [code, f] of localities) {
+      const { name_ru, name_en } = f.properties as Record<string, string>;
+      if (name_ru === name_en) continue;
+      expect(seen.get(name_ru), `${code} and ${seen.get(name_ru)} are both ${name_ru}`).toBeUndefined();
+      seen.set(name_ru, code);
+    }
+  });
+
   it('5540 carries its 2021 name, Emek Lod', () => {
     const p = byCode('local-authorities-2011').get('5540')!.properties;
     expect([p.name_he, p.name_en, p.name_ru]).toEqual(['עמק לוד', 'Emek Lod', 'Эмек-Лод']);

@@ -8,6 +8,8 @@ export interface TopologyOptions {
   dissolve: string;
   /** Extra properties carried through the dissolve (first value wins). */
   copyFields: string[];
+  /** Numeric properties summed over the dissolved features. */
+  sumFields?: string[];
   /** Share of removable vertices to keep, e.g. "5%". */
   simplify: string;
   /** Grid size per axis over the bounding box. */
@@ -25,7 +27,7 @@ export interface Topology {
 export async function toTopoJSON(fc: FeatureCollection, o: TopologyOptions): Promise<Topology> {
   const cmd = [
     `-i in.json name=${o.object} encoding=utf8`,
-    `-dissolve ${o.dissolve} copy-fields=${o.copyFields.join(',')}`,
+    `-dissolve ${o.dissolve} copy-fields=${o.copyFields.join(',')}${o.sumFields?.length ? ` sum-fields=${o.sumFields.join(',')}` : ''}`,
     `-simplify ${o.simplify} keep-shapes`,
     '-clean',
     // fix-geometry reverts segments that quantization made intersect; those arcs keep a few decimal deltas.

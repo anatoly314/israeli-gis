@@ -84,9 +84,27 @@ boundaries, not legal municipal jurisdictions.
 | `placeholder` | boolean | all | `true` if CBS has no real boundary for this unit, only 50 m circles. See below. |
 | `locality_code` | string of digits | statistical-areas-2011 | Code of the city the SA belongs to |
 | `sa` | integer | statistical-areas-2011 | SA number within the city |
+| `authority_type` | `"city"` \| `"local-council"` \| `"regional-council"` | local-authorities-2011 | Municipal status: CBS status 0 (municipality), 99 (local council), or a regional council (the `55xx` codes) |
+| `population` | integer | all | Residents at the end of `levels[...].populationYear` (2020): the SA layer's `Pop_Total`, summed over every polygon the feature is made of (0 where CBS has none). For ordering places by size (label priority, search ties); it is **not** a dataset value and differs from the SES dataset's own `population` field ("index population"), which takes precedence when a viewer merges dataset records into feature properties. All localities sum to 9,217,568. |
+
+**Feature type.** `levels[...].featureType[lang]` names what one feature of the level is ("Locality", "Statistical
+area"). When the type varies within a level, `levels[...].featureTypes` says which property holds it and labels each
+value; prefer that label when the feature has the property:
+
+```json
+"featureType": { "en": "Local authority", "…": "…" },
+"featureTypes": { "property": "authority_type", "labels": { "city": { "en": "City", "…": "…" }, "local-council": { "…": "…" }, "regional-council": { "…": "…" } } }
+```
+
+Counts on `local-authorities-2011`: 79 `city`, 124 `local-council`, 54 `regional-council`.
 
 On `statistical-areas-2011`, `name_*` holds the **city** name. Build the label from `levels[...].featureLabel[lang]`,
 replacing `{name}` with `name_<lang>` and `{sa}` with `sa`.
+
+**Parts of a place.** `levels[...].parentCode`, when set, names the property that holds the code of the place each
+feature is part of; the features' `name_*` are then that place's name. Only `statistical-areas-2011` sets it
+(`"locality_code"`). The viewer uses it to search such a level by place (one entry per city) and to skip map labels
+that would repeat the city name on every part.
 
 ### Placeholder circles (West Bank)
 
@@ -144,7 +162,7 @@ geometry, so a missing key always means CBS did not compute the index.
 |---|---|
 | `name_he` | CBS localities file (`bycode2021`). Then, for regional councils, the CBS municipal-status name without its "מועצה אזורית" prefix. Then the SA layer. |
 | `name_en` | 1. CBS localities file. 2. CBS SA layer (for RCs, the open-land polygon's English name). 3. The English label of the matched Wikidata item. 4. **The Hebrew name.** |
-| overrides | 1770 → en "Neot Hovav". 5540 → עמק לוד / Emek Lod / Эмек-Лод, its 2021 name; the localities file and SA layer still say Sedot Dan. |
+| overrides | 1770 → en "Neot Hovav". 5540 → עמק לוד / Emek Lod / Эмек-Лод, its 2021 name; the localities file and SA layer still say Sedot Dan. Seven ru names that collided between two localities get the disambiguator their Hebrew names carry (see the changes list at the end). |
 | `name_ru` | 1. The ru.wikipedia article title of the matched Wikidata item, with the disambiguator stripped. 2. That item's Cyrillic ru label. 3. **`name_en`.** Never transliterated. |
 
 **Wikidata matching.** The item is matched on P3466 (CBS code):
@@ -197,6 +215,10 @@ interface Level {
   featureCount: number;
   placeholderCount: number;
   featureLabel?: I18n;                  // template, {name} / {<property>}
+  featureType?: I18n;                   // what one feature is called ("Statistical area"); set on every shipped level
+  featureTypes?: { property: string; labels: Record<string, I18n> };   // per-feature type, when it varies
+  parentCode?: string;                  // property with the code of the place a feature is part of (SA → locality_code)
+  populationYear?: number;              // year of the features' `population` (2020 on every shipped level)
 }
 
 type Layer = ChoroplethLayer | PointsLayer;
@@ -333,3 +355,13 @@ Don't imply CBS endorsement.
 - Quantization went from 1e5 to 2e5 with `fix-geometry`, which brings decimal arc deltas.
 - New `layers.schema.json`.
 - Names were corrected (see [Names](#names)). `name_en`/`name_ru` may be Hebrew for 44 no-data localities.
+
+### Changes in slice 2 (additive, still `version: 1`)
+
+- `levels[*].featureType` and `levels[*].featureTypes` (see [Feature type](#polygon-properties)).
+- `authority_type` property on `local-authorities-2011` polygons.
+- `levels[*].parentCode` (set on `statistical-areas-2011`).
+- `population` property on every level, its year in `levels[*].populationYear` (2020).
+- Russian names now tell apart localities that shared one: 173/2018 Гиват-Хайим (Меухад)/(Ихуд), 1084/2013
+  Бен-Шемен (молодёжная деревня)/(мошав), 66/97 Мерхавия (кибуц)/(мошав), 547 Тамра (Изреэль) vs 8900 Тамра. No
+  two localities share a real `name_ru` (tested). The counts in the [Names](#names) table are unchanged.
