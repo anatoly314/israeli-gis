@@ -1,0 +1,22 @@
+node_modules/
+.DS_Store
+*.part
+*.unverified
+
+# Build staging (pipeline/build.ts swaps it into dist/data only after every check passes)
+dist/.data-staging-*/
+dist/data.previous-*/
+
+# Raw data: commit only what the pipeline reads (see README "Raw data").
+data/raw/**/*.gdb/
+data/raw/**/*.pdf
+data/raw/cbs-statistical-areas-2022/
+data/raw/cbs-socioeconomic-2021-publication-1955/
+data/raw/osm-places-overpass/
+data/raw/cbs-socioeconomic-2021/24_24_230t2.xlsx
+data/raw/cbs-socioeconomic-2021/24_24_230t5.xlsx
+data/raw/cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx
+data/raw/cbs-localities-file/index2021.xlsx
+data/raw/datagov-localities-multilingual/
+# Superseded by p3466_items.csv (adds P576 and the ru.wikipedia title)
+data/raw/wikidata-p3466/p3466_labels.csv

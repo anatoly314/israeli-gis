@@ -1,0 +1,30 @@
+{
+  "name": "israeli-gis",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Data pipeline for an embeddable multi-layer map of Israel (CBS socio-economic index and future layers)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "download": "tsx pipeline/download.ts",
+    "build": "tsx pipeline/build.ts",
+    "test": "tsc --noEmit && vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^26.6.5",
+    "@types/topojson-client": "^3.1.5",
+    "csv-parse": "^7.0.3",
+    "gdal3.js": "^2.8.1",
+    "mapshaper": "^0.7.98",
+    "read-excel-file": "^9.3.12",
+    "topojson-client": "^3.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5",
+    "zod": "^4.6.7"
+  }
+}

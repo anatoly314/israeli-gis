@@ -1,0 +1,68 @@
+import { describe, expect, it } from 'vitest';
+import { Classification, LEVEL_IDS, validateManifest, type ChoroplethLayer, type Manifest, type PointsLayer } from '../pipeline/lib/contract.ts';
+import { manifest, readBuilt } from './dist.ts';
+
+describe('layers.json', () => {
+  it('validates against the contract', () => {
+    expect(validateManifest(manifest())).toEqual([]);
+  });
+
+  it('ships a JSON Schema derived from the same contract', () => {
+    const schema = readBuilt<{ $schema: string; properties: Record<string, unknown> }>('layers.schema.json');
+    expect(schema.$schema).toMatch(/json-schema/);
+    expect(Object.keys(schema.properties).sort()).toEqual(['attribution', 'layers', 'levels', 'sources', 'version']);
+  });
+
+  it('describes the three SES 2021 choropleths with a "not calculated" state', () => {
+    const m = manifest();
+    expect(Object.keys(m.levels).sort()).toEqual([...LEVEL_IDS].sort());
+    expect(m.layers.map((l) => [l.id, (l as ChoroplethLayer).level])).toEqual([
+      ['ses-2021-local-authorities', 'local-authorities-2011'],
+      ['ses-2021-localities', 'rc-localities-2011'],
+      ['ses-2021-statistical-areas', 'statistical-areas-2011'],
+    ]);
+    for (const l of m.layers) {
+      expect(l.kind).toBe('choropleth');
+      expect(l.valueField).toBe('cluster');
+      expect(l.classification.type).toBe('categorical');
+      if (l.classification.type === 'categorical') expect(l.classification.classes.map((c) => c.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(l.classification.missing.label.en).toBe('Not calculated');
+      expect(l.popup.map((p) => p.field)).toEqual(['cluster', 'index', 'rank', 'population']);
+    }
+  });
+
+  it('rejects malformed manifests', () => {
+    const broken = structuredClone(manifest()) as unknown as Record<string, any>;
+    broken.layers[0].kind = 'heatmap';
+    delete broken.layers[1].title.ru;
+    broken.layers[2].classification.classes[0].color = 'red';
+    delete broken.levels['localities-2011'];
+    const errors = validateManifest(broken).join('\n');
+    expect(errors).toMatch(/^layers\.0\.kind:/m);
+    expect(errors).toMatch(/^layers\.1\.title\.ru:/m);
+    expect(errors).toMatch(/^layers\.2\.classification/m);
+    expect(errors).toMatch(/^levels\.localities-2011:/m);
+  });
+
+  it('can express a points layer with stepped classification', () => {
+    const { level: _level, ...base } = manifest().layers[0] as ChoroplethLayer;
+    const points: PointsLayer = {
+      ...base,
+      id: 'schools-2025',
+      dataset: 'schools-2025',
+      kind: 'points',
+      data: 'datasets/schools-2025/points.geojson',
+      classification: { type: 'stepped', breaks: [10, 20], colors: ['#000000', '#777777', '#ffffff'], missing: base.classification.missing },
+    };
+    const m: Manifest = { ...manifest(), layers: [points] };
+    expect(validateManifest(m)).toEqual([]);
+  });
+
+  it('checks stepped breaks and colours', () => {
+    const missing = manifest().layers[0].classification.missing;
+    const ok = (breaks: number[], colors: string[]) => Classification.safeParse({ type: 'stepped', breaks, colors, missing }).success;
+    expect(ok([1, 2], ['#000000', '#111111', '#222222'])).toBe(true);
+    expect(ok([1, 2], ['#000000', '#111111'])).toBe(false);
+    expect(ok([2, 1], ['#000000', '#111111', '#222222'])).toBe(false);
+  });
+});
