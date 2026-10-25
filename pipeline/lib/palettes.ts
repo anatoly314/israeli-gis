@@ -28,3 +28,37 @@ export type PaletteName = keyof typeof PALETTES;
 
 /** The 10 colours of a named palette, low → high. */
 export const palette10 = (name: PaletteName): string[] => [...PALETTES[name]];
+
+/**
+ * ColorBrewer schemes for stepped classifications whose class count isn't 10. BrBG8 is the published scheme exactly
+ * as d3-scale-chromatic 3.0.0 ships it (`schemeBrBG[8]`).
+ */
+const COLORBREWER = {
+  /**
+   * Sequential blue → purple, colourblind-safe; no hue shared with RdYlBu's reds or YlGn's greens. The published
+   * BuPu starts at near-white (#f7fcfd / #edf8fb), which reads as "unfilled" on the pale basemap for the ~400
+   * smallest localities. So these sample d3-scale-chromatic 3.0.0 `interpolateBuPu` (the spline through the 9-class
+   * scheme) evenly over t = 0.15…1: same hue path and lightness order, a visibly tinted first class, same dark end.
+   */
+  BuPu7: ['#d9e6f1', '#b4cbe2', '#96aad0', '#8c7cb9', '#894ca1', '#7d197f', '#4d004b'],
+  BuPu9: ['#d9e6f1', '#bdd2e6', '#a3bcda', '#929fcb', '#8c7cb9', '#8a58a8', '#863292', '#751073', '#4d004b'],
+  /** Diverging brown ↔ teal, colourblind-safe; distinct from RdYlBu's red ↔ blue. */
+  BrBG8: ['#8c510a', '#bf812d', '#dfc27d', '#f6e8c3', '#c7eae5', '#80cdc1', '#35978f', '#01665e'],
+} as const;
+
+export const colorbrewer = (name: keyof typeof COLORBREWER): string[] => [...COLORBREWER[name]];
+
+/**
+ * Okabe-Ito qualitative palette (Okabe & Ito 2008, "Color Universal Design"), built to stay distinguishable under
+ * every common colour-vision deficiency. Hex values as in R's grDevices `palette.colors(palette = "Okabe-Ito")`
+ * (src/library/grDevices/R/colorstuff.R). Black and grey are left out: they read as borders or "no data".
+ */
+export const OKABE_ITO = {
+  orange: '#e69f00',
+  skyBlue: '#56b4e9',
+  bluishGreen: '#009e73',
+  yellow: '#f0e442',
+  blue: '#0072b2',
+  vermillion: '#d55e00',
+  reddishPurple: '#cc79a7',
+} as const;

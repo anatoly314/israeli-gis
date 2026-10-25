@@ -99,13 +99,35 @@ For the statistical areas that is 1298 more entries; building the level's index 
 
 Add it to the pipeline (README, "Adding a dataset"). On the next `build:viewer` it appears:
 
-- in the switcher, grouped by `layer.dataset`; each item is labelled with its level's `title`, and the level's
-  `officialTerm` as small secondary text (also in the popup, after the feature type); the group is headed by
-  `datasets[id].title`, with `datasets[id].description` under it when set
+- in the switcher, as a collapsible section per `layer.dataset` (only the current dataset's open), headed by
+  `datasets[id].title`, with `datasets[id].description` behind an "About the data" disclosure. Each item is
+  labelled with its level's `title`, and the level's `officialTerm` as small secondary text (also in the popup,
+  after the feature type)
+- **multi-measure datasets** (`datasets[id].measures`, `layer.measure`): one radio per measure, in `measures`
+  order; the selected measure shows its levels as a small segmented choice (a measure on one level shows that
+  level's name instead). Switching measure keeps the level when the measure has it, else takes its first; switching
+  level keeps the measure. The collapsed sheet reads "dataset · measure · level", the dataset giving way first when
+  space is short. The highlight is cleared when the dataset or the measure changes, kept across levels.
 - with its classification (`categorical` or `stepped`), legend, `note`, range slider over its classes or bins, and
-  `missing` style
-- with its `popup` fields and formats, and `levels[...].featureType`/`featureTypes` for the type line
-- in search, by `name_he/en/ru` of its level (see above)
+  `missing` style. **Nominal** categories (`ordered: false`): swatches with labels only, no range slider, no
+  low/high caption or numbers, highlight as a set (`hl=1,4`, never a range; a range in a link is ignored) and a
+  "Clear" button in the legend
+- with its `popup` fields and formats (`integer`, `decimal`, `rank`, `percent` — signed for growth, "%" inside the
+  bidi isolate — and `category` — the code's label). Fields absent from the record are skipped; a record without the
+  layer's `valueField` is "no data" for that layer (the missing note first, the record's other fields after). Values
+  come from the dataset record only, never from a geometry property of the same name (`population`). The row of
+  the layer's own value is marked in bold. Popups are per level: every layer of a dataset shows the same profile.
+- units on stepped scales come from the `valueField`'s popup format (`percent` → "%"), written once per bin after
+  the last number ("< -5%", "0 – 2%", "≥ 10%") in the legend, slider label, strip, popup bin, tooltip and search
+  value. Strip cells write thousands compactly ("20K", "20 тыс.")
+- `datasets[id].notes[level][code]` shows as a small muted line at the end of that feature's popup, on every layer of
+  the dataset; `levels[...].popupOfficialTerm: false` keeps the official term in the switcher but out of popups
+- compact layout: the collapsed sheet has two lines, `datasets[id].shortTitle ?? title` small, then "measure ·
+  level" (or the level) in bold; popups are at most 280 px wide and the map pans so the popup and its close button
+  stay inside the visible map; the map's bottom controls hide while the sheet is open
+- with `levels[...].featureType`/`featureTypes` for the type line
+- in search, by `name_he/en/ru` of its level (see above); a result shows the current layer's value (the category
+  label for nominal layers)
 
 `points` layers (a GeoJSON FeatureCollection at `layer.data`) are drawn as markers with the same classification.
 

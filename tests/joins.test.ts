@@ -61,6 +61,12 @@ describe('built outputs', () => {
       'ses-2021-statistical-areas': 1641,
       'peripherality-2020-local-authorities': 255,
       'peripherality-2020-localities': 1213,
+      'population-2024-size-local-authorities': 255,
+      'population-2024-growth-local-authorities': 255,
+      'population-2024-size-localities': 1216,
+      'population-2024-growth-localities': 1216,
+      'population-2024-group-localities': 1216,
+      'population-2024-type-localities': 1216,
     };
     expect(manifest().layers.map((l) => l.id)).toEqual(Object.keys(expected));
     for (const layer of manifest().layers as ChoroplethLayer[]) {
@@ -99,8 +105,8 @@ describe('built outputs', () => {
     }
   });
 
-  it('carries clusters 1–10 only', () => {
-    for (const layer of manifest().layers) {
+  it('carries clusters 1–10 only (cluster indices)', () => {
+    for (const layer of manifest().layers.filter((l) => l.valueField === 'cluster')) {
       for (const v of Object.values(dataset(layer.data))) expect(v.cluster).toBeOneOf([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
   });

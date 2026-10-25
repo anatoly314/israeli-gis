@@ -42,6 +42,13 @@ function visualText(page: Page, selector: string) {
   );
 }
 
+/** Picks a single-level-list layer by id, opening its dataset's section first when it is collapsed. */
+async function pickLayer(page: Page, id: string) {
+  const input = page.locator(`input[name=layer][value="${id}"]`);
+  if (!(await input.isVisible())) await page.locator('details.dataset', { has: input }).locator(':scope > summary').click();
+  await input.check();
+}
+
 /** A one-finger drag through CDP touch events (Playwright has no touch-drag helper). */
 async function touchDrag(page: Page, x0: number, y: number, x1: number) {
   const cdp = await page.context().newCDPSession(page);
@@ -134,7 +141,7 @@ test('keyboard: search → pick → Escape closes the popup and returns to the s
   await box.fill('Haifa');
   await box.press('Enter');
   await expect(page.locator('.maplibregl-popup')).toBeVisible();
-  await page.getByRole('group', { name: /Socio-economic index/ }).getByRole('radio', { name: 'Municipalities' }).focus();
+  await page.getByRole('radiogroup', { name: /Socio-economic index/ }).getByRole('radio', { name: 'Municipalities' }).focus();
   await page.keyboard.press('Escape');
   await expect(page.locator('.maplibregl-popup')).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -303,14 +310,14 @@ test('highlight is kept across levels of one dataset and cleared when the datase
   await expect(page).toHaveURL(/hl=1-3(&|#|$)/);
   expect(await pressedCount()).toBe(3);
   // Other dataset: peripherality 1–3 is a different scale, so the highlight goes.
-  await page.locator('input[name=layer][value="peripherality-2020-local-authorities"]').check();
+  await pickLayer(page, 'peripherality-2020-local-authorities');
   await ready(page, 'peripherality-2020-local-authorities');
   await expect(page).not.toHaveURL(/hl=/);
   expect(await pressedCount()).toBe(0);
   await expect(page.locator('#range')).toHaveClass(/empty/);
   // …and within peripherality the same rule holds.
   await page.locator('#legend [data-key="2"]').click();
-  await page.locator('input[name=layer][value="peripherality-2020-localities"]').check();
+  await pickLayer(page, 'peripherality-2020-localities');
   await ready(page, 'peripherality-2020-localities');
   await expect(page).toHaveURL(/hl=2(&|#|$)/);
   expect(errors).toEqual([]);
@@ -324,7 +331,8 @@ for (const lang of ['he', 'en', 'ru'] as const) {
     await ready(page, 'peripherality-2020-local-authorities');
     const m = JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8'));
     const title = page.locator('#sheet-title');
-    await expect(title.locator('.sheet-dataset')).toHaveText(m.datasets['peripherality-2020'].title[lang]);
+    const ds = m.datasets['peripherality-2020'];
+    await expect(title.locator('.sheet-dataset')).toHaveText((ds.shortTitle ?? ds.title)[lang]);
     await expect(title.locator('.sheet-level')).toHaveText(m.levels['local-authorities-2011'].title[lang]);
     // Both parts are on screen, within the toggle, without horizontal scroll.
     const toggle = (await page.locator('#sheet-toggle').boundingBox())!;
@@ -342,6 +350,238 @@ for (const lang of ['he', 'en', 'ru'] as const) {
     await context.close();
   });
 }
+
+/** population-2024's manifest entry, so tests follow the pipeline's wording instead of pinning it. */
+const popManifest = () => JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8')).datasets['population-2024'];
+const popTypeLabel = (code: number) =>
+  JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8'))
+    .layers.find((l: { id: string }) => l.id === 'population-2024-type-localities')
+    .popup.find((f: { field: string }) => f.field === 'type').format.labels[String(code)];
+
+const screens = (page: Page, name: string) =>
+  process.env.SCREENS && test.info().project.name === 'chromium'
+    ? page.waitForTimeout(2000).then(() => page.screenshot({ path: path.join(process.env.SCREENS!, name) }))
+    : Promise.resolve();
+
+test('population: measures switch on the same level; levels switch within a measure', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en&layer=population-2024-size-localities');
+  await ready(page, 'population-2024-size-localities');
+  const pop = popManifest();
+  const group = page.getByRole('radiogroup', { name: pop.title.en });
+  const measure = (i: number) => group.locator('.measure').nth(i).locator('input');
+  // One entry per measure, in the dataset's order, and the level choice under the selected one.
+  await expect(group.getByRole('radio')).toHaveCount(4);
+  const titles = pop.measures.map((x: { title: { en: string } }) => x.title.en);
+  await expect(group.locator('.measure .layer-name')).toHaveText([titles[0], titles[1], `${titles[2]}Localities`, `${titles[3]}Localities`]);
+  await expect(group.locator('.levels button')).toHaveText(['Municipalities', 'Localities']);
+  await expect(group.locator('.levels button[aria-pressed=true]')).toHaveText('Localities');
+  await expect(group.locator('.dataset-desc summary')).toHaveText('About the data');
+  await screens(page, 'pop-size-en.png');
+
+  await measure(1).check(); // growth
+  await ready(page, 'population-2024-growth-localities'); // the level is kept
+  await group.locator('.levels button', { hasText: 'Municipalities' }).click();
+  await ready(page, 'population-2024-growth-local-authorities'); // the measure is kept
+  await measure(2).check(); // group
+  await ready(page, 'population-2024-group-localities'); // group exists on localities only
+  await measure(0).check(); // size
+  await ready(page, 'population-2024-size-localities');
+  await expect(page).toHaveURL(/layer=population-2024-size-localities/);
+  // The collapsed sheet (compact): the dataset's short title, then measure · level.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#sheet-title .sheet-dataset')).toHaveText((pop.shortTitle ?? pop.title).en);
+  await expect(page.locator('#sheet-title .sheet-measure')).toHaveText(titles[0]);
+  await expect(page.locator('#sheet-title .sheet-level')).toHaveText('Localities');
+  expect(errors).toEqual([]);
+});
+
+test('population: the highlight is kept across levels of a measure and cleared when the measure changes', async ({ page }) => {
+  await page.goto('./?lang=en&layer=population-2024-size-local-authorities');
+  await ready(page, 'population-2024-size-local-authorities');
+  const group = page.getByRole('radiogroup', { name: popManifest().title.en });
+  await page.locator('#legend [data-key="s5"]').click();
+  await page.locator('#legend [data-key="s6"]').click();
+  await expect(page).toHaveURL(/hl=s5-s6(&|#|$)/);
+  await group.locator('.levels button', { hasText: 'Localities' }).click();
+  await ready(page, 'population-2024-size-localities');
+  await expect(page).toHaveURL(/hl=s5-s6(&|#|$)/);
+  await group.locator('.measure').nth(1).locator('input').check(); // growth
+  await ready(page, 'population-2024-growth-localities');
+  await expect(page).not.toHaveURL(/hl=/);
+  await expect(page.locator('#legend .legend-list [aria-pressed=true]')).toHaveCount(0);
+});
+
+test('population growth: % on every bin label (legend, slider, strip)', async ({ page }) => {
+  await page.goto('./?lang=en&layer=population-2024-growth-localities');
+  await ready(page, 'population-2024-growth-localities');
+  const labels = (await page.locator('#legend .legend-list li:not(:last-child) span:last-child').allTextContents()).map(bare);
+  expect(labels).toEqual(['< -5%', '-5 – 0%', '0 – 2%', '2 – 5%', '5 – 10%', '≥ 10%']);
+  expect(bare(await page.locator('#range output').textContent())).toBe('< -5% … ≥ 10% · all');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#strip [data-key="s2"]')).toHaveText(/^⁦?0%⁩?$/);
+});
+
+test('population: nominal classes toggle as a set, listed in the URL, with no slider or low/high', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en&layer=population-2024-type-localities');
+  await ready(page, 'population-2024-type-localities');
+  await expect(page.locator('#range')).toBeHidden();
+  await expect(page.locator('#legend .legend-list li')).toHaveCount(7); // 6 types + no data
+  for (const k of ['1', '2', '4']) await page.locator(`#legend [data-key="${k}"]`).click();
+  await expect(page).toHaveURL(/hl=1,2,4(&|#|$)/); // never "1-2,4"
+  await page.locator('#legend [data-key="2"]').click();
+  await expect(page).toHaveURL(/hl=1,4(&|#|$)/);
+  await screens(page, 'pop-type-en.png');
+  await page.locator('#legend .legend-actions .range-clear').click();
+  await expect(page).not.toHaveURL(/hl=/);
+  // A range in an old link means nothing on a nominal layer.
+  await page.goto('./?lang=en&layer=population-2024-type-localities&hl=1-3');
+  await ready(page, 'population-2024-type-localities');
+  await expect(page).not.toHaveURL(/hl=/);
+  // Compact: the strip has no low/high caption.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./?lang=en&layer=population-2024-type-localities&hl=3');
+  await ready(page, 'population-2024-type-localities');
+  await expect(page.locator('#strip .strip-caption')).toHaveCount(0);
+  await expect(page.locator('#strip [aria-pressed=true]')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+for (const lang of ['he', 'ru'] as const) {
+  test(`population popup (${lang}): the full profile, percent and category formats, missing fields skipped`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(`./?lang=${lang}&layer=population-2024-growth-localities`);
+    await ready(page, 'population-2024-growth-localities');
+    const box = page.getByRole('combobox');
+    await box.fill(lang === 'he' ? 'כפר סבא' : 'Кфар-Сава');
+    await expect(page.getByRole('option').first()).toContainText(lang === 'he' ? 'כפר סבא' : 'Кфар-Сава');
+    await box.press('Enter');
+    const popup = page.locator('.popup');
+    await expect(popup).toBeVisible();
+    const dt = await popup.locator('dt').allTextContents();
+    expect(dt[0]).toBe(lang === 'he' ? 'תושבים 2024' : 'Жители 2024');
+    await expect(popup.locator('.current dt')).toHaveText(lang === 'he' ? 'גידול 2022–2024 (ישראלים)' : 'Прирост 2022–24 (израильтяне)');
+    // Growth is signed, a percent, read left-to-right; the locality type is a label, not a code.
+    expect(bare(await popup.locator('.current dd span').nth(1).textContent())).toMatch(/^[+-]\d+[.,]\d%$/);
+    await expect(popup).toContainText(popTypeLabel(1)[lang]);
+    // A small place without growth: "no data" for this layer, its other fields still listed.
+    await box.fill('תירוש'); // Tirosh: under 500 Israelis in 2022, so no growth figure
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await box.press('Enter');
+    await expect(popup.locator('.popup-missing')).toBeVisible();
+    expect(await popup.locator('dt').count()).toBeGreaterThan(3);
+    await expect(popup.locator('.current')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('population on a phone (390×844) and in a 358 px embed: switcher, sheet title, no horizontal scroll', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  const errors = collectErrors(page);
+  await page.goto('./?lang=he&layer=population-2024-group-localities');
+  await ready(page, 'population-2024-group-localities');
+  const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(await overflow()).toBeLessThanOrEqual(0);
+  await page.locator('#sheet-toggle').tap();
+  const group = page.getByRole('radiogroup', { name: popManifest().title.he });
+  await group.locator('.measure').nth(0).locator('label').tap(); // size
+  await ready(page, 'population-2024-size-localities');
+  const chip = group.locator('.levels button', { hasText: 'רשויות מקומיות' });
+  expect((await chip.boundingBox())!.height).toBeGreaterThanOrEqual(40);
+  await chip.tap();
+  await ready(page, 'population-2024-size-local-authorities');
+  expect(await overflow()).toBeLessThanOrEqual(0);
+  await screens(page, 'pop-mobile-he.png');
+  await context.close();
+
+  const embed = await browser.newContext({ viewport: { width: 358, height: 650 } });
+  const p = await embed.newPage();
+  await p.goto('./?lang=ru&embed=1&layer=population-2024-growth-localities');
+  await ready(p, 'population-2024-growth-localities');
+  const title = p.locator('#sheet-title');
+  await expect(title.locator('.sheet-measure')).toHaveText(popManifest().measures[1].title.ru);
+  await expect(title.locator('.sheet-level')).toHaveText('Населённые пункты');
+  const toggle = (await p.locator('#sheet-toggle').boundingBox())!;
+  for (const part of ['.sheet-dataset', '.sheet-measure', '.sheet-level']) {
+    const b = (await title.locator(part).boundingBox())!;
+    expect(b.width, part).toBeGreaterThan(15);
+    expect(b.x + b.width).toBeLessThanOrEqual(toggle.x + toggle.width + 0.5);
+  }
+  expect(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+  // Two lines (dataset, then measure · level): the collapsed sheet stays compact.
+  const sheetHeight = (await p.locator('#sheet').boundingBox())!.height;
+  test.info().annotations.push({ type: 'collapsed sheet height (358 px, ru, population)', description: String(Math.round(sheetHeight)) });
+  expect(sheetHeight).toBeLessThan(170);
+  await screens(p, 'pop-sheet-358-ru.png');
+  await embed.close();
+  expect(errors).toEqual([]);
+});
+
+test('phone sheet: chevrons on collapsed datasets, map controls hidden while the sheet is open', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  await page.goto('./?lang=he&layer=ses-2021-local-authorities');
+  await ready(page, 'ses-2021-local-authorities');
+  const attrib = page.locator('.maplibregl-ctrl-attrib');
+  await expect(attrib).toBeVisible();
+  await page.locator('#sheet-toggle').tap();
+  await expect(attrib).toBeHidden();
+  const marker = (sel: string) => page.locator(sel).first().evaluate((el) => getComputedStyle(el, '::before').content);
+  expect(await marker('details.dataset:not([open]) > summary')).toBe('"◂"');
+  expect(await marker('details.dataset[open] > summary')).toBe('"▾"');
+  await page.locator('#sheet-toggle').tap();
+  await expect(attrib).toBeVisible();
+  await context.close();
+});
+
+for (const [lang, layerId, query] of [
+  ['he', 'population-2024-growth-localities', 'כפר סבא'],
+  ['en', 'population-2024-type-localities', 'Kfar Saba'],
+  ['ru', 'population-2024-size-localities', 'Кфар-Сава'],
+  ['ru', 'ses-2021-local-authorities', 'Беэр-Шева'],
+] as const) {
+  test(`popup fits a 390 px phone with its close button (${lang}, ${layerId})`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    await page.goto(`./?lang=${lang}&layer=${layerId}`);
+    await ready(page, layerId);
+    const box = page.getByRole('combobox');
+    await box.fill(query);
+    await expect(page.getByRole('option').first()).toBeVisible();
+    await box.press('Enter');
+    const popup = page.locator('.maplibregl-popup');
+    await expect(popup).toBeVisible();
+    await page.waitForTimeout(1500); // the fit-to-feature move, then the pan that keeps the popup in view
+    for (const sel of ['.maplibregl-popup', '.maplibregl-popup-close-button']) {
+      const b = (await page.locator(sel).boundingBox())!;
+      expect(b.x, `${sel} left`).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width, `${sel} right`).toBeLessThanOrEqual(390);
+      expect(b.y, `${sel} top`).toBeGreaterThanOrEqual(0);
+    }
+    expect((await popup.boundingBox())!.width).toBeLessThanOrEqual(290);
+    if (lang === 'ru' && layerId === 'population-2024-size-localities') await screens(page, 'pop-popup-ru.png');
+    await context.close();
+  });
+}
+
+test('population screenshots: switcher (he), growth (ru), group (he)', async ({ page }) => {
+  test.skip(!process.env.SCREENS || test.info().project.name !== 'chromium', 'set SCREENS=<dir> to capture (Chromium)');
+  await page.goto('./?lang=he&layer=population-2024-size-local-authorities');
+  await ready(page, 'population-2024-size-local-authorities');
+  await page.locator('#layers').screenshot({ path: path.join(process.env.SCREENS!, 'pop-switcher-he.png') });
+  await page.goto('./?lang=ru&layer=population-2024-growth-localities#8/32.3/35.0');
+  await ready(page, 'population-2024-growth-localities');
+  await screens(page, 'pop-growth-ru.png');
+  await page.goto('./?lang=he&layer=population-2024-group-localities#8/32.3/35.0');
+  await ready(page, 'population-2024-group-localities');
+  await screens(page, 'pop-group-he.png');
+  await page.goto('./?lang=en&layer=population-2024-growth-localities#8/32.3/35.0');
+  await ready(page, 'population-2024-growth-localities');
+  await page.locator('#legend').scrollIntoViewIfNeeded();
+  await screens(page, 'pop-legend-units-en.png');
+});
 
 test('search placeholder and city group count come from the manifest (he)', async ({ page }) => {
   await page.goto('./?lang=he&layer=ses-2021-statistical-areas');

@@ -4,7 +4,7 @@ import type { LevelId, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
 import { isRegionalCouncilCode } from '../../lib/keys.ts';
 import { raw } from '../../lib/paths.ts';
-import { datasetTerms } from '../../terminology.ts';
+import { datasetInfo } from '../../terminology.ts';
 import { clusterLayer } from '../cluster-index.ts';
 import { parseAuthorities, parseLocalities, type PeripheralityRecord } from './parse.ts';
 
@@ -52,7 +52,7 @@ const pick = <T extends PeripheralityRecord>(records: T[], fields: (keyof T)[]) 
 
 const peripheralityModule: DatasetModule = {
   id: ID,
-  info: { title: datasetTerms(ID).title },
+  info: datasetInfo(ID, Object.keys(LEVELS) as PeriLevel[]),
   rawFiles: [
     {
       path: files.authorities,

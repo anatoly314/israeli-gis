@@ -6,12 +6,13 @@ An embeddable, multi-layer web map of Israel's open data, in two parts:
 - **viewer**: a static MapLibre page that reads `dist/data/layers.json` and shows every layer in it, in Hebrew, English
   and Russian (`viewer/`, built to `dist/site/`).
 
-Datasets (one layer group each, coloured by CBS cluster 1–10):
+Datasets (one layer group each):
 
-| Dataset | Levels | Palette |
+| Dataset | Levels | Classification |
 |---|---|---|
-| `ses-2021`: CBS socio-economic index 2021 | local authorities, localities in regional councils, statistical areas | RdYlBu |
-| `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | YlGn |
+| `ses-2021`: CBS socio-economic index 2021 | local authorities, localities in regional councils, statistical areas | clusters 1–10, RdYlBu |
+| `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | clusters 1–10, YlGn |
+| `population-2024`: CBS localities file 2024 | size and growth on local authorities and all localities; population group and locality type on localities | stepped BuPu / BrBG, nominal Okabe-Ito |
 
 The four geometry levels (local authorities, all localities, localities in regional councils, statistical areas) are
 shared by every dataset.
@@ -47,8 +48,11 @@ npm run build          # both, in that order
 npm run dev            # viewer dev server on http://localhost:5173, serving dist/data at /data/
 npm run preview        # serve the built dist/site
 npm test               # type-check pipeline + viewer, viewer unit tests, rebuild into a temp dir and test that build
-npm run test:e2e       # build the viewer, then a Playwright/Chromium smoke test against it under /maps/israel/
+npm run test:e2e       # build the viewer, then Playwright e2e (Chromium; slider specs also Firefox/WebKit) under /maps/israel/
 ```
+
+The e2e preview server listens on port 4179; set `E2E_PORT` to run several e2e suites at once
+(`E2E_PORT=4281 npm run test:e2e`).
 
 `build:data` writes to a staging directory and checks everything there. If all checks pass, it swaps the staging
 directory in for `dist/data`. If any check fails, `dist/data` is left untouched. The checks are:
@@ -83,6 +87,7 @@ pipeline/
     cluster-index.ts          shared layer shape of CBS cluster indices (classification, popup, title)
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
     peripherality-2020/       peripherality index 2020: authorities + all localities
+    population-2024/          population 2024: four measures (size, growth, group, type)
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
   terminology.ts              user-facing wording (he/en/ru): levels by kind, datasets by id
 tests/                        vitest (global setup runs the pipeline)
@@ -190,7 +195,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 10.2 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 10.9 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
@@ -198,6 +203,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 | `cbs-socioeconomic-2021/24_24_230t{1,3,4}.xlsx` | Index tables A1, B and C |
 | `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | Neighborhood and main-street names per statistical area (Hebrew) → `neighborhoods_he`, `streets_he` |
 | `cbs-peripherality-2020/24_22_420t{1,2}.xlsx` | Peripherality index 2020: table 1 (255 authorities), table 2 (1,213 localities) |
+| `cbs-localities-file/bycode2024.xlsx`, `bycode2022.xlsx` | Population 2024, and the 2022 base for growth |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
 | `datagov-municipal-authorities/localauthorities.csv` | Tests cross-check the `5500+n` authority codes against it |

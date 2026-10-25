@@ -58,6 +58,7 @@
         "en": "All CBS localities, cities included",
         "ru": "все населённые пункты ЦСБ, включая города"
       },
+      "popupOfficialTerm": false,
       "file": "geometry/localities-2011.topo.json",
       "object": "localities-2011",
       "placeholderObject": "localities-2011-placeholders",
@@ -185,6 +186,11 @@
         "he": "מדד חברתי-כלכלי 2021",
         "en": "Socio-economic index 2021",
         "ru": "Социально-экономический индекс 2021"
+      },
+      "shortTitle": {
+        "he": "מדד חברתי-כלכלי 2021",
+        "en": "Socio-economic 2021",
+        "ru": "Соц.-экон. индекс 2021"
       }
     },
     "peripherality-2020": {
@@ -192,6 +198,83 @@
         "he": "מדד פריפריאליות 2020",
         "en": "Peripherality index 2020",
         "ru": "Индекс периферийности 2020"
+      },
+      "shortTitle": {
+        "he": "פריפריאליות 2020",
+        "en": "Peripherality 2020",
+        "ru": "Периферийность 2020"
+      }
+    },
+    "population-2024": {
+      "title": {
+        "he": "אוכלוסייה 2024",
+        "en": "Population 2024",
+        "ru": "Население 2024"
+      },
+      "shortTitle": {
+        "he": "אוכלוסייה 2024",
+        "en": "Population 2024",
+        "ru": "Население 2024"
+      },
+      "description": {
+        "he": "אומדני אוכלוסייה לסוף 2024 (קובץ היישובים של הלמ\"ס) על גבולות 2011: כוכב יעקב כולל את תל ציון; 5 יישובים שנוסדו אחרי 2021 אינם על המפה; רשויות לפי השיוך של 2011 (צור הדסה במטה יהודה, שער שומרון בשומרון). ייתכן ששינויים בין 2022 ל-2024 ביישובים מסוימים משקפים עקירה בזמן המלחמה (לא נבדק).",
+        "en": "End-2024 population estimates (CBS localities file) on 2011 boundaries: Kokhav Ya'akov includes Tel Zion; 5 localities founded after 2021 have no boundary; authorities follow 2011 membership (Tzur Hadassa in Mateh Yehuda, Sha'ar Shomron in Shomron). Changes from 2022 to 2024 in some places may reflect wartime displacement (not verified).",
+        "ru": "Оценки населения на конец 2024 года (файл населённых пунктов ЦСБ) в границах 2011 года: Кохав-Яаков включает Тель-Цион; 5 населённых пунктов, основанных после 2021 года, на карте нет; органы власти — по составу 2011 года (Цур-Хадасса в Мате-Йехуде, Шаар-Шомрон в Шомроне). Изменения с 2022 по 2024 год в некоторых местах могут отражать вынужденное переселение во время войны (не проверено)."
+      },
+      "measures": [
+        {
+          "id": "size",
+          "title": {
+            "he": "מספר תושבים",
+            "en": "Residents",
+            "ru": "Численность"
+          }
+        },
+        {
+          "id": "growth",
+          "title": {
+            "he": "גידול 2022–2024",
+            "en": "Growth 2022–24",
+            "ru": "Прирост 2022–24"
+          }
+        },
+        {
+          "id": "group",
+          "title": {
+            "he": "קבוצת אוכלוסייה",
+            "en": "Population group",
+            "ru": "Группа населения"
+          }
+        },
+        {
+          "id": "type",
+          "title": {
+            "he": "סוג יישוב",
+            "en": "Locality type",
+            "ru": "Тип населённого пункта"
+          }
+        }
+      ],
+      "notes": {
+        "local-authorities-2011": {
+          "5526": {
+            "he": "כולל את צור הדסה, מועצה מקומית נפרדת מאז 2024 (נספרת כאן בשתי השנים).",
+            "en": "Includes Tzur Hadassa, a separate local council since 2024 (counted here in both years).",
+            "ru": "Включает Цур-Хадассу, отдельный местный совет с 2024 года (учтена здесь за оба года)."
+          },
+          "5572": {
+            "he": "כולל את שער שומרון, מועצה מקומית נפרדת מאז 2022 (נספרת כאן בשתי השנים).",
+            "en": "Includes Sha'ar Shomron, a separate local council since 2022 (counted here in both years).",
+            "ru": "Включает Шаар-Шомрон, отдельный местный совет с 2022 года (учтён здесь за оба года)."
+          }
+        },
+        "localities-2011": {
+          "3779": {
+            "he": "כולל את תל ציון (3815), שהפכה ליישוב נפרד ב-2023; הצורה על המפה מכסה את שניהם.",
+            "en": "Includes Tel Zion (3815), which became a separate locality in 2023; the shared polygon covers both.",
+            "ru": "Включает Тель-Цион (3815), ставший отдельным населённым пунктом в 2023 году; общий полигон охватывает оба."
+          }
+        }
       }
     }
   },
@@ -1154,6 +1237,1183 @@
         "license": "CBS open licence",
         "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
         "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מדד הפריפריאליות של יישובים ושל רשויות מקומיות 2020 (הודעה לתקשורת 420/2022), (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/mediarelease/DocLib/2022/420/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "population-2024-size-local-authorities",
+      "dataset": "population-2024",
+      "measure": "size",
+      "title": {
+        "he": "אוכלוסייה 2024 – מספר תושבים – רשויות מקומיות",
+        "en": "Population 2024 – Residents – Municipalities",
+        "ru": "Население 2024 – Численность – Муниципалитеты"
+      },
+      "data": "datasets/population-2024/local-authorities-2011.json",
+      "valueField": "population",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          5000,
+          10000,
+          20000,
+          50000,
+          100000,
+          200000
+        ],
+        "colors": [
+          "#d9e6f1",
+          "#b4cbe2",
+          "#96aad0",
+          "#8c7cb9",
+          "#894ca1",
+          "#7d197f",
+          "#4d004b"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "אין אוכלוסייה לרשות זו (מועצה מקומית תעשייתית).",
+            "en": "This authority has no residents (an industrial local council).",
+            "ru": "У этого органа власти нет жителей (промышленный местный совет)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "תושבים בסוף 2024, כולל זרים",
+          "en": "Residents at the end of 2024, foreigners included",
+          "ru": "Жители на конец 2024 года, включая иностранцев"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "local-authorities-2011"
+    },
+    {
+      "id": "population-2024-growth-local-authorities",
+      "dataset": "population-2024",
+      "measure": "growth",
+      "title": {
+        "he": "אוכלוסייה 2024 – גידול 2022–2024 – רשויות מקומיות",
+        "en": "Population 2024 – Growth 2022–24 – Municipalities",
+        "ru": "Население 2024 – Прирост 2022–24 – Муниципалитеты"
+      },
+      "data": "datasets/population-2024/local-authorities-2011.json",
+      "valueField": "growth_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          -5,
+          0,
+          2,
+          5,
+          10
+        ],
+        "colors": [
+          "#bf812d",
+          "#dfc27d",
+          "#c7eae5",
+          "#80cdc1",
+          "#35978f",
+          "#01665e"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "אין אוכלוסייה לרשות זו (מועצה מקומית תעשייתית).",
+            "en": "This authority has no residents (an industrial local council).",
+            "ru": "У этого органа власти нет жителей (промышленный местный совет)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "ישראלים בלבד; 2022 חושב מחדש לאחר מפקד 2022",
+          "en": "Israeli residents only; 2022 recomputed after the 2022 census",
+          "ru": "Только израильские жители; 2022 год пересчитан после переписи 2022 года"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "local-authorities-2011"
+    },
+    {
+      "id": "population-2024-size-localities",
+      "dataset": "population-2024",
+      "measure": "size",
+      "title": {
+        "he": "אוכלוסייה 2024 – מספר תושבים – יישובים",
+        "en": "Population 2024 – Residents – Localities",
+        "ru": "Население 2024 – Численность – Населённые пункты"
+      },
+      "data": "datasets/population-2024/localities-2011.json",
+      "valueField": "population",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          500,
+          2000,
+          5000,
+          10000,
+          20000,
+          50000,
+          100000,
+          200000
+        ],
+        "colors": [
+          "#d9e6f1",
+          "#bdd2e6",
+          "#a3bcda",
+          "#929fcb",
+          "#8c7cb9",
+          "#8a58a8",
+          "#863292",
+          "#751073",
+          "#4d004b"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת אוכלוסייה למקום זה (שטח לא מיושב, אזור תעשייה או שבט בדואי).",
+            "en": "CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).",
+            "ru": "ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "תושבים בסוף 2024, כולל זרים",
+          "en": "Residents at the end of 2024, foreigners included",
+          "ru": "Жители на конец 2024 года, включая иностранцев"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "group",
+          "label": {
+            "he": "קבוצת אוכלוסייה",
+            "en": "Population group",
+            "ru": "Группа населения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב יהודי",
+                "en": "Jewish locality",
+                "ru": "Еврейский населённый пункт"
+              },
+              "2": {
+                "he": "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+                "en": "Non-Jewish locality (Arab, Druze, Circassian)",
+                "ru": "Нееврейский населённый пункт (арабский, друзский, черкесский)"
+              },
+              "4": {
+                "he": "יישוב מעורב",
+                "en": "Mixed locality",
+                "ru": "Смешанный населённый пункт"
+              }
+            }
+          }
+        },
+        {
+          "field": "type",
+          "label": {
+            "he": "סוג יישוב",
+            "en": "Locality type",
+            "ru": "Тип населённого пункта"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב עירוני – יהודי או מעורב",
+                "en": "Town or city – Jewish or mixed",
+                "ru": "Город (еврейский или смешанный)"
+              },
+              "2": {
+                "he": "יישוב עירוני – ערבי, דרוזי או צ'רקסי",
+                "en": "Arab, Druze or Circassian town",
+                "ru": "Арабский, друзский или черкесский город"
+              },
+              "3": {
+                "he": "מושב",
+                "en": "Moshav",
+                "ru": "Мошав"
+              },
+              "4": {
+                "he": "קיבוץ",
+                "en": "Kibbutz",
+                "ru": "Кибуц"
+              },
+              "5": {
+                "he": "יישוב קהילתי",
+                "en": "Community settlement",
+                "ru": "Общинное поселение"
+              },
+              "6": {
+                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
+                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
+                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+              }
+            }
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "population-2024-growth-localities",
+      "dataset": "population-2024",
+      "measure": "growth",
+      "title": {
+        "he": "אוכלוסייה 2024 – גידול 2022–2024 – יישובים",
+        "en": "Population 2024 – Growth 2022–24 – Localities",
+        "ru": "Население 2024 – Прирост 2022–24 – Населённые пункты"
+      },
+      "data": "datasets/population-2024/localities-2011.json",
+      "valueField": "growth_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          -5,
+          0,
+          2,
+          5,
+          10
+        ],
+        "colors": [
+          "#bf812d",
+          "#dfc27d",
+          "#c7eae5",
+          "#80cdc1",
+          "#35978f",
+          "#01665e"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "לא מוצג: פחות מ-500 ישראלים ב-2022 (השינוי אינו יציב), או שאין נתון ל-2022.",
+            "en": "Not shown: fewer than 500 Israeli residents in 2022 (too noisy), or no 2022 figure.",
+            "ru": "Не показано: менее 500 израильских жителей в 2022 году (слишком неустойчиво) или нет данных за 2022 год."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "ישראלים בלבד; 2022 חושב מחדש לאחר מפקד 2022",
+          "en": "Israeli residents only; 2022 recomputed after the 2022 census",
+          "ru": "Только израильские жители; 2022 год пересчитан после переписи 2022 года"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "group",
+          "label": {
+            "he": "קבוצת אוכלוסייה",
+            "en": "Population group",
+            "ru": "Группа населения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב יהודי",
+                "en": "Jewish locality",
+                "ru": "Еврейский населённый пункт"
+              },
+              "2": {
+                "he": "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+                "en": "Non-Jewish locality (Arab, Druze, Circassian)",
+                "ru": "Нееврейский населённый пункт (арабский, друзский, черкесский)"
+              },
+              "4": {
+                "he": "יישוב מעורב",
+                "en": "Mixed locality",
+                "ru": "Смешанный населённый пункт"
+              }
+            }
+          }
+        },
+        {
+          "field": "type",
+          "label": {
+            "he": "סוג יישוב",
+            "en": "Locality type",
+            "ru": "Тип населённого пункта"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב עירוני – יהודי או מעורב",
+                "en": "Town or city – Jewish or mixed",
+                "ru": "Город (еврейский или смешанный)"
+              },
+              "2": {
+                "he": "יישוב עירוני – ערבי, דרוזי או צ'רקסי",
+                "en": "Arab, Druze or Circassian town",
+                "ru": "Арабский, друзский или черкесский город"
+              },
+              "3": {
+                "he": "מושב",
+                "en": "Moshav",
+                "ru": "Мошав"
+              },
+              "4": {
+                "he": "קיבוץ",
+                "en": "Kibbutz",
+                "ru": "Кибуц"
+              },
+              "5": {
+                "he": "יישוב קהילתי",
+                "en": "Community settlement",
+                "ru": "Общинное поселение"
+              },
+              "6": {
+                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
+                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
+                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+              }
+            }
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "population-2024-group-localities",
+      "dataset": "population-2024",
+      "measure": "group",
+      "title": {
+        "he": "אוכלוסייה 2024 – קבוצת אוכלוסייה – יישובים",
+        "en": "Population 2024 – Population group – Localities",
+        "ru": "Население 2024 – Группа населения – Населённые пункты"
+      },
+      "data": "datasets/population-2024/localities-2011.json",
+      "valueField": "group",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "יישוב יהודי",
+              "en": "Jewish locality",
+              "ru": "Еврейский населённый пункт"
+            },
+            "color": "#0072b2"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+              "en": "Non-Jewish locality (Arab, Druze, Circassian)",
+              "ru": "Нееврейский населённый пункт (арабский, друзский, черкесский)"
+            },
+            "color": "#e69f00"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "יישוב מעורב",
+              "en": "Mixed locality",
+              "ru": "Смешанный населённый пункт"
+            },
+            "color": "#cc79a7"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת אוכלוסייה למקום זה (שטח לא מיושב, אזור תעשייה או שבט בדואי).",
+            "en": "CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).",
+            "ru": "ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "סיווג היישוב בלמ\"ס (דת יישוב); בקובץ 2024 אין פילוח של יהודים בלבד",
+          "en": "CBS classification of the locality; the 2024 file has no Jews-only count",
+          "ru": "Классификация населённого пункта ЦСБ; в файле 2024 года нет отдельного числа евреев"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "group",
+          "label": {
+            "he": "קבוצת אוכלוסייה",
+            "en": "Population group",
+            "ru": "Группа населения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב יהודי",
+                "en": "Jewish locality",
+                "ru": "Еврейский населённый пункт"
+              },
+              "2": {
+                "he": "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+                "en": "Non-Jewish locality (Arab, Druze, Circassian)",
+                "ru": "Нееврейский населённый пункт (арабский, друзский, черкесский)"
+              },
+              "4": {
+                "he": "יישוב מעורב",
+                "en": "Mixed locality",
+                "ru": "Смешанный населённый пункт"
+              }
+            }
+          }
+        },
+        {
+          "field": "type",
+          "label": {
+            "he": "סוג יישוב",
+            "en": "Locality type",
+            "ru": "Тип населённого пункта"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב עירוני – יהודי או מעורב",
+                "en": "Town or city – Jewish or mixed",
+                "ru": "Город (еврейский или смешанный)"
+              },
+              "2": {
+                "he": "יישוב עירוני – ערבי, דרוזי או צ'רקסי",
+                "en": "Arab, Druze or Circassian town",
+                "ru": "Арабский, друзский или черкесский город"
+              },
+              "3": {
+                "he": "מושב",
+                "en": "Moshav",
+                "ru": "Мошав"
+              },
+              "4": {
+                "he": "קיבוץ",
+                "en": "Kibbutz",
+                "ru": "Кибуц"
+              },
+              "5": {
+                "he": "יישוב קהילתי",
+                "en": "Community settlement",
+                "ru": "Общинное поселение"
+              },
+              "6": {
+                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
+                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
+                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+              }
+            }
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "population-2024-type-localities",
+      "dataset": "population-2024",
+      "measure": "type",
+      "title": {
+        "he": "אוכלוסייה 2024 – סוג יישוב – יישובים",
+        "en": "Population 2024 – Locality type – Localities",
+        "ru": "Население 2024 – Тип населённого пункта – Населённые пункты"
+      },
+      "data": "datasets/population-2024/localities-2011.json",
+      "valueField": "type",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "יישוב עירוני – יהודי או מעורב",
+              "en": "Town or city – Jewish or mixed",
+              "ru": "Город (еврейский или смешанный)"
+            },
+            "color": "#0072b2"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "יישוב עירוני – ערבי, דרוזי או צ'רקסי",
+              "en": "Arab, Druze or Circassian town",
+              "ru": "Арабский, друзский или черкесский город"
+            },
+            "color": "#e69f00"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "מושב",
+              "en": "Moshav",
+              "ru": "Мошав"
+            },
+            "color": "#009e73"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "קיבוץ",
+              "en": "Kibbutz",
+              "ru": "Кибуц"
+            },
+            "color": "#d55e00"
+          },
+          {
+            "value": 5,
+            "label": {
+              "he": "יישוב קהילתי",
+              "en": "Community settlement",
+              "ru": "Общинное поселение"
+            },
+            "color": "#56b4e9"
+          },
+          {
+            "value": 6,
+            "label": {
+              "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
+              "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
+              "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+            },
+            "color": "#f0e442"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת אוכלוסייה למקום זה (שטח לא מיושב, אזור תעשייה או שבט בדואי).",
+            "en": "CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).",
+            "ru": "ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "סוג היישוב לפי הלמ\"ס (2024), בקבוצות; יישוב עירוני – 2,000 תושבים ומעלה",
+          "en": "CBS locality type (2024), grouped; towns and cities have 2,000+ residents",
+          "ru": "Тип по ЦСБ (2024), сгруппирован; города — от 2000 жителей"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "תושבים 2024",
+            "en": "Residents 2024",
+            "ru": "Жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis",
+          "label": {
+            "he": "ישראלים 2024",
+            "en": "Israeli residents 2024",
+            "ru": "Израильские жители 2024"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "israelis_2022",
+          "label": {
+            "he": "ישראלים 2022",
+            "en": "Israeli residents 2022",
+            "ru": "Израильские жители 2022"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "growth_pct",
+          "label": {
+            "he": "גידול 2022–2024 (ישראלים)",
+            "en": "Growth 2022–24 (Israelis)",
+            "ru": "Прирост 2022–24 (израильтяне)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1,
+            "signed": true
+          }
+        },
+        {
+          "field": "group",
+          "label": {
+            "he": "קבוצת אוכלוסייה",
+            "en": "Population group",
+            "ru": "Группа населения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב יהודי",
+                "en": "Jewish locality",
+                "ru": "Еврейский населённый пункт"
+              },
+              "2": {
+                "he": "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+                "en": "Non-Jewish locality (Arab, Druze, Circassian)",
+                "ru": "Нееврейский населённый пункт (арабский, друзский, черкесский)"
+              },
+              "4": {
+                "he": "יישוב מעורב",
+                "en": "Mixed locality",
+                "ru": "Смешанный населённый пункт"
+              }
+            }
+          }
+        },
+        {
+          "field": "type",
+          "label": {
+            "he": "סוג יישוב",
+            "en": "Locality type",
+            "ru": "Тип населённого пункта"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יישוב עירוני – יהודי או מעורב",
+                "en": "Town or city – Jewish or mixed",
+                "ru": "Город (еврейский или смешанный)"
+              },
+              "2": {
+                "he": "יישוב עירוני – ערבי, דרוזי או צ'רקסי",
+                "en": "Arab, Druze or Circassian town",
+                "ru": "Арабский, друзский или черкесский город"
+              },
+              "3": {
+                "he": "מושב",
+                "en": "Moshav",
+                "ru": "Мошав"
+              },
+              "4": {
+                "he": "קיבוץ",
+                "en": "Kibbutz",
+                "ru": "Кибуц"
+              },
+              "5": {
+                "he": "יישוב קהילתי",
+                "en": "Community settlement",
+                "ru": "Общинное поселение"
+              },
+              "6": {
+                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
+                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
+                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+              }
+            }
+          }
+        },
+        {
+          "field": "jews_others_pct",
+          "label": {
+            "he": "יהודים ואחרים (% מהישראלים)",
+            "en": "Jews and others (% of Israelis)",
+            "ru": "Евреи и прочие (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "arabs_pct",
+          "label": {
+            "he": "ערבים (% מהישראלים)",
+            "en": "Arabs (% of Israelis)",
+            "ru": "Арабы (% израильтян)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        }
+      ],
+      "attribution": {
+        "he": "אוכלוסייה 2024: הלמ\"ס",
+        "en": "Population 2024: CBS Israel",
+        "ru": "Население 2024: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, קובץ היישובים 2024 (ו-2022)",
+          "en": "CBS, Localities File 2024 (and 2022)",
+          "ru": "ЦСБ, файл населённых пунктов 2024 (и 2022)"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/bycode2024.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
       },
       "kind": "choropleth",
       "level": "localities-2011"

@@ -1,11 +1,11 @@
 import { Popup, type MapGeoJSONFeature, type PointLike } from 'maplibre-gl';
-import { classKeys } from './classify.ts';
+import { classKeys, isOrdered } from './classify.ts';
 import { MANIFEST_URL } from './config.ts';
 import { joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
 import type { ExtraField } from '../../pipeline/lib/contract.ts';
 import { countText, formatNumber } from './format.ts';
 import { detectLang, dirOf, featureName, inLangNote, searchPlaceholder, t, type Lang } from './i18n.ts';
-import { groupLayers, isChoropleth, loadManifest, type Layer, type Level, type Manifest } from './manifest.ts';
+import { describeLayer, featureNote, groupLayers, isChoropleth, loadManifest, type Layer, type Level, type Manifest } from './manifest.ts';
 import {
   addDataLayer,
   createMap,
@@ -81,7 +81,7 @@ function status(text: string | null) {
 /** `hl` for the URL: runs of classes compacted to "4-7". */
 function hlTokens() {
   const layer = manifest && layerById(state.layerId);
-  return layer ? compactHl(state.hl, classKeys(layer.classification)) : state.hl;
+  return layer ? compactHl(state.hl, classKeys(layer.classification), isOrdered(layer.classification)) : state.hl;
 }
 
 function syncUrl() {
@@ -133,19 +133,17 @@ function renderChrome() {
   $('fullscreen').textContent = `${t('fullscreen', lang)} ↗`;
   if (!manifest) return;
   const groups = groupLayers(manifest);
-  renderLayers($('layers'), groups, state.layerId, lang, (id) => void switchLayer(id));
   const layer = layerById(state.layerId);
+  renderLayers($('layers'), groups, layer, lang, (id) => void switchLayer(id));
   if (layer) {
-    const g = groups.find((x) => x.items.some((i) => i.layer.id === layer.id))!;
-    const item = g.items.find((i) => i.layer.id === layer.id)!;
-    // "dataset · level": with several datasets on one level, the level alone doesn't say which map this is.
-    const title = $('sheet-title');
-    title.replaceChildren(
-      Object.assign(document.createElement('span'), { className: 'sheet-dataset', textContent: g.title[lang] }),
-      Object.assign(document.createElement('span'), { className: 'sheet-sep', textContent: ' · ' }),
-      Object.assign(document.createElement('span'), { className: 'sheet-level', textContent: item.label[lang] }),
-    );
-    $('sheet-toggle').title = `${g.title[lang]} · ${item.label[lang]}`;
+    // Two lines: the dataset (its short title) small, then "measure · level" (or the level) in bold. With several
+    // datasets and measures on one level, the level alone doesn't say which map this is.
+    const d = describeLayer(manifest, layer);
+    const span = (className: string, textContent: string) => Object.assign(document.createElement('span'), { className, textContent });
+    const main = span('sheet-main', '');
+    main.replaceChildren(...(d.measure ? [span('sheet-measure', d.measure[lang]), span('sheet-sep', ' · ')] : []), span('sheet-level', d.level[lang]));
+    $('sheet-title').replaceChildren(span('sheet-dataset', d.shortDataset[lang]), main);
+    $('sheet-toggle').title = [d.dataset[lang], d.measure?.[lang], d.level[lang]].filter(Boolean).join(' · ');
   }
   renderSelection();
   renderAbout($<HTMLDialogElement>('about'), manifest, lang);
@@ -217,9 +215,9 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   // Class keys mean something else in another dataset (SES cluster 1 ≠ peripherality cluster 1): drop the
   // highlight when the dataset changes, keep it across levels of the same dataset.
   const before = layerById(previous);
-  if (before && before.dataset !== layer.dataset) state.hl = [];
+  if (before && (before.dataset !== layer.dataset || before.measure !== layer.measure)) state.hl = [];
   // Accepts URL tokens ("4-7", "1,5,9", "na") as well as keys already expanded for another layer.
-  state.hl = expandHl(state.hl, classKeys(layer.classification));
+  state.hl = expandHl(state.hl, classKeys(layer.classification), isOrdered(layer.classification));
   if (previous !== layer.id) clearSelection();
   renderChrome();
   syncUrl();
@@ -263,8 +261,31 @@ function showPopup(layerId: string, code: string, at: { lng: number; lat: number
   const layer = layerById(layerId);
   const props = layerData.get(layerId)?.byCode.get(code);
   if (!layer || !props) return;
-  popup.setLngLat(at).setHTML(popupHtml(layer, levelOf(layer), props, state.lang));
+  popup.setLngLat(at).setHTML(popupHtml(layer, levelOf(layer), props, state.lang, featureNote(manifest, layer, code)));
   if (!popup.isOpen()) popup.addTo(map);
+  keepPopupInView();
+}
+
+/**
+ * Pans the map so the whole popup, close button included, is inside the visible map (below the compact search bar),
+ * once any running camera move has ended.
+ */
+function keepPopupInView() {
+  if (map.isMoving()) {
+    map.once('moveend', keepPopupInView);
+    return;
+  }
+  requestAnimationFrame(() => {
+    const el = popup.isOpen() ? popup.getElement() : undefined;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const c = map.getContainer().getBoundingClientRect();
+    const margin = 8;
+    const top = c.top + (state.compact ? $('top').getBoundingClientRect().bottom - c.top : 0) + margin;
+    const dx = r.left < c.left + margin ? r.left - (c.left + margin) : r.right > c.right - margin ? r.right - (c.right - margin) : 0;
+    const dy = r.top < top ? r.top - top : r.bottom > c.bottom - margin ? Math.min(r.bottom - (c.bottom - margin), r.top - top) : 0;
+    if (dx || dy) map.panBy([dx, dy], { duration: reducedMotion.matches ? 0 : 250 });
+  });
 }
 
 popup.on('close', () => {
@@ -426,7 +447,7 @@ function layerFor(levelKey: string): Layer | undefined {
   const cur = currentLayer();
   if (levelKeyOf(cur) === levelKey) return cur;
   const onLevel = manifest.layers.filter((l) => levelKeyOf(l) === levelKey);
-  return onLevel.find((l) => l.dataset === cur.dataset) ?? onLevel[0];
+  return onLevel.find((l) => l.dataset === cur.dataset && l.measure === cur.measure) ?? onLevel.find((l) => l.dataset === cur.dataset) ?? onLevel[0];
 }
 
 async function selectEntry(e: SearchEntry) {
@@ -441,19 +462,25 @@ async function selectEntry(e: SearchEntry) {
   if (single) {
     const info = data.level.features.get(e.code!);
     if (info) showPopup(layer.id, e.code!, info.anchor);
-    if (state.compact) $('sheet').dataset.open = 'false';
+    if (state.compact) setSheetOpen(false);
     popup.getElement()?.querySelector<HTMLElement>('.maplibregl-popup-close-button')?.focus();
   }
+}
+
+/**
+ * Opens or folds the compact bottom sheet. While it is open the map's bottom controls (attribution "i", zoom) are
+ * hidden, as they would float over it; the About panel lists every source meanwhile.
+ */
+function setSheetOpen(open: boolean) {
+  $('sheet').dataset.open = String(open);
+  $('sheet-toggle').setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('sheet-open', open);
 }
 
 function setupSheet() {
   const sheet = $('sheet');
   const toggle = $('sheet-toggle');
-  toggle.addEventListener('click', () => {
-    const open = sheet.dataset.open !== 'true';
-    sheet.dataset.open = String(open);
-    toggle.setAttribute('aria-expanded', String(open));
-  });
+  toggle.addEventListener('click', () => setSheetOpen(sheet.dataset.open !== 'true'));
   document.addEventListener('keydown', (ev) => {
     const target = ev.target as HTMLElement;
     if (ev.key !== 'Escape' || target.closest('#q, dialog') || !state.selected) return;

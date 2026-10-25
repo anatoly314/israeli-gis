@@ -9,8 +9,9 @@ export const MISSING_COLOR = '#c8c8c8';
 
 export function clusterClassification(dataset: string, level: LevelId, palette: PaletteName): Classification {
   const terms = datasetTerms(dataset);
-  const description = terms.missing[levelKind(level)];
+  const description = terms.missing?.[levelKind(level)];
   if (!description) throw new Error(`${dataset}: no "not calculated" wording for ${levelKind(level)} in pipeline/terminology.ts`);
+  if (!terms.scale) throw new Error(`${dataset}: a cluster index needs a scale (low/high) in pipeline/terminology.ts`);
   return {
     type: 'categorical',
     classes: palette10(palette).map((color, i) => ({ value: i + 1, color, label: CLUSTER_INDEX.classLabel(i + 1) })),

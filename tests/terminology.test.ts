@@ -49,8 +49,9 @@ describe('terminology', () => {
   it('lists every dataset with its title, the single source of the layer-title prefix', () => {
     const m = manifest();
     expect(m.datasets).toEqual({
-      'ses-2021': { title: DATASET_TITLE },
-      'peripherality-2020': { title: { he: 'מדד פריפריאליות 2020', en: 'Peripherality index 2020', ru: 'Индекс периферийности 2020' } },
+      'ses-2021': expect.objectContaining({ title: DATASET_TITLE }),
+      'peripherality-2020': expect.objectContaining({ title: { he: 'מדד פריפריאליות 2020', en: 'Peripherality index 2020', ru: 'Индекс периферийности 2020' } }),
+      'population-2024': expect.objectContaining({ title: { he: 'אוכלוסייה 2024', en: 'Population 2024', ru: 'Население 2024' } }),
     });
     for (const layer of m.layers) expect(m.datasets[layer.dataset]).toBeDefined();
     const broken = structuredClone(m) as Manifest;
@@ -63,8 +64,12 @@ describe('terminology', () => {
     for (const layer of m.layers) {
       if (layer.kind !== 'choropleth') continue;
       const ds = m.datasets[layer.dataset].title;
-      expect(layer.title).toEqual(layerTitle(ds, layer.level));
-      for (const l of LANGS) expect(layer.title[l]).toBe(`${ds[l]}${TITLE_SEP}${m.levels[layer.level].title[l]}`);
+      const measure = m.datasets[layer.dataset].measures?.find((x) => x.id === layer.measure)?.title;
+      expect(layer.title).toEqual(layerTitle(ds, layer.level, measure));
+      for (const l of LANGS) {
+        const parts = [ds[l], ...(measure ? [measure[l]] : []), m.levels[layer.level].title[l]];
+        expect(layer.title[l]).toBe(parts.join(TITLE_SEP));
+      }
     }
     expect(m.layers.find((l) => l.id === 'ses-2021-statistical-areas')?.title.ru).toBe('Социально-экономический индекс 2021 – Кварталы');
   });

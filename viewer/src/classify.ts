@@ -1,6 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
-import type { Classification } from '../../pipeline/lib/contract.ts';
-import { formatNumber, ltr, rangeLabel, spanLabel } from './format.ts';
+import type { Classification, PopupField } from '../../pipeline/lib/contract.ts';
+import { formatBound, formatNumber, ltr, rangeLabel, spanLabel } from './format.ts';
 import type { Lang } from './i18n.ts';
 
 /** Feature property the viewer writes with the class key, so styling is the same for every classification. */
@@ -25,7 +25,10 @@ export function classKey(c: Classification, value: number | undefined): string {
   return `s${i}`;
 }
 
-/** Class keys in scale order (low → high), without "not calculated". */
+/** False for nominal categories (`ordered: false`): no low → high reading, no ranges, no range slider. */
+export const isOrdered = (c: Classification) => !(c.type === 'categorical' && c.ordered === false);
+
+/** Class keys in scale order (low → high), without "not calculated"; display order for nominal ones. */
 export const classKeys = (c: Classification) => (c.type === 'categorical' ? c.classes.map((k) => String(k.value)) : c.colors.map((_, i) => `s${i}`));
 
 export function colorOf(c: Classification, key: string): string {
@@ -35,28 +38,37 @@ export function colorOf(c: Classification, key: string): string {
 }
 
 /** Legend text of one stepped bin (all numbers bidi-isolated, see format.ts). */
-const binLabel = (breaks: number[], i: number, lang: Lang) => rangeLabel(breaks[i - 1], breaks[i], lang);
+const binLabel = (breaks: number[], i: number, lang: Lang, unit: string) => rangeLabel(breaks[i - 1], breaks[i], lang, unit);
 
-export function legendEntries(c: Classification, lang: Lang): { classes: ClassEntry[]; missing: ClassEntry } {
+/**
+ * Unit of a layer's values for scale labels, taken from the popup format of its `valueField`: "%" for `percent`,
+ * none otherwise. Nothing dataset-specific: a new percent measure gets "%" too.
+ */
+export function layerUnit(layer: { valueField: string; popup: PopupField[] }): string {
+  return layer.popup.find((f) => f.field === layer.valueField)?.format.type === 'percent' ? '%' : '';
+}
+
+export function legendEntries(c: Classification, lang: Lang, unit = ''): { classes: ClassEntry[]; missing: ClassEntry } {
   const missing = { key: MISSING, color: c.missing.color, label: c.missing.label[lang], short: '', description: c.missing.description[lang] };
   if (c.type === 'categorical') {
     return {
-      classes: c.classes.map((k) => ({ key: String(k.value), color: k.color, label: k.label[lang], short: formatNumber(k.value, lang) })),
+      // Nominal class values are just codes: no short number on their swatches.
+      classes: c.classes.map((k) => ({ key: String(k.value), color: k.color, label: k.label[lang], short: isOrdered(c) ? formatNumber(k.value, lang) : '' })),
       missing,
     };
   }
   const classes = c.colors.map((color, i) => ({
     key: `s${i}`,
     color,
-    label: binLabel(c.breaks, i, lang),
-    short: i === 0 ? rangeLabel(undefined, c.breaks[0], lang) : formatNumber(c.breaks[i - 1], lang),
+    label: binLabel(c.breaks, i, lang, unit),
+    short: i === 0 ? rangeLabel(undefined, c.breaks[0], lang, unit) : formatBound(c.breaks[i - 1], lang, unit),
   }));
   return { classes, missing };
 }
 
-/** Label of a class key, e.g. "Cluster 7" or "5 – 10". */
-export function classLabel(c: Classification, key: string, lang: Lang): string {
-  const { classes, missing } = legendEntries(c, lang);
+/** Label of a class key, e.g. "Cluster 7", "5 – 10" or "0 – 2%". */
+export function classLabel(c: Classification, key: string, lang: Lang, unit = ''): string {
+  const { classes, missing } = legendEntries(c, lang, unit);
   return classes.find((x) => x.key === key)?.label ?? missing.label;
 }
 
@@ -96,13 +108,13 @@ export function textOn(hex: string): '#000000' | '#ffffff' {
  * Text for a run of classes from `first` to `last` (keys, scale order): "4–7" or "4" for clusters; the covered
  * values for stepped bins ("< 5", "0 – 10", "≥ 5"). Bidi-isolated.
  */
-export function spanText(c: Classification, first: string, last: string, lang: Lang): string {
+export function spanText(c: Classification, first: string, last: string, lang: Lang, unit = ''): string {
   if (c.type === 'categorical') return first === last ? formatNumber(Number(first), lang) : spanLabel(Number(first), Number(last), lang);
   const lo = c.breaks[Number(first.slice(1)) - 1];
   const hi = c.breaks[Number(last.slice(1))];
   if (lo == null && hi == null) {
-    const [a, b] = [rangeLabel(undefined, c.breaks[0], lang), rangeLabel(c.breaks[c.breaks.length - 1], undefined, lang)];
+    const [a, b] = [rangeLabel(undefined, c.breaks[0], lang, unit), rangeLabel(c.breaks[c.breaks.length - 1], undefined, lang, unit)];
     return ltr(`${a} … ${b}`);
   }
-  return rangeLabel(lo, hi, lang);
+  return rangeLabel(lo, hi, lang, unit);
 }

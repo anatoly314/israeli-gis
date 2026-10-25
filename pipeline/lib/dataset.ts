@@ -14,6 +14,11 @@ export interface JoinReport extends JoinCount {
   geometryWithoutData: number;
   /** Optional per-subset counts, e.g. municipalities vs regional councils. */
   breakdown: JoinCount[];
+  /**
+   * Codes known to have no polygon, with the reason (localities founded after the 2011 geometry). The build fails if
+   * `unmatched` differs from this list in either direction, so it can neither hide a new miss nor go stale.
+   */
+  expectedUnmatched?: Record<string, string>;
 }
 
 export interface DatasetOutput {
@@ -44,6 +49,7 @@ export function join(
   codes: string[],
   geometry: Set<string>,
   subsets: { label: string; codes: string[] }[] = [],
+  expectedUnmatched?: Record<string, string>,
 ): JoinReport {
   const have = new Set(codes);
   const unmatched = codes.filter((c) => !geometry.has(c));
@@ -54,5 +60,16 @@ export function join(
     unmatched,
     geometryWithoutData: [...geometry].filter((c) => !have.has(c)).length,
     breakdown: subsets.map((s) => count(s.label, s.codes)),
+    ...(expectedUnmatched && { expectedUnmatched }),
   };
+}
+
+/** Unmatched codes the dataset didn't declare, and declared ones that now match; [] when the join is as expected. */
+export function unexpectedUnmatched(j: JoinReport): string[] {
+  const expected = new Set(Object.keys(j.expectedUnmatched ?? {}));
+  const actual = new Set(j.unmatched);
+  return [
+    ...j.unmatched.filter((c) => !expected.has(c)).map((c) => `${c} has no polygon`),
+    ...[...expected].filter((c) => !actual.has(c)).map((c) => `${c} is listed as unmatched but matches`),
+  ];
 }

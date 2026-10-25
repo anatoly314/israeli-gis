@@ -3,13 +3,15 @@
 // up the same names without any string edits. To change wording: edit this file, `npm run build:data`,
 // `npm run build:viewer`.
 import { z } from 'zod';
-import { CountForms, I18n, LevelKind, type LevelId } from './lib/contract.ts';
+import { CountForms, I18n, LevelKind, type DatasetInfo, type LevelId } from './lib/contract.ts';
 
 export const LevelTerms = z.strictObject({
   /** Plain name shown to users ("Neighborhoods"). */
   title: I18n,
   /** The official CBS term, shown as small secondary text ("CBS statistical areas"). */
   officialTerm: I18n,
+  /** `false`: the official term only distinguishes levels in the switcher; don't repeat it in every popup. */
+  popupOfficialTerm: z.literal(false).optional(),
   /** What one feature is called ("Neighborhood"). */
   featureType: I18n,
   /** Per-value feature types, when the level mixes types; keys are the values of the level's type property. */
@@ -52,6 +54,7 @@ export const TERMINOLOGY: Record<LevelKind, LevelTerms> = Terminology.parse({
       en: 'All CBS localities, cities included',
       ru: 'все населённые пункты ЦСБ, включая города',
     },
+    popupOfficialTerm: false,
     featureType: LOCALITY,
   },
   'rc-localities': {
@@ -107,10 +110,14 @@ export function termsFor(id: LevelId | string): LevelTerms {
 /** Separator between dataset and level in layer titles (grouping uses `manifest.datasets`, not the title). */
 export const TITLE_SEP = ' – ';
 
-/** Layer title = dataset title + the level's plain name, per language. */
-export function layerTitle(dataset: I18n, level: LevelId): I18n {
+/**
+ * Layer title = dataset title + the level's plain name, per language; with a measure, dataset + measure + level
+ * ("Population 2024 – Growth 2022–24 – Localities").
+ */
+export function layerTitle(dataset: I18n, level: LevelId, measure?: I18n): I18n {
   const t = termsFor(level).title;
-  return { he: `${dataset.he}${TITLE_SEP}${t.he}`, en: `${dataset.en}${TITLE_SEP}${t.en}`, ru: `${dataset.ru}${TITLE_SEP}${t.ru}` };
+  const join = (l: keyof I18n) => [dataset[l], ...(measure ? [measure[l]] : []), t[l]].join(TITLE_SEP);
+  return { he: join('he'), en: join('en'), ru: join('ru') };
 }
 
 // Dataset wording, keyed by dataset id (pipeline/datasets/<id>). Dataset modules read it from here, so every
@@ -137,17 +144,37 @@ export const CLUSTER_INDEX = {
   }),
 };
 
-export const DatasetTerms = z.strictObject({
-  /** Dataset title: the group heading and the first half of every layer title. */
+/** One variable of a multi-measure dataset: its title, legend note, "not calculated" texts and class labels. */
+export const MeasureTerms = z.strictObject({
   title: I18n,
+  /** Legend caption. */
+  note: I18n.optional(),
+  /** "Not calculated" explanation for each level kind the measure is mapped on. */
+  missing: z.partialRecord(LevelKind, I18n),
+  /** Labels of nominal classes, keyed by the class value. */
+  classes: z.record(z.string(), I18n).optional(),
+});
+export type MeasureTerms = z.infer<typeof MeasureTerms>;
+
+export const DatasetTerms = z.strictObject({
+  /** Dataset title: the group heading and the first part of every layer title. */
+  title: I18n,
+  /** Compact title for tight spaces (mobile sheet). */
+  shortTitle: I18n.optional(),
+  /** Optional longer text shown under the group heading (caveats that apply to every layer). */
+  description: I18n.optional(),
+  /** Per-feature caveats by level kind and feature code (manifest `datasets[id].notes`, keyed by level id). */
+  notes: z.partialRecord(LevelKind, z.record(z.string(), I18n)).optional(),
   /** Short credit for the map attribution control. */
   attribution: I18n,
-  /** What cluster 1 and cluster 10 mean; the legend note is CLUSTER_INDEX.note(scale). */
-  scale: z.strictObject({ low: I18n, high: I18n }),
-  /** "Not calculated" explanation for each level kind the dataset ships. */
-  missing: z.partialRecord(LevelKind, I18n),
+  /** Cluster indices: what cluster 1 and cluster 10 mean; the legend note is CLUSTER_INDEX.note(scale). */
+  scale: z.strictObject({ low: I18n, high: I18n }).optional(),
+  /** Single-measure datasets: "not calculated" explanation for each level kind the dataset ships. */
+  missing: z.partialRecord(LevelKind, I18n).optional(),
   /** Popup labels of the dataset's own fields (beyond CLUSTER_INDEX.fields), keyed by record field. */
   fields: z.record(z.string(), I18n),
+  /** Multi-measure datasets, in display order (object key order), keyed by measure id. */
+  measures: z.record(z.string(), MeasureTerms).optional(),
 });
 export type DatasetTerms = z.infer<typeof DatasetTerms>;
 
@@ -157,9 +184,24 @@ const NOT_CALCULATED_AUTHORITY: I18n = {
   ru: 'ЦСБ не рассчитывало индекс для этого органа власти.',
 };
 
+/** Missing-data label for non-index datasets (population and later). */
+export const NO_DATA: I18n = { he: 'אין נתון', en: 'No data', ru: 'Нет данных' };
+
+const NO_POPULATION_LOCALITY: I18n = {
+  he: 'הלמ"ס אינה מפרסמת אוכלוסייה למקום זה (שטח לא מיושב, אזור תעשייה או שבט בדואי).',
+  en: 'CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).',
+  ru: 'ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя).',
+};
+const NO_POPULATION_AUTHORITY: I18n = {
+  he: 'אין אוכלוסייה לרשות זו (מועצה מקומית תעשייתית).',
+  en: 'This authority has no residents (an industrial local council).',
+  ru: 'У этого органа власти нет жителей (промышленный местный совет).',
+};
+
 export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), DatasetTerms).parse({
   'ses-2021': {
     title: { he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic index 2021', ru: 'Социально-экономический индекс 2021' },
+    shortTitle: { he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic 2021', ru: 'Соц.-экон. индекс 2021' },
     attribution: { he: 'מדד חברתי-כלכלי 2021: הלמ"ס', en: 'Socio-Economic Index 2021: CBS Israel', ru: 'Социально-экономический индекс 2021: ЦСБ Израиля' },
     scale: {
       low: { he: 'הרמה החברתית-כלכלית הנמוכה ביותר', en: 'lowest socio-economic level', ru: 'самый низкий социально-экономический уровень' },
@@ -184,6 +226,7 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
   },
   'peripherality-2020': {
     title: { he: 'מדד פריפריאליות 2020', en: 'Peripherality index 2020', ru: 'Индекс периферийности 2020' },
+    shortTitle: { he: 'פריפריאליות 2020', en: 'Peripherality 2020', ru: 'Периферийность 2020' },
     attribution: { he: 'מדד פריפריאליות 2020: הלמ"ס', en: 'Peripherality Index 2020: CBS Israel', ru: 'Индекс периферийности 2020: ЦСБ Израиля' },
     scale: {
       low: { he: 'הכי פריפריאלי', en: 'most peripheral', ru: 'самая периферия' },
@@ -206,7 +249,136 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
       population: { he: 'אוכלוסייה 2020', en: 'Population 2020', ru: 'Население 2020' },
     },
   },
+  'population-2024': {
+    title: { he: 'אוכלוסייה 2024', en: 'Population 2024', ru: 'Население 2024' },
+    shortTitle: { he: 'אוכלוסייה 2024', en: 'Population 2024', ru: 'Население 2024' },
+    description: {
+      he: 'אומדני אוכלוסייה לסוף 2024 (קובץ היישובים של הלמ"ס) על גבולות 2011: כוכב יעקב כולל את תל ציון; 5 יישובים שנוסדו אחרי 2021 אינם על המפה; רשויות לפי השיוך של 2011 (צור הדסה במטה יהודה, שער שומרון בשומרון). ייתכן ששינויים בין 2022 ל-2024 ביישובים מסוימים משקפים עקירה בזמן המלחמה (לא נבדק).',
+      en: "End-2024 population estimates (CBS localities file) on 2011 boundaries: Kokhav Ya'akov includes Tel Zion; 5 localities founded after 2021 have no boundary; authorities follow 2011 membership (Tzur Hadassa in Mateh Yehuda, Sha'ar Shomron in Shomron). Changes from 2022 to 2024 in some places may reflect wartime displacement (not verified).",
+      ru: 'Оценки населения на конец 2024 года (файл населённых пунктов ЦСБ) в границах 2011 года: Кохав-Яаков включает Тель-Цион; 5 населённых пунктов, основанных после 2021 года, на карте нет; органы власти — по составу 2011 года (Цур-Хадасса в Мате-Йехуде, Шаар-Шомрон в Шомроне). Изменения с 2022 по 2024 год в некоторых местах могут отражать вынужденное переселение во время войны (не проверено).',
+    },
+    notes: {
+      localities: {
+        3779: {
+          he: 'כולל את תל ציון (3815), שהפכה ליישוב נפרד ב-2023; הצורה על המפה מכסה את שניהם.',
+          en: 'Includes Tel Zion (3815), which became a separate locality in 2023; the shared polygon covers both.',
+          ru: 'Включает Тель-Цион (3815), ставший отдельным населённым пунктом в 2023 году; общий полигон охватывает оба.',
+        },
+      },
+      'local-authorities': {
+        5526: {
+          he: 'כולל את צור הדסה, מועצה מקומית נפרדת מאז 2024 (נספרת כאן בשתי השנים).',
+          en: 'Includes Tzur Hadassa, a separate local council since 2024 (counted here in both years).',
+          ru: 'Включает Цур-Хадассу, отдельный местный совет с 2024 года (учтена здесь за оба года).',
+        },
+        5572: {
+          he: 'כולל את שער שומרון, מועצה מקומית נפרדת מאז 2022 (נספרת כאן בשתי השנים).',
+          en: "Includes Sha'ar Shomron, a separate local council since 2022 (counted here in both years).",
+          ru: 'Включает Шаар-Шомрон, отдельный местный совет с 2022 года (учтён здесь за оба года).',
+        },
+      },
+    },
+    attribution: { he: 'אוכלוסייה 2024: הלמ"ס', en: 'Population 2024: CBS Israel', ru: 'Население 2024: ЦСБ Израиля' },
+    fields: {
+      population: { he: 'תושבים 2024', en: 'Residents 2024', ru: 'Жители 2024' },
+      israelis: { he: 'ישראלים 2024', en: 'Israeli residents 2024', ru: 'Израильские жители 2024' },
+      israelis_2022: { he: 'ישראלים 2022', en: 'Israeli residents 2022', ru: 'Израильские жители 2022' },
+      growth_pct: { he: 'גידול 2022–2024 (ישראלים)', en: 'Growth 2022–24 (Israelis)', ru: 'Прирост 2022–24 (израильтяне)' },
+      jews_others_pct: { he: 'יהודים ואחרים (% מהישראלים)', en: 'Jews and others (% of Israelis)', ru: 'Евреи и прочие (% израильтян)' },
+      arabs_pct: { he: 'ערבים (% מהישראלים)', en: 'Arabs (% of Israelis)', ru: 'Арабы (% израильтян)' },
+      group: { he: 'קבוצת אוכלוסייה', en: 'Population group', ru: 'Группа населения' },
+      type: { he: 'סוג יישוב', en: 'Locality type', ru: 'Тип населённого пункта' },
+    },
+    measures: {
+      size: {
+        title: { he: 'מספר תושבים', en: 'Residents', ru: 'Численность' },
+        note: { he: 'תושבים בסוף 2024, כולל זרים', en: 'Residents at the end of 2024, foreigners included', ru: 'Жители на конец 2024 года, включая иностранцев' },
+        missing: { localities: NO_POPULATION_LOCALITY, 'local-authorities': NO_POPULATION_AUTHORITY },
+      },
+      // Logical order "2022–2024": in an RTL paragraph the bidi algorithm shows it as 2024–2022, which a Hebrew
+      // reader reads right to left as "from 2022 to 2024".
+      growth: {
+        title: { he: 'גידול 2022–2024', en: 'Growth 2022–24', ru: 'Прирост 2022–24' },
+        note: {
+          he: 'ישראלים בלבד; 2022 חושב מחדש לאחר מפקד 2022',
+          en: 'Israeli residents only; 2022 recomputed after the 2022 census',
+          ru: 'Только израильские жители; 2022 год пересчитан после переписи 2022 года',
+        },
+        missing: {
+          localities: {
+            he: 'לא מוצג: פחות מ-500 ישראלים ב-2022 (השינוי אינו יציב), או שאין נתון ל-2022.',
+            en: 'Not shown: fewer than 500 Israeli residents in 2022 (too noisy), or no 2022 figure.',
+            ru: 'Не показано: менее 500 израильских жителей в 2022 году (слишком неустойчиво) или нет данных за 2022 год.',
+          },
+          'local-authorities': NO_POPULATION_AUTHORITY,
+        },
+      },
+      group: {
+        title: { he: 'קבוצת אוכלוסייה', en: 'Population group', ru: 'Группа населения' },
+        note: {
+          he: 'סיווג היישוב בלמ"ס (דת יישוב); בקובץ 2024 אין פילוח של יהודים בלבד',
+          en: 'CBS classification of the locality; the 2024 file has no Jews-only count',
+          ru: 'Классификация населённого пункта ЦСБ; в файле 2024 года нет отдельного числа евреев',
+        },
+        missing: { localities: NO_POPULATION_LOCALITY },
+        classes: {
+          1: { he: 'יישוב יהודי', en: 'Jewish locality', ru: 'Еврейский населённый пункт' },
+          2: {
+            he: "יישוב לא-יהודי (ערבי, דרוזי, צ'רקסי)",
+            en: 'Non-Jewish locality (Arab, Druze, Circassian)',
+            ru: 'Нееврейский населённый пункт (арабский, друзский, черкесский)',
+          },
+          4: { he: 'יישוב מעורב', en: 'Mixed locality', ru: 'Смешанный населённый пункт' },
+        },
+      },
+      type: {
+        title: { he: 'סוג יישוב', en: 'Locality type', ru: 'Тип населённого пункта' },
+        note: {
+          he: 'סוג היישוב לפי הלמ"ס (2024), בקבוצות; יישוב עירוני – 2,000 תושבים ומעלה',
+          en: 'CBS locality type (2024), grouped; towns and cities have 2,000+ residents',
+          ru: 'Тип по ЦСБ (2024), сгруппирован; города — от 2000 жителей',
+        },
+        missing: { localities: NO_POPULATION_LOCALITY },
+        classes: {
+          // CBS's "Jewish" urban codes include the mixed cities (Tel Aviv, Jerusalem, Haifa…), hence "or mixed".
+          1: { he: 'יישוב עירוני – יהודי או מעורב', en: 'Town or city – Jewish or mixed', ru: 'Город (еврейский или смешанный)' },
+          2: { he: "יישוב עירוני – ערבי, דרוזי או צ'רקסי", en: 'Arab, Druze or Circassian town', ru: 'Арабский, друзский или черкесский город' },
+          3: { he: 'מושב', en: 'Moshav', ru: 'Мошав' },
+          4: { he: 'קיבוץ', en: 'Kibbutz', ru: 'Кибуц' },
+          5: { he: 'יישוב קהילתי', en: 'Community settlement', ru: 'Общинное поселение' },
+          // Code 450 (26 villages in regional councils) is Arab and Bedouin villages plus Circassian Rihaniya, not only
+          // Bedouin ones; the label says so.
+          6: {
+            he: 'יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי',
+            en: 'Other rural (incl. Arab and Bedouin villages) or institutional',
+            ru: 'Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение',
+          },
+        },
+      },
+    },
+  },
 });
+
+/**
+ * `manifest.datasets[id]` from the dataset's wording: title, short title, description, measures (in order) and the
+ * per-feature notes, re-keyed from level kind to the level ids the dataset ships.
+ */
+export function datasetInfo(id: string, levels: LevelId[]): DatasetInfo {
+  const t = datasetTerms(id);
+  const notes = Object.fromEntries(
+    levels.flatMap((level) => {
+      const n = t.notes?.[levelKind(level)];
+      return n ? [[level, n]] : [];
+    }),
+  );
+  return {
+    title: t.title,
+    ...(t.shortTitle && { shortTitle: t.shortTitle }),
+    ...(t.description && { description: t.description }),
+    ...(t.measures && { measures: Object.entries(t.measures).map(([mid, m]) => ({ id: mid, title: m.title })) }),
+    ...(Object.keys(notes).length && { notes }),
+  };
+}
 
 /** Wording for a dataset id; throws when it has no entry, so a new dataset can't ship unnamed. */
 export function datasetTerms(id: string): DatasetTerms {

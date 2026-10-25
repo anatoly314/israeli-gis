@@ -34,6 +34,13 @@ const UI = {
     ru: 'Нажимайте на классы, чтобы выделить их на карте, или двигайте края диапазона',
   },
   clear: { he: 'ניקוי', en: 'Clear', ru: 'Сбросить' },
+  legendHintNominal: {
+    he: 'לחצו על קטגוריות כדי להדגיש אותן במפה',
+    en: 'Tap categories to highlight them on the map',
+    ru: 'Нажимайте на категории, чтобы выделить их на карте',
+  },
+  level: { he: 'רמה', en: 'Level', ru: 'Уровень' },
+  aboutData: { he: 'על הנתונים', en: 'About the data', ru: 'О данных' },
   low: { he: 'נמוך', en: 'Low', ru: 'Низкий' },
   high: { he: 'גבוה', en: 'High', ru: 'Высокий' },
   range: { he: 'הדגשת טווח', en: 'Highlight range', ru: 'Выделить диапазон' },

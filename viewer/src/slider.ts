@@ -1,4 +1,4 @@
-import { MISSING, classKeys, legendEntries, spanText } from './classify.ts';
+import { MISSING, classKeys, isOrdered, layerUnit, legendEntries, spanText } from './classify.ts';
 import { esc } from './html.ts';
 import { t, type Lang } from './i18n.ts';
 import type { Layer } from './manifest.ts';
@@ -89,13 +89,14 @@ export function createSlider(root: HTMLElement, onChange: (keys: string[], done:
   }
 
   function build() {
-    const { classes } = legendEntries(layer!.classification, lang);
+    const { classes } = legendEntries(layer!.classification, lang, layerUnit(layer!));
     keys = classKeys(layer!.classification);
     labels = classes.map((c) => c.label);
     const last = keys.length - 1;
     const input = (cls: string, label: string, value: number) =>
       `<input type="range" class="${cls}" min="0" max="${last}" step="1" value="${value}" aria-label="${esc(label)}">`;
-    root.hidden = keys.length < 2;
+    // Nominal categories have no order, so no range to drag.
+    root.hidden = keys.length < 2 || !isOrdered(layer!.classification);
     root.innerHTML =
       `<div class="range-head"><span class="range-title">${esc(t('range', lang))}</span>` +
       `<output class="range-value" aria-live="off"></output></div>` +
@@ -144,10 +145,11 @@ export function createSlider(root: HTMLElement, onChange: (keys: string[], done:
       hi.setAttribute('aria-valuetext', labels[max]);
 
       const c = layer.classification;
-      let text = spanText(c, keys[0], keys[keys.length - 1], lang);
-      if (!empty && !custom) text = spanText(c, keys[min], keys[max], lang);
+      const unit = layerUnit(layer);
+      let text = spanText(c, keys[0], keys[keys.length - 1], lang, unit);
+      if (!empty && !custom) text = spanText(c, keys[min], keys[max], lang, unit);
       if (custom) {
-        const { classes, missing } = legendEntries(c, lang);
+        const { classes, missing } = legendEntries(c, lang, unit);
         const picked = classes.filter((x) => hl.includes(x.key)).map((x) => x.short);
         if (hl.includes(MISSING)) picked.push(missing.label);
         text = `${picked.join(', ')} · ${t('rangeCustom', lang)}`;

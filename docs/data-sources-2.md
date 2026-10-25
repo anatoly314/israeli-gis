@@ -194,6 +194,11 @@ separate RC-localities layer would be redundant. This becomes the first dataset 
 
 ## 2. Population composition per locality and authority (CBS localities file)
 
+> **Used (steps 2–3, 2026-10-25):** dataset `population-2024` (`pipeline/datasets/population-2024/`) reads
+> `bycode2024.xlsx` and `bycode2022.xlsx`. The measures are size, growth 2022→24 (Israelis, ≥500 base), population
+> group and locality type. Joins: localities 1216/1221 (the 5 above have no polygon; Tel Zion is merged into 3779) and
+> authorities 255/257 (Tzur Hadassa and Sha'ar Shomron by 2011 membership).
+
 ### 2.1 What `bycode2021.xlsx` actually has
 
 Sheet `קובץ יישובים 2021`, header row 1, 1,483 rows, 26 columns:
@@ -731,9 +736,9 @@ level. New wording is needed for dataset titles, measures and the points feature
 | `cbs-peripherality-2020/24_22_420t3.xlsx` | 184,737 | cad6d3f16085 |
 | `cbs-peripherality-2020/24_22_420t4.xls`, `24_22_420b.pdf` | 89,088 / 279,598 | |
 | `cbs-peripherality-2020-publication-1917/table_01–03.xlsx`, `intro_*.pdf`, `nispah_*.pdf` | 64–486 KB | |
-| `cbs-localities-file/bycode2022.xlsx` | 341,988 | b58b54759d18 |
+| `cbs-localities-file/bycode2022.xlsx` | 341,988 | b58b54759d18 (**used, committed**) |
 | `cbs-localities-file/bycode2023Sofi.xlsx` | 318,412 | a372c2b45e62 |
-| `cbs-localities-file/bycode2024.xlsx` | 370,654 | a021c6a15186 |
+| `cbs-localities-file/bycode2024.xlsx` | 370,654 | a021c6a15186 (**used, committed**) |
 | `cbs-localities-file/index2024.xlsx`, `changes-1948-2024.xlsx`, `change2024-2023Araii-2023Sofi.xlsx`, `intro.pdf` | 27–302 KB | |
 | `cbs-census-2022/summary_geo_units_census2022_en.xlsx` | 7,863,230 | 2db3c5bc0cf1 |
 | `cbs-census-2022/summary_geo_units_census2022_he.xlsx` | 7,829,964 | 75a00c88f636 |

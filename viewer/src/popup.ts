@@ -1,20 +1,25 @@
 import type { PopupField } from '../../pipeline/lib/contract.ts';
-import { CLASS_PROP, MISSING, classLabel, colorOf } from './classify.ts';
+import { CLASS_PROP, MISSING, classLabel, colorOf, layerUnit } from './classify.ts';
 import type { Props } from './data.ts';
-import { formatNumber } from './format.ts';
+import { formatNumber, formatPercent } from './format.ts';
 import { extraFieldsHtml, extraTooltipHtml } from './extras.ts';
 import { esc, swatch } from './html.ts';
-import { featureName, fillTemplate, t, type Lang } from './i18n.ts';
+import { featureName, fillTemplate, t, type I18n, type Lang } from './i18n.ts';
 import type { Layer, Level } from './manifest.ts';
 
 export function formatField(f: PopupField, v: number, lang: Lang): string {
-  switch (f.format.type) {
+  const format = f.format;
+  switch (format.type) {
     case 'integer':
       return formatNumber(v, lang);
     case 'decimal':
-      return formatNumber(v, lang, f.format.decimals);
+      return formatNumber(v, lang, format.decimals);
     case 'rank':
-      return `${formatNumber(v, lang)} ${t('of', lang)} ${formatNumber(f.format.total, lang)}`;
+      return `${formatNumber(v, lang)} ${t('of', lang)} ${formatNumber(format.total, lang)}`;
+    case 'percent':
+      return formatPercent(v, lang, format.decimals, format.signed);
+    case 'category':
+      return format.labels[String(v)]?.[lang] ?? formatNumber(v, lang);
   }
 }
 
@@ -37,7 +42,8 @@ export function featureType(p: Props, level: Level | undefined, lang: Lang): str
  */
 export function headerLines(p: Props, level: Level | undefined, lang: Lang): string[] {
   const type = featureType(p, level, lang);
-  const official = level?.officialTerm?.[lang];
+  // `popupOfficialTerm: false`: the term stays in the switcher but would only repeat itself on every popup.
+  const official = level?.popupOfficialTerm === false ? undefined : level?.officialTerm?.[lang];
   return [[type, official !== type ? official : ''].filter(Boolean).join(' · ')].filter(Boolean);
 }
 
@@ -51,7 +57,7 @@ export function valueHtml(layer: Layer, p: Props, lang: Lang): string {
   const key = keyOf(p);
   const c = layer.classification;
   const chip = swatch(colorOf(c, key), key === MISSING);
-  const label = esc(classLabel(c, key, lang));
+  const label = esc(classLabel(c, key, lang, layerUnit(layer)));
   const v = p[layer.valueField];
   if (c.type === 'categorical' || key === MISSING || typeof v !== 'number') return `${chip}<span>${label}</span>`;
   const field = layer.popup.find((f) => f.field === layer.valueField);
@@ -59,19 +65,31 @@ export function valueHtml(layer: Layer, p: Props, lang: Lang): string {
   return `${chip}<span>${esc(value)}</span><span class="bin">${label}</span>`;
 }
 
-export function popupHtml(layer: Layer, level: Level | undefined, p: Props, lang: Lang): string {
+/**
+ * Popup: title, type line, extra fields, then the layer's popup fields that the feature's record has (absent fields
+ * are skipped). Without the layer's own value the feature is "not calculated" for this layer: the missing note
+ * comes first, and the record's other fields still follow (one dataset file serves all its measures).
+ */
+export function popupHtml(layer: Layer, level: Level | undefined, p: Props, lang: Lang, featureNote?: I18n): string {
   const title = featureTitle(p, level, lang);
   const missing = keyOf(p) === MISSING;
-  const rows = missing
+  const fields = layer.popup.filter((f) => typeof p[f.field] === 'number' && !(missing && f.field === layer.valueField));
+  const missingNote = missing
     ? `<p class="popup-missing">${swatch(layer.classification.missing.color, true)}<b>${esc(layer.classification.missing.label[lang])}</b><br>${esc(layer.classification.missing.description[lang])}</p>`
-    : `<dl>${layer.popup
-        .filter((f) => typeof p[f.field] === 'number')
+    : '';
+  const list = fields.length
+    ? `<dl>${fields
         .map((f) => {
           const value = f.field === layer.valueField ? valueHtml(layer, p, lang) : esc(formatField(f, p[f.field] as number, lang));
-          return `<div><dt>${esc(f.label[lang])}</dt><dd>${value}</dd></div>`;
+          return `<div${f.field === layer.valueField ? ' class="current"' : ''}><dt>${esc(f.label[lang])}</dt><dd>${value}</dd></div>`;
         })
-        .join('')}</dl>`;
-  const note = p.placeholder ? `<p class="popup-note">${esc(t('placeholderNote', lang))}</p>` : '';
+        .join('')}</dl>`
+    : '';
+  const rows = missingNote + list;
+  // Small muted lines at the end: the placeholder caveat, and the dataset's note on this feature (`notes`).
+  const note =
+    (p.placeholder ? `<p class="popup-note">${esc(t('placeholderNote', lang))}</p>` : '') +
+    (featureNote ? `<p class="popup-note feature-note">${esc(featureNote[lang])}</p>` : '');
   const fallback = title.fallback && t('noRuName', lang) ? ` title="${esc(t('noRuName', lang))}"` : '';
   return (
     `<div class="popup" lang="${lang}">` +

@@ -11,19 +11,42 @@ const PDI = '⁩';
 export const ltr = (s: string) => `${LRI}${s}${PDI}`;
 
 /** Locale digits/grouping without the bidi marks Intl adds for Hebrew ("‎-0.111"). */
-function plain(v: number, lang: Lang, decimals?: number) {
-  const opts = decimals == null ? {} : { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+function plain(v: number, lang: Lang, decimals?: number, signed = false) {
+  const opts: Intl.NumberFormatOptions = decimals == null ? {} : { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+  if (signed) opts.signDisplay = 'exceptZero';
   return new Intl.NumberFormat(lang, opts).format(v).replace(/[‎‏؜]/g, '');
 }
 
 /** The one way the UI prints a number. */
 export const formatNumber = (v: number, lang: Lang, decimals?: number) => ltr(plain(v, lang, decimals));
 
-/** A bin of a stepped scale: "< hi", "lo – hi" or "≥ lo", isolated as a whole so "<" never mirrors. */
-export function rangeLabel(lo: number | undefined, hi: number | undefined, lang: Lang): string {
-  if (lo == null && hi != null) return ltr(`< ${plain(hi, lang)}`);
-  if (hi == null && lo != null) return ltr(`≥ ${plain(lo, lang)}`);
-  return ltr(`${plain(lo!, lang)} – ${plain(hi!, lang)}`);
+/**
+ * A value already in percent: 2.5 → "2.5%"; `signed` adds "+" to positive values (growth: "+5.9%", "−17.6%" as the
+ * locale writes it). Isolated as a whole, so sign, digits and "%" keep their order in Hebrew.
+ */
+export const formatPercent = (v: number, lang: Lang, decimals: number, signed = false) => ltr(`${plain(v, lang, decimals, signed)}%`);
+
+/**
+ * A bin of a stepped scale: "< hi", "lo – hi" or "≥ lo", isolated as a whole so "<" never mirrors. A `unit` ("%")
+ * is written once, after the last number: "< -5%", "0 – 2%", "≥ 10%".
+ */
+export function rangeLabel(lo: number | undefined, hi: number | undefined, lang: Lang, unit = ''): string {
+  if (lo == null && hi != null) return ltr(`< ${plain(hi, lang)}${unit}`);
+  if (hi == null && lo != null) return ltr(`≥ ${plain(lo, lang)}${unit}`);
+  return ltr(`${plain(lo!, lang)} – ${plain(hi!, lang)}${unit}`);
+}
+
+/**
+ * A bound with its unit ("-5%"), for compact scales (the colour strip): thousands in the locale's compact notation
+ * ("20K", "20 тыс."), so they fit a narrow cell.
+ */
+export function formatBound(v: number, lang: Lang, unit = ''): string {
+  // A plain space before "тыс." lets a narrow cell break the line there.
+  const n =
+    Math.abs(v) >= 1000
+      ? new Intl.NumberFormat(lang, { notation: 'compact' }).format(v).replace(/[‎‏؜]/g, '').replace(/ /g, ' ')
+      : plain(v, lang);
+  return ltr(`${n}${unit}`);
 }
 
 /**

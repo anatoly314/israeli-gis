@@ -229,6 +229,50 @@ statistical-area level. Its locality table covers every locality with municipal 
 `DATASET_TERMS` in `pipeline/terminology.ts`, keyed by dataset id. The shared cluster wording (class labels,
 "Not calculated", cluster/index/rank labels) is in `CLUSTER_INDEX`. Dataset modules only read it.
 
+### `population-2024`
+
+CBS localities file, end of 2024 (`bycode2024.xlsx`), with `bycode2022.xlsx` as the growth base
+(`docs/data-sources-2.md` §2). It is the first **multi-measure** dataset: `datasets["population-2024"].measures` is
+`size, growth, group, type`, and each layer names one in `measure`. All measures on a level share one data file.
+
+| Layer | Level | `valueField` | Classification |
+|---|---|---|---|
+| `population-2024-size-local-authorities` | `local-authorities-2011` | `population` | stepped 5k/10k/20k/50k/100k/200k, BuPu (7 stops) |
+| `population-2024-growth-local-authorities` | `local-authorities-2011` | `growth_pct` | stepped −5/0/2/5/10 %, ColorBrewer BrBG (classes 2,3,5–8 of 8) |
+| `population-2024-size-localities` | `localities-2011` | `population` | stepped 500/2k/5k/10k/20k/50k/100k/200k, BuPu (9 stops) |
+| `population-2024-growth-localities` | `localities-2011` | `growth_pct` | same as authorities |
+| `population-2024-group-localities` | `localities-2011` | `group` | **nominal** (`ordered: false`), Okabe-Ito: 1 Jewish, 2 non-Jewish (Arab, Druze, Circassian), 4 mixed locality |
+| `population-2024-type-localities` | `localities-2011` | `type` | **nominal**, Okabe-Ito: 1 town or city – Jewish or mixed, 2 Arab, Druze or Circassian town, 3 moshav, 4 kibbutz, 5 community settlement, 6 other rural (incl. Arab and Bedouin villages) or institutional |
+
+Record fields: `population` is the 2024 total including foreigners, and `israelis` is the 2024 Israeli residents.
+`israelis_2022` is the 2022 total; it is census-based and excluded foreigners then.
+`growth_pct` = `israelis / israelis_2022 − 1`, in %, to 1 decimal. It is **absent** when the 2022 base is under 500 or
+missing (947 of 1216 localities have it). `jews_others_pct` and `arabs_pct` are shares of Israeli residents; the 2024
+file has no Jews-only count. `group` is CBS `דת יישוב` and `type` is CBS `צורת יישוב` grouped into 6 classes (localities
+only).
+
+Reassignments onto the 2011 geometry, which the dataset `description` also states:
+- **Kokhav Ya'akov 3779 includes Tel Zion 3815**, split off in 2023, so its growth compares the same area.
+- **No polygon** for 5 populated 2024 localities: Sha'ar Shomron 3826, Tel Zion 3815 (merged as above), Giv'ot Eden
+  1362, Bet Hogla 3864 and Ramat Trump 4029. That makes 1216 of 1221. The build fails if this list changes.
+- **Authorities by 2011 membership:** Tzur Hadassa (local council since 2024) counts in Mateh Yehuda 5526, and Sha'ar
+  Shomron in Shomron 5572, in both years. That makes 255 of 257 authority codes.
+
+**Palettes.**
+- Size uses sequential BuPu, which shares no hue with RdYlBu (SES) or YlGn (peripherality). It is sampled from d3
+  `interpolateBuPu` over t = 0.15…1. The published scheme's near-white first stop read as "unfilled" for the ~400
+  localities under 500 residents.
+- The size measure is titled "Residents" (he מספר תושבים, ru Численность).
+- Growth uses BrBG, diverging at 0: brown for decline, teal for growth. It is colourblind-safe and distinct from SES's
+  red ↔ blue.
+- The nominal layers use Okabe-Ito (from R's grDevices), with the same colour for the same group in both layers.
+
+**Popup.** Every layer on a level lists the same fields, so any one map shows the place's whole profile:
+- population, Israelis, Israelis 2022
+- growth (`percent`, signed)
+- group and type (`category`, localities only)
+- the two shares (`percent`)
+
 ## Names
 
 | | Source, in order of preference |
@@ -274,7 +318,13 @@ type LevelId = 'local-authorities-2011' | 'localities-2011' | 'rc-localities-201
 interface Manifest {
   version: 1;
   levels: Record<LevelId, Level>;       // every level is present, even without a layer (localities-2011 has none yet)
-  datasets: Record<string, { title: I18n; description?: I18n }>;   // keyed by layer.dataset; every layer's dataset has an entry
+  datasets: Record<string, {            // keyed by layer.dataset; every layer's dataset has an entry
+    title: I18n;
+    shortTitle?: I18n;                  // compact title (mobile sheet)
+    description?: I18n;                 // caveats for the whole dataset, shown under the group heading
+    measures?: { id: string; title: I18n }[];   // multi-measure datasets, in display order (population-2024)
+    notes?: Partial<Record<LevelId, Record<string, I18n>>>;   // per-feature caveats: level → code → text
+  }>;
   layers: Layer[];                      // suggested order: coarse → fine
   attribution: I18n;                    // geometry + names credit
   sources: Source[];                    // geometry + names sources
@@ -284,6 +334,7 @@ interface Level {
   kind: 'local-authorities' | 'localities' | 'rc-localities' | 'statistical-areas';   // the id is `<kind>-<vintage>`
   title: I18n;                          // plain name for users ("Neighborhoods")
   officialTerm?: I18n;                  // the CBS term, for small secondary text ("CBS statistical areas"); set on every shipped level
+  popupOfficialTerm?: false;            // false: show officialTerm in the layer switcher only, not in popups
   file: string;
   object: string;                       // polygons
   placeholderObject: string;            // points, one per placeholder circle (may be empty)
@@ -303,8 +354,9 @@ interface Level {
 type Layer = ChoroplethLayer | PointsLayer;
 interface LayerBase {
   id: string; dataset: string; title: I18n;
-  data: string;                         // dataset path
-  valueField: string;
+  measure?: string;                     // one of datasets[dataset].measures[].id; set exactly when the dataset has measures
+  data: string;                         // dataset path (shared by every measure of the dataset on a level)
+  valueField: string;                   // a record without this field is "not calculated" for this layer
   classification: Categorical | Stepped;
   popup: PopupField[];
   attribution: I18n;
@@ -315,11 +367,12 @@ interface PointsLayer extends LayerBase { kind: 'points' }      // data = GeoJSO
 
 interface Categorical {
   type: 'categorical';
-  classes: { value: number; label: I18n; color: string }[];     // #rrggbb
+  classes: { value: number; label: I18n; color: string }[];     // #rrggbb; display order (low → high when ordered)
+  ordered?: false;                                               // false = nominal categories; absent = ordered
   missing: { label: I18n; description: I18n; color: string };
   note?: I18n;
 }
-interface Stepped {                                              // not used yet; ready for crime/health rates
+interface Stepped {                                              // population-2024 size and growth
   type: 'stepped';
   breaks: number[];                                              // strictly ascending
   colors: string[];                                              // breaks.length + 1
@@ -331,7 +384,9 @@ interface Stepped {                                              // not used yet
 
 interface PopupField {
   field: string; label: I18n;
-  format: { type: 'integer' } | { type: 'decimal'; decimals: number } | { type: 'rank'; total: number };
+  format: { type: 'integer' } | { type: 'decimal'; decimals: number } | { type: 'rank'; total: number }
+        | { type: 'percent'; decimals: number; signed?: true }  // value already in %: 2.5 → "2.5%"; signed → "+2.5%"
+        | { type: 'category'; labels: Record<string, I18n> };   // value is a code: show labels[String(value)]
 }
 interface Source { name: I18n; url: string; license: string; licenseUrl: string; citation: string }
 ```
@@ -340,6 +395,11 @@ Popup formats:
 - `integer`: `Intl.NumberFormat(lang)`.
 - `decimal`: the given number of fraction digits.
 - `rank`: e.g. "1632 / 1641". The wording for "of" is a UI string.
+- `percent`: the number with that many decimals and a locale percent sign (`Intl.NumberFormat(lang, {style:
+  'percent'})` on value / 100). With `signed`, positive values get "+" (`signDisplay: 'exceptZero'`).
+- `category`: `labels[String(value)][lang]`.
+- **Absent fields:** if a record has no value for a popup field (e.g. no `growth_pct` for small localities), leave
+  that row out of the popup.
 
 ### Shipped layers
 
@@ -350,6 +410,8 @@ Popup formats:
 | `ses-2021-statistical-areas` | `statistical-areas-2011` | `datasets/ses-2021/statistical-areas-2011.json` |
 | `peripherality-2020-local-authorities` | `local-authorities-2011` | `datasets/peripherality-2020/local-authorities-2011.json` |
 | `peripherality-2020-localities` | `localities-2011` | `datasets/peripherality-2020/localities-2011.json` |
+| `population-2024-{size,growth}-local-authorities` | `local-authorities-2011` | `datasets/population-2024/local-authorities-2011.json` |
+| `population-2024-{size,growth,group,type}-localities` | `localities-2011` | `datasets/population-2024/localities-2011.json` |
 
 The paragraph below describes the three SES layers. The two peripherality layers are described in
 [`peripherality-2020`](#peripherality-2020).
@@ -583,3 +645,65 @@ and build the search placeholder from the searchable fields' `searchTerm`s.
 2. Build one search index per level, not per layer. Two datasets on one level share features, and indexing per layer
    would list every authority twice (`main.ts` already does this).
 3. Tests that assumed a single dataset group or three layers need updating.
+
+### Changes for measures and nominal classes (additive, still `version: 1`)
+
+- `datasets[id].measures?: { id, title }[]`, in display order, and `layer.measure?: string`. The schema requires a
+  measure on every layer of a dataset that lists measures, and on no other layer. It allows at most one layer per
+  (dataset, measure, level).
+- Layer titles are `dataset – measure – level` when there is a measure, and `dataset – level` otherwise.
+  Single-measure datasets (SES, peripherality) are byte-identical. The build also checks that titles are unique in
+  every language.
+- `Categorical.ordered?: false`: nominal categories.
+- New popup formats `percent { decimals, signed? }` and `category { labels }`.
+- A dataset record may lack a layer's `valueField`. That counts as "not calculated" for that layer only.
+- Join reports can declare `expectedUnmatched` codes with reasons. The build prints them and fails if the actual
+  unmatched set differs from the list.
+
+**The viewer must know** (it must implement all of these; until then `tsc -p viewer` fails on the new popup formats):
+1. **Measures.**
+   - Under a dataset group heading, show one entry per measure (`datasets[id].measures` order, label =
+     `measure.title`), with the levels that measure has as a secondary choice. Show the level as radios or tabs,
+     labelled by `levels[level].title`, plus `officialTerm` if you like.
+   - Switching measure keeps the level when that measure has it (otherwise take its first level). Switching level
+     keeps the measure.
+   - The URL `layer` param stays the layer id.
+   - Datasets without `measures` keep today's one-row-per-level list.
+   - Show `datasets[id].description` under the heading.
+2. **Nominal classes (`ordered: false`).**
+   - Legend: one swatch per class in `classes` order, each with its label. No range slider, no "low → high" arrow and
+     no first–last span text.
+   - Highlighting is a set of classes, toggled individually (`hl=1,4`, never ranges like `1-3`).
+   - The search/legend "N–M" phrasing doesn't apply.
+   - Missing data is still the hatched "no data" entry.
+3. **Stepped legends** for size and growth work as today, but growth has negative breaks. Format bin labels with the
+   locale minus sign and "%" if you add units. The breaks themselves are unitless numbers.
+4. **Popups:** implement `percent` and `category`, skip fields absent from the record, and treat a record without the
+   layer's `valueField` as "no data" (missing colour, `missing.description`).
+5. Search indexing stays per level. population-2024 adds no new geometry.
+
+### Changes for notes, short titles and popup terms (additive, still `version: 1`)
+
+- `datasets[id].notes?: { [levelId]: { [code]: I18n } }`: per-feature caveats. They are generated from
+  `DATASET_TERMS[id].notes` (keyed by level kind) in `pipeline/terminology.ts`, and the build checks that every code is
+  a feature of a level where the dataset has a layer. Shipped notes, all in population-2024:
+  - `localities-2011` 3779 (Kokhav Ya'akov includes Tel Zion)
+  - `local-authorities-2011` 5526 (Mateh Yehuda includes Tzur Hadassa)
+  - `local-authorities-2011` 5572 (Shomron includes Sha'ar Shomron)
+- `datasets[id].shortTitle?: I18n` on all three datasets.
+- `levels[id].popupOfficialTerm?: false`, set on `localities-2011`.
+- Wording changes:
+  - the size measure is now "Residents" / מספר תושבים / Численность
+  - locality types 1, 2 and 6 are relabelled
+  - the population description adds an unverified wartime-displacement caveat
+- The size palette's first class is tinted (BuPu sampled from t = 0.15).
+- SES and peripherality data files are unchanged. `layers.json` changes only by `shortTitle`.
+
+**The viewer must know:**
+1. **Notes:** when a popup shows feature `code` on layer `l`, look up `datasets[l.dataset].notes?.[l.level]?.[code]` and
+   show it as a short italic line under the values. Hover tooltips can leave it out.
+2. **Popup official term:** show `officialTerm` in popups only when `level.popupOfficialTerm !== false`. Keep it in the
+   layer switcher.
+3. **Short title:** use `shortTitle ?? title` wherever the full dataset title doesn't fit (the compact sheet header).
+4. **Strings:** tests pinned to the old size-measure title ("Population") or the old locality-type labels need
+   updating.

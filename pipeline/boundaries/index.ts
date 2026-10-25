@@ -214,6 +214,7 @@ function level(
     kind: levelKind(id),
     title: terms.title,
     officialTerm: terms.officialTerm,
+    ...(terms.popupOfficialTerm === false && { popupOfficialTerm: false as const }),
     file: `geometry/${id}.topo.json`,
     object: id,
     placeholderObject: `${id}-placeholders`,

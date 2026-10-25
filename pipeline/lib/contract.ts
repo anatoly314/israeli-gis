@@ -7,6 +7,7 @@ export const LANGS = ['he', 'en', 'ru'] as const;
 export type Lang = (typeof LANGS)[number];
 
 const text = z.string().min(1);
+const slug = z.string().regex(/^[a-z0-9-]+$/);
 export const I18n = z.strictObject({ he: text, en: text, ru: text });
 export type I18n = z.infer<typeof I18n>;
 
@@ -68,6 +69,11 @@ export const Level = z.strictObject({
   title: I18n,
   /** The official CBS term for the level ("CBS statistical areas"), for small secondary text. */
   officialTerm: I18n.optional(),
+  /**
+   * `false`: show `officialTerm` in the layer switcher only, not in popups (where it would repeat on every feature
+   * without adding anything). Absent: show it in both.
+   */
+  popupOfficialTerm: z.literal(false).optional(),
   /** TopoJSON file, relative to layers.json. */
   file: text,
   /** Name of the polygon object inside the TopoJSON `objects`. */
@@ -103,7 +109,13 @@ const Missing = z.strictObject({ label: I18n, description: I18n, color });
 /** One class per discrete value (e.g. CBS clusters 1–10). */
 export const Categorical = z.strictObject({
   type: z.literal('categorical'),
+  /** In display order; for ordered classifications also low → high. */
   classes: z.array(z.strictObject({ value: z.number(), label: I18n, color })).min(1),
+  /**
+   * `false` for nominal categories (locality type): no order, so no range slider and no "low → high" reading; class
+   * order is display order only. Absent means ordered (CBS clusters 1–10).
+   */
+  ordered: z.literal(false).optional(),
   missing: Missing,
   note: I18n.optional(),
 });
@@ -130,6 +142,10 @@ export const PopupFormat = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('integer') }),
   z.strictObject({ type: z.literal('decimal'), decimals: z.number().int().nonnegative() }),
   z.strictObject({ type: z.literal('rank'), total: z.number().int().positive() }),
+  /** The value is already in percent (2.5 → "2.5%"); `signed` shows "+" on positive values (growth). */
+  z.strictObject({ type: z.literal('percent'), decimals: z.number().int().nonnegative(), signed: z.literal(true).optional() }),
+  /** The value is a category code; show `labels[String(value)]`. */
+  z.strictObject({ type: z.literal('category'), labels: z.record(z.string(), I18n) }),
 ]);
 
 export type PopupFormat = z.infer<typeof PopupFormat>;
@@ -151,6 +167,11 @@ const layerBase = {
   id: z.string().regex(/^[a-z0-9-]+$/),
   /** Dataset folder the layer came from (pipeline/datasets/<dataset>); layers sharing it can be grouped. */
   dataset: text,
+  /**
+   * Which of the dataset's `measures` this layer maps, when the dataset has several layers on one level (population
+   * size, growth…). Absent for single-measure datasets.
+   */
+  measure: slug.optional(),
   title: I18n,
   /** Dataset file, relative to layers.json. */
   data: text,
@@ -174,7 +195,22 @@ export const Layer = z.discriminatedUnion('kind', [ChoroplethLayer, PointsLayer]
 export type Layer = z.infer<typeof Layer>;
 
 /** A dataset (pipeline/datasets/<id>): its title heads the group of its layers. */
-export const DatasetInfo = z.strictObject({ title: I18n, description: I18n.optional() });
+export const DatasetInfo = z.strictObject({
+  title: I18n,
+  /** Compact form of `title` for tight spaces (mobile sheet header). */
+  shortTitle: I18n.optional(),
+  description: I18n.optional(),
+  /**
+   * The dataset's measures, in display order, when it maps several variables (one layer per measure and level).
+   * Every layer of such a dataset names one of these in `layer.measure`.
+   */
+  measures: z.array(z.strictObject({ id: slug, title: I18n })).min(1).optional(),
+  /**
+   * Per-feature notes, by level id and feature code: a caveat about that one place (a merged locality, an authority
+   * counted with 2011 membership). Shown in the popup of every layer of this dataset on that level.
+   */
+  notes: z.partialRecord(LevelId, z.record(z.string().regex(/^\d+$/), I18n)).optional(),
+});
 export type DatasetInfo = z.infer<typeof DatasetInfo>;
 
 export const Manifest = z
@@ -182,7 +218,7 @@ export const Manifest = z
     version: z.literal(1),
     levels: z.record(LevelId, Level),
     /** Keyed by dataset id; every `layers[*].dataset` has an entry. */
-    datasets: z.record(z.string().regex(/^[a-z0-9-]+$/), DatasetInfo),
+    datasets: z.record(slug, DatasetInfo),
     layers: z.array(Layer),
     /** Credit for the geometry and names, shown whenever any level is on the map. */
     attribution: I18n,
@@ -190,12 +226,31 @@ export const Manifest = z
   })
   .refine((m) => new Set(m.layers.map((l) => l.id)).size === m.layers.length, { message: 'layer ids must be unique' })
   .refine((m) => m.layers.every((l) => m.datasets[l.dataset]), { message: 'every layer.dataset must have a datasets entry' })
+  .refine(
+    (m) =>
+      m.layers.every((l) => {
+        const measures = m.datasets[l.dataset]?.measures;
+        return measures ? measures.some((x) => x.id === l.measure) : l.measure === undefined;
+      }),
+    { message: 'a layer has a measure exactly when its dataset lists measures, and it must be one of them' },
+  )
+  .refine(
+    (m) => {
+      const keys = m.layers.map((l) => `${l.dataset}/${l.measure ?? ''}/${l.kind === 'choropleth' ? l.level : 'points'}`);
+      return new Set(keys).size === keys.length;
+    },
+    { message: 'at most one layer per (dataset, measure, level)' },
+  )
   .refine((m) => Object.entries(m.levels).every(([id, l]) => id.startsWith(`${l.kind}-`)), {
     message: 'each level id must be <kind>-<vintage>',
   });
 export type Manifest = z.infer<typeof Manifest>;
 
-/** Dataset file for a choropleth layer: code → record. A code without a record is "not calculated". */
+/**
+ * Dataset file for a choropleth layer: code → record. A code without a record, or a record without the layer's
+ * `valueField`, is "not calculated" for that layer (layers of one dataset share the file; growth is left out where it
+ * would be noise).
+ */
 export const DatasetValues = z.record(z.string().regex(/^\d+$/), z.record(z.string(), z.number()));
 export type DatasetValues = z.infer<typeof DatasetValues>;
 

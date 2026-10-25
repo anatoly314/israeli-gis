@@ -27,12 +27,11 @@ data/raw/wikidata-p3466/p3466_labels.csv
 
 # Spike 2 downloads (docs/data-sources-2.md §9) not read by the pipeline yet. Each later step un-ignores what it uses.
 # Peripherality 2020 uses only t1 and t2; t3 is a subset of t2, t4 is a code list, the publication duplicates them.
+# Population 2024 uses bycode2024 and bycode2022 (growth base); the 2023 files and code lists stay out.
 data/raw/cbs-peripherality-2020/24_22_420t3.xlsx
 data/raw/cbs-peripherality-2020/24_22_420t4.xls
 data/raw/cbs-peripherality-2020-publication-1917/
-data/raw/cbs-localities-file/bycode2022.xlsx
 data/raw/cbs-localities-file/bycode2023Sofi.xlsx
-data/raw/cbs-localities-file/bycode2024.xlsx
 data/raw/cbs-localities-file/change2024-2023Araii-2023Sofi.xlsx
 data/raw/cbs-localities-file/changes-1948-2024.xlsx
 data/raw/cbs-localities-file/index2024.xlsx

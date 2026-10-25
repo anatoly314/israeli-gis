@@ -38,10 +38,11 @@ export function rangeToSelection(keys: readonly string[], min: number, max: numb
 const RANGE = /^(-?[^-]+)-(-?[^-]+)$/;
 
 /** URL `hl` tokens → class keys: ranges expand over `keys` (scale order), single keys pass through if known. */
-export function expandHl(tokens: readonly string[], keys: readonly string[]): string[] {
+export function expandHl(tokens: readonly string[], keys: readonly string[], ordered = true): string[] {
   const out: string[] = [];
   for (const tok of tokens) {
-    const m = RANGE.exec(tok);
+    // Nominal classes have no order, so a range means nothing: only single keys count.
+    const m = ordered ? RANGE.exec(tok) : null;
     const [a, b] = m ? [keys.indexOf(m[1]), keys.indexOf(m[2])] : [-1, -1];
     if (m && a >= 0 && b >= 0) out.push(...keys.slice(Math.min(a, b), Math.max(a, b) + 1));
     else if (tok === MISSING || keys.includes(tok)) out.push(tok);
@@ -49,13 +50,16 @@ export function expandHl(tokens: readonly string[], keys: readonly string[]): st
   return normalizeSelection(out, keys);
 }
 
-/** Class keys → URL `hl` tokens: runs of two or more consecutive classes become "first-last" ("4-7", "1,5,9", "4-7,na"). */
-export function compactHl(selected: readonly string[], keys: readonly string[]): string[] {
+/**
+ * Class keys → URL `hl` tokens: runs of two or more consecutive classes become "first-last" ("4-7", "1,5,9",
+ * "4-7,na"). Nominal classes (`ordered` false) are always listed one by one ("1,4").
+ */
+export function compactHl(selected: readonly string[], keys: readonly string[], ordered = true): string[] {
   const idx = [...new Set(selected.map((k) => keys.indexOf(k)).filter((i) => i >= 0))].sort((a, b) => a - b);
   const out: string[] = [];
   for (let i = 0; i < idx.length; ) {
     let j = i;
-    while (j + 1 < idx.length && idx[j + 1] === idx[j] + 1) j++;
+    while (ordered && j + 1 < idx.length && idx[j + 1] === idx[j] + 1) j++;
     out.push(j > i ? `${keys[idx[i]]}-${keys[idx[j]]}` : keys[idx[i]]);
     i = j + 1;
   }

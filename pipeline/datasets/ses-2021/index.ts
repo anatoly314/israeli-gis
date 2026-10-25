@@ -1,7 +1,7 @@
 import type { LevelId, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
 import { raw } from '../../lib/paths.ts';
-import { datasetTerms } from '../../terminology.ts';
+import { datasetInfo, datasetTerms } from '../../terminology.ts';
 import { clusterLayer } from '../cluster-index.ts';
 import { parseAuthorities, parseLocalities, parseStatisticalAreas, type IndexRecord } from './parse.ts';
 
@@ -48,7 +48,7 @@ const values = (records: IndexRecord[]) =>
 
 const sesModule: DatasetModule = {
   id: ID,
-  info: { title: DATASET_TITLE },
+  info: datasetInfo(ID, Object.keys(LEVELS) as SesLevel[]),
   rawFiles: [
     {
       path: files.authorities,

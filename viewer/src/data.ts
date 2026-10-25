@@ -114,10 +114,15 @@ export function decodePoints(fc: FeatureCollection<Point, Partial<Props>>): Leve
 
 /** Copies each feature with its dataset record and class key; codes without a record become "not calculated". */
 export function joinLayer(level: LevelData, values: DatasetValues, layer: Layer): LayerData {
+  const points = layer.kind === 'points';
   const withValues = <G extends Area | Point>(f: Feature<G, Props>): Feature<G, Props> => {
     const v = values[f.properties.code];
-    const value = v?.[layer.valueField] ?? f.properties[layer.valueField];
-    return { ...f, properties: { ...f.properties, ...v, [CLASS_PROP]: classKey(layer.classification, typeof value === 'number' ? value : undefined) } };
+    // Choropleth values come from the dataset record only: a geometry property of the same name (`population`,
+    // residents 2020) must not stand in for a missing record or field. Points layers carry their values themselves.
+    const value = points ? f.properties[layer.valueField] : v?.[layer.valueField];
+    const props: Props = { ...f.properties, ...v, [CLASS_PROP]: classKey(layer.classification, typeof value === 'number' ? value : undefined) };
+    if (!points) for (const field of layer.popup) if (!v || !(field.field in v)) delete props[field.field];
+    return { ...f, properties: props };
   };
   const polygons = level.polygons.features.map(withValues);
   return {

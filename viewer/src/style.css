@@ -261,6 +261,68 @@ fieldset legend {
   font-weight: 600;
 }
 
+/* One collapsible section per dataset; the current dataset's is open. */
+details.dataset {
+  border-top: 1px solid var(--line);
+  padding: 4px 0;
+}
+
+details.dataset:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Own chevron (the native marker vanishes once the summary is a flex box on touch screens). */
+details.dataset > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 2px;
+  border-radius: 6px;
+  list-style: none;
+}
+
+details.dataset > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.dataset > summary::before {
+  content: '▸';
+  display: inline-block;
+  width: 1.1em;
+  color: var(--muted);
+}
+
+[dir='rtl'] details.dataset > summary::before {
+  content: '◂';
+}
+
+details.dataset[open] > summary::before {
+  content: '▾';
+}
+
+/* The open compact sheet covers the map's bottom corner: hide the controls there meanwhile. */
+.compact.sheet-open .maplibregl-ctrl-bottom-left,
+.compact.sheet-open .maplibregl-ctrl-bottom-right {
+  visibility: hidden;
+}
+
+details.dataset > summary:hover {
+  background: var(--hover);
+}
+
+details.dataset:not([open]) > summary {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+@media (pointer: coarse) {
+  details.dataset > summary {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
+}
+
 .layer-item {
   display: flex;
   align-items: center;
@@ -287,6 +349,62 @@ fieldset legend {
 
 .compact .official {
   font-size: 11px;
+}
+
+/* Multi-measure datasets: a radio per measure; the selected one shows its levels as a segmented choice. */
+.measure .levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 4px;
+  padding-inline-start: 30px;
+}
+
+.levels button {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  min-height: 28px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.levels button:hover {
+  background: var(--hover);
+}
+
+.levels button[aria-pressed='true'] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: #fff;
+}
+
+.dataset-desc {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.dataset-desc summary {
+  cursor: pointer;
+  color: var(--accent);
+  width: max-content;
+}
+
+.dataset-desc p {
+  margin: 4px 0 2px;
+}
+
+.legend-actions {
+  margin-top: 6px;
+}
+
+.compact .legend-actions {
+  display: none;
 }
 
 .layer-item:hover {
@@ -666,15 +784,28 @@ fieldset legend {
   font-weight: 600;
 }
 
+/* Both columns may wrap: long labels ("Население (для индекса)") and category values never widen the popup. */
 .popup dl {
   margin: 0;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 4px 14px;
+}
+
+.popup dt,
+.popup dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .popup dl div {
   display: contents;
+}
+
+/* The row the map is coloured by. */
+.popup dl div.current dt {
+  color: var(--fg);
+  font-weight: 600;
 }
 
 .popup dt {
@@ -844,30 +975,48 @@ fieldset legend {
   min-height: 36px;
 }
 
-/* "dataset · level" on one line: both parts shrink with an ellipsis, the level keeps at least half the room. */
+/*
+ * Two lines: the dataset small and muted, then "measure · level" (or the level) in bold with the fold chevron.
+ * Each part shrinks with an ellipsis; the measure gives way before the level.
+ */
 .compact .sheet-toggle #sheet-title {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 100%;
   min-width: 0;
   white-space: nowrap;
+  line-height: 1.25;
 }
 
-.sheet-dataset,
+.sheet-dataset {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.sheet-main {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sheet-measure,
 .sheet-level {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.sheet-dataset {
-  flex: 0 1 auto;
-  font-weight: 500;
-  color: var(--muted);
+.sheet-measure {
+  flex: 0 3 auto;
 }
 
 .sheet-level {
-  flex: 0 0 auto;
-  max-width: 55%;
+  flex: 0 1 auto;
 }
 
 .sheet-sep {
@@ -876,14 +1025,14 @@ fieldset legend {
   color: var(--muted);
 }
 
-.compact .sheet-toggle #sheet-title::after {
+.compact .sheet-toggle .sheet-main::after {
   content: ' ▴';
   flex: none;
   white-space: pre;
   color: var(--muted);
 }
 
-.compact #sheet[data-open='true'] #sheet-title::after {
+.compact #sheet[data-open='true'] .sheet-main::after {
   content: ' ▾';
 }
 
@@ -953,8 +1102,14 @@ fieldset legend {
   color: var(--fg);
   font-size: 12px;
   font-weight: 650;
-  padding: 0;
+  padding: 0 1px;
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+}
+
+/* Bounds like "20 тыс." or "< 500" wrap onto two short lines instead of spilling out of a narrow cell. */
+.strip-row button span {
+  display: block;
+  line-height: 1.05;
 }
 
 .strip-row button.swatch-missing {
@@ -989,8 +1144,14 @@ fieldset legend {
   padding-bottom: 4px;
 }
 
+/* Phones and embeds: a narrow popup; main.ts pans the map so it (and its close button) stays on screen. */
 .compact .maplibregl-popup {
-  max-width: calc(100vw - 24px) !important;
+  max-width: min(280px, calc(100vw - 24px)) !important;
+}
+
+.compact .popup dl {
+  gap: 3px 10px;
+  font-size: 13px;
 }
 
 .strip-row .strip-clear[hidden] {
@@ -1023,7 +1184,8 @@ fieldset legend {
   }
 
   .range-clear,
-  .layer-item {
+  .layer-item,
+  .levels button {
     min-height: 40px;
   }
 

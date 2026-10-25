@@ -15,17 +15,40 @@ export async function loadManifest(url: string): Promise<{ manifest: Manifest; b
 
 export const isChoropleth = (l: Layer): l is ChoroplethLayer => l.kind === 'choropleth';
 
+/** One layer in the switcher, labelled by its level (points layers by their own title). */
+export interface LayerItem {
+  layer: Layer;
+  label: I18n;
+  official?: I18n;
+}
+
+/** One measure of a multi-measure dataset, with its layers (one per level) in manifest order. */
+export interface MeasureGroup {
+  id: string;
+  title: I18n;
+  items: LayerItem[];
+}
+
 export interface LayerGroup {
   dataset: string;
   title: I18n;
   description?: I18n;
-  items: { layer: Layer; label: I18n; official?: I18n }[];
+  /** Every layer of the dataset, in manifest order. */
+  items: LayerItem[];
+  /** Set when the dataset lists `measures`: the switcher shows one entry per measure, levels as a second choice. */
+  measures?: MeasureGroup[];
 }
+
+const itemOf = (m: Manifest, layer: Layer): LayerItem => {
+  if (!isChoropleth(layer)) return { layer, label: layer.title };
+  const level = m.levels[layer.level];
+  return { layer, label: level.title, official: level.officialTerm };
+};
 
 /**
  * Layers grouped by their `dataset`, in manifest order, headed by `datasets[id].title` (and `description` when
- * set). Items are labelled by their level's title, with the level's `officialTerm` as secondary text; points
- * layers by their own title.
+ * set). Items are labelled by their level's title, with the level's `officialTerm` as secondary text. Datasets with
+ * `measures` also get them, in `measures` order, each with its layers.
  */
 export function groupLayers(m: Manifest): LayerGroup[] {
   const groups = new Map<string, Layer[]>();
@@ -33,11 +56,30 @@ export function groupLayers(m: Manifest): LayerGroup[] {
   return [...groups].map(([dataset, layers]) => {
     const info = m.datasets[dataset];
     const title = info?.title ?? (Object.fromEntries(LANGS.map((l) => [l, dataset])) as I18n);
-    const items = layers.map((layer) => {
-      if (!isChoropleth(layer)) return { layer, label: layer.title };
-      const level = m.levels[layer.level];
-      return { layer, label: level.title, official: level.officialTerm };
-    });
-    return { dataset, title, description: info?.description, items };
+    const items = layers.map((layer) => itemOf(m, layer));
+    const measures = info?.measures
+      ?.map((x) => ({ id: x.id, title: x.title, items: items.filter((i) => i.layer.measure === x.id) }))
+      .filter((x) => x.items.length);
+    return { dataset, title, description: info?.description, items, ...(measures && { measures }) };
   });
+}
+
+/** The layer to show when picking `measure` while `current` is on: same level if the measure has it, else its first. */
+export function layerForMeasure(group: MeasureGroup, current: Layer | undefined): Layer {
+  const level = current && isChoropleth(current) ? current.level : undefined;
+  return group.items.find((i) => isChoropleth(i.layer) && i.layer.level === level)?.layer ?? group.items[0].layer;
+}
+
+/** Words naming a layer: its dataset, its measure (multi-measure datasets) and its level. */
+/** The dataset's note on one feature (`datasets[id].notes[level][code]`), e.g. a merged locality. */
+export function featureNote(m: Manifest, layer: Layer, code: string): I18n | undefined {
+  if (!isChoropleth(layer)) return undefined;
+  return m.datasets[layer.dataset]?.notes?.[layer.level]?.[code];
+}
+
+export function describeLayer(m: Manifest, layer: Layer): { dataset: I18n; shortDataset: I18n; measure?: I18n; level: I18n } {
+  const info = m.datasets[layer.dataset];
+  const measure = layer.measure ? info?.measures?.find((x) => x.id === layer.measure)?.title : undefined;
+  const dataset = info?.title ?? layer.title;
+  return { dataset, shortDataset: info?.shortTitle ?? dataset, ...(measure && { measure }), level: itemOf(m, layer).label };
 }

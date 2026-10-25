@@ -12,7 +12,7 @@ import {
 } from './boundaries/index.ts';
 import { datasets } from './datasets/index.ts';
 import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, manifestJsonSchema, type CountForms, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
-import type { JoinReport } from './lib/dataset.ts';
+import { unexpectedUnmatched, type JoinReport } from './lib/dataset.ts';
 import { verifyRawFile } from './lib/download.ts';
 import { assertDatumShift, invalidGeometries } from './lib/gdal.ts';
 import { writeOut, writeOutJson, type WrittenFile } from './lib/io.ts';
@@ -69,12 +69,19 @@ export function assertTerminology(m: Manifest): void {
   if (/статистическ\p{L}* район/iu.test(text) && /статистическ\p{L}* участк/iu.test(text)) {
     throw new Error('manifest mixes "статистические районы" and "статистические участки"; use "статистические районы"');
   }
-  // Layer titles are derived, never written by hand: datasets[id].title + " – " + the level's title.
+  // Layer titles are derived, never written by hand: datasets[id].title [+ measure title] + the level's title.
   for (const l of m.layers) {
     if (l.kind !== 'choropleth') continue;
-    if (JSON.stringify(l.title) !== JSON.stringify(layerTitle(m.datasets[l.dataset].title, l.level))) {
-      throw new Error(`${l.id}: title is not datasets["${l.dataset}"].title + the level title`);
+    const measure = m.datasets[l.dataset].measures?.find((x) => x.id === l.measure)?.title;
+    if (JSON.stringify(l.title) !== JSON.stringify(layerTitle(m.datasets[l.dataset].title, l.level, measure))) {
+      throw new Error(`${l.id}: title is not datasets["${l.dataset}"].title + the measure title + the level title`);
     }
+  }
+  // Titles end up in one layer list, so they must be unique per language.
+  for (const lang of LANGS) {
+    const titles = m.layers.map((l) => l.title[lang]);
+    const dup = titles.find((t, i) => titles.indexOf(t) !== i);
+    if (dup) throw new Error(`two layers share the ${lang} title "${dup}"`);
   }
 }
 
@@ -165,14 +172,25 @@ export async function buildAll(outDir: string): Promise<BuildReport> {
     };
   });
 
-  const unmatched = joins.filter((j) => j.unmatched.length);
+  // Every table code needs a polygon, except the ones a dataset declares (with a reason) in expectedUnmatched.
+  const unmatched = joins.map((j) => [j.label, unexpectedUnmatched(j)] as const).filter(([, problems]) => problems.length);
   if (unmatched.length) {
-    throw new Error(`Table codes without geometry:\n${unmatched.map((j) => `  ${j.label}: ${j.unmatched.join(', ')}`).join('\n')}`);
+    throw new Error(`Unexpected join result:\n${unmatched.map(([label, p]) => `  ${label}: ${p.join('; ')}`).join('\n')}`);
   }
 
   const datasetInfo = Object.fromEntries(datasets.map((d) => [d.id, d.info]));
   const manifest = Manifest.parse({ version: 1, levels, datasets: datasetInfo, layers, attribution, sources } satisfies Manifest);
   assertTerminology(manifest);
+  // A per-feature note must point at a feature the dataset actually maps.
+  for (const [id, info] of Object.entries(manifest.datasets)) {
+    for (const [level, notes] of Object.entries(info.notes ?? {}) as [LevelId, Record<string, unknown>][]) {
+      if (!manifest.layers.some((l) => l.dataset === id && l.kind === 'choropleth' && l.level === level)) {
+        throw new Error(`${id}: notes for ${level}, but the dataset has no layer there`);
+      }
+      const stray = Object.keys(notes).filter((code) => !geometryCodes[level].has(code));
+      if (stray.length) throw new Error(`${id}: notes for codes not in ${level}: ${stray.join(', ')}`);
+    }
+  }
   written.push(writeOutJson(outDir, 'layers.json', manifest, true));
   written.push(writeOutJson(outDir, 'layers.schema.json', manifestJsonSchema(), true));
 

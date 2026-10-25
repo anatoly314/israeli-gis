@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { detectLang, dirOf, featureName, fillTemplate, inLangNote, searchPlaceholder, t } from '../src/i18n.ts';
 import { featureTitle, featureType, formatField, headerLines, popupHtml } from '../src/popup.ts';
+import { joinLayer } from '../src/data.ts';
 import { layer, manifest } from './fixtures.ts';
 
 const bare = (s: string) => s.replace(/[⁦⁩]/g, '');
@@ -119,7 +120,10 @@ describe('popup', () => {
     expect(html).toContain('Cluster 9');
     expect(html).toContain('1,632 of 1,641');
     expect(html).toContain('dir="auto"');
-    const missing = popupHtml(authorities.layer, authorities.level, { ...authorities.data.features.get('1722')!.props, _k: 'na' }, 'en');
+    // Joined as the map joins it: a geometry property of the same name (population 2020) never shows as a value.
+    const joined = joinLayer(authorities.data, authorities.values, authorities.layer);
+    const tefen = joined.polygons.features.find((f) => f.properties.code === '1722')!.properties;
+    const missing = popupHtml(authorities.layer, authorities.level, tefen, 'en');
     expect(missing).toContain('Not calculated');
     expect(missing).not.toContain('<dl>');
     const evil = popupHtml(authorities.layer, authorities.level, { ...authorities.data.features.get('5000')!.props, name_en: '<img onerror=x>', _k: 'na' }, 'en');

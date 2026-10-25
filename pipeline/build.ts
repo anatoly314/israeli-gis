@@ -30,6 +30,7 @@ for (const j of report.joins) {
   const parts = j.breakdown.map((b) => `${b.label} ${b.matched}/${b.rows}`).join(', ');
   console.log(`  ✓ ${j.label.padEnd(28)} ${`${j.matched}/${j.rows}`.padEnd(10)} ${parts ? `(${parts}) ` : ''}` +
     `— ${j.geometryWithoutData} ${j.level} features without data → "not calculated"`);
+  for (const [code, why] of Object.entries(j.expectedUnmatched ?? {})) console.log(`      no polygon (expected): ${code} ${why}`);
 }
 for (const c of report.companions) {
   const layers = c.layers.map((l) => `${l.id} ${l.matched}/${l.rows}`).join(', ');

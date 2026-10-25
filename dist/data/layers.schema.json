@@ -75,6 +75,10 @@
             ],
             "additionalProperties": false
           },
+          "popupOfficialTerm": {
+            "type": "boolean",
+            "const": false
+          },
           "file": {
             "type": "string",
             "minLength": 1
@@ -465,6 +469,29 @@
             ],
             "additionalProperties": false
           },
+          "shortTitle": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ru": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          },
           "description": {
             "type": "object",
             "properties": {
@@ -487,6 +514,89 @@
               "ru"
             ],
             "additionalProperties": false
+          },
+          "measures": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "he": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ru": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "he",
+                    "en",
+                    "ru"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "title"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "notes": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "local-authorities-2011",
+                "localities-2011",
+                "rc-localities-2011",
+                "statistical-areas-2011"
+              ]
+            },
+            "additionalProperties": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "he": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ru": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "he",
+                  "en",
+                  "ru"
+                ],
+                "additionalProperties": false
+              }
+            }
           }
         },
         "required": [
@@ -509,6 +619,10 @@
               "dataset": {
                 "type": "string",
                 "minLength": 1
+              },
+              "measure": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
               },
               "title": {
                 "type": "object",
@@ -594,6 +708,10 @@
                           ],
                           "additionalProperties": false
                         }
+                      },
+                      "ordered": {
+                        "type": "boolean",
+                        "const": false
                       },
                       "missing": {
                         "type": "object",
@@ -885,6 +1003,72 @@
                           "required": [
                             "type",
                             "total"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "percent"
+                            },
+                            "decimals": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "signed": {
+                              "type": "boolean",
+                              "const": true
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "decimals"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "category"
+                            },
+                            "labels": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {
+                                "type": "object",
+                                "properties": {
+                                  "he": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "en": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "ru": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "he",
+                                  "en",
+                                  "ru"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "labels"
                           ],
                           "additionalProperties": false
                         }
@@ -1014,6 +1198,10 @@
                 "type": "string",
                 "minLength": 1
               },
+              "measure": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
               "title": {
                 "type": "object",
                 "properties": {
@@ -1098,6 +1286,10 @@
                           ],
                           "additionalProperties": false
                         }
+                      },
+                      "ordered": {
+                        "type": "boolean",
+                        "const": false
                       },
                       "missing": {
                         "type": "object",
@@ -1389,6 +1581,72 @@
                           "required": [
                             "type",
                             "total"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "percent"
+                            },
+                            "decimals": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "signed": {
+                              "type": "boolean",
+                              "const": true
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "decimals"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "category"
+                            },
+                            "labels": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {
+                                "type": "object",
+                                "properties": {
+                                  "he": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "en": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "ru": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "he",
+                                  "en",
+                                  "ru"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "labels"
                           ],
                           "additionalProperties": false
                         }

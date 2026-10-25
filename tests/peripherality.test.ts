@@ -131,7 +131,17 @@ describe('YlGn palette', () => {
 describe('dataset wording', () => {
   it('is complete in all three languages for every dataset', () => {
     for (const [id, t] of Object.entries(DATASET_TERMS)) {
-      for (const text of [t.title, t.attribution, t.scale.low, t.scale.high, ...Object.values(t.missing), ...Object.values(t.fields)]) {
+      const measures = Object.values(t.measures ?? {});
+      const texts = [
+        t.title,
+        t.attribution,
+        ...(t.description ? [t.description] : []),
+        ...(t.scale ? [t.scale.low, t.scale.high] : []),
+        ...Object.values(t.missing ?? {}),
+        ...Object.values(t.fields),
+        ...measures.flatMap((m) => [m.title, ...(m.note ? [m.note] : []), ...Object.values(m.missing), ...Object.values(m.classes ?? {})]),
+      ];
+      for (const text of texts) {
         for (const lang of LANGS) expect(text?.[lang]?.trim(), `${id}`).toBeTruthy();
       }
     }
@@ -139,7 +149,7 @@ describe('dataset wording', () => {
   });
 
   it('writes every cluster legend note in one style, "1 – low, 10 – high"', () => {
-    for (const l of manifest().layers) {
+    for (const l of manifest().layers.filter((x) => x.valueField === 'cluster')) {
       for (const lang of LANGS) expect(l.classification.note?.[lang], l.id).toMatch(/^1 – .+, 10 – .+$/);
     }
     expect(manifest().layers.find((l) => l.id === 'ses-2021-localities')?.classification.note?.en).toBe('1 – lowest socio-economic level, 10 – highest');
