@@ -19,7 +19,9 @@ export function detectLang(param: string | null, navigatorLangs: readonly string
 
 const UI = {
   title: { he: 'מפת הנתונים הפתוחים של ישראל', en: 'Israel open data map', ru: 'Карта открытых данных Израиля' },
-  searchPlaceholder: { he: 'חיפוש יישוב או שכונה', en: 'Search place or neighborhood', ru: 'Поиск: город, посёлок, квартал' },
+  searchPlace: { he: 'חיפוש יישוב', en: 'Search a place', ru: 'Поиск: город, посёлок' },
+  // {terms}: the searchTerm of each searchable extra field ("neighborhood"), joined as an "or" list.
+  searchPlaceOr: { he: 'חיפוש יישוב או {terms}', en: 'Search a place or {terms}', ru: 'Поиск: город, посёлок, {terms}' },
   alsoSearchable: { he: 'אפשר לחפש גם: {fields}', en: 'Also searchable: {fields}', ru: 'Также ищутся: {fields}' },
   searchLabel: { he: 'חיפוש', en: 'Search', ru: 'Поиск' },
   noResults: { he: 'לא נמצאו תוצאות', en: 'No matches', ru: 'Ничего не найдено' },
@@ -70,6 +72,16 @@ export type UiKey = keyof typeof UI;
 /** UI string; `{var}` placeholders take already formatted values (see format.ts for numbers). */
 export const t = (key: UiKey, lang: Lang, vars: Record<string, string> = {}) =>
   UI[key][lang].replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? vars[k] : m));
+
+/**
+ * Search box placeholder: "Search a place", plus the manifest's searchable extra fields by their `searchTerm`
+ * ("Search a place or neighborhood"); several terms are joined as an "or" list in the UI language.
+ */
+export function searchPlaceholder(lang: Lang, terms: readonly I18n[]): string {
+  if (!terms.length) return t('searchPlace', lang);
+  const list = new Intl.ListFormat(lang, { type: 'disjunction' }).format(terms.map((x) => x[lang]));
+  return t('searchPlaceOr', lang, { terms: list });
+}
 
 /**
  * Note after a label whose values are in another language than the UI ("Районы (на иврите)"), keyed by the values'

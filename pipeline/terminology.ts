@@ -3,7 +3,7 @@
 // up the same names without any string edits. To change wording: edit this file, `npm run build:data`,
 // `npm run build:viewer`.
 import { z } from 'zod';
-import { I18n, LevelKind, type LevelId } from './lib/contract.ts';
+import { CountForms, I18n, LevelKind, type LevelId } from './lib/contract.ts';
 
 export const LevelTerms = z.strictObject({
   /** Plain name shown to users ("Neighborhoods"). */
@@ -16,8 +16,15 @@ export const LevelTerms = z.strictObject({
   featureTypes: z.record(z.string(), I18n).optional(),
   /** Feature label template; `{name}` and `{<property>}` refer to feature properties (contract v1 syntax). */
   featureLabel: I18n.optional(),
-  /** Labels of the level's extra fields, keyed by feature property; `shortLabel` for compact mentions. */
-  extraFields: z.record(z.string(), z.strictObject({ label: I18n, shortLabel: I18n.optional() })).optional(),
+  /**
+   * Labels of the level's extra fields, keyed by feature property; `shortLabel` for compact mentions, `searchTerm`
+   * (one value, singular, in running text) for searchable fields.
+   */
+  extraFields: z
+    .record(z.string(), z.strictObject({ label: I18n, shortLabel: I18n.optional(), searchTerm: I18n.optional() }))
+    .optional(),
+  /** "N features" phrases by plural category (contract `CountForms`), for levels whose parts are counted per place. */
+  countForms: CountForms.optional(),
 });
 export type LevelTerms = z.infer<typeof LevelTerms>;
 
@@ -58,10 +65,17 @@ export const TERMINOLOGY: Record<LevelKind, LevelTerms> = Terminology.parse({
     featureType: { he: 'אזור', en: 'Area', ru: 'Участок' },
     // {name} is the parent city's name, {sa} the area number.
     featureLabel: { he: '{name} – אזור {sa}', en: '{name} – area {sa}', ru: '{name} – участок {sa}' },
+    // A city's areas, counted in search results: "169 участков". Hebrew 1 is "אזור אחד" (number after the noun).
+    countForms: {
+      he: { one: 'אזור אחד', two: '{n} אזורים', other: '{n} אזורים' },
+      en: { one: '{n} area', other: '{n} areas' },
+      ru: { one: '{n} участок', few: '{n} участка', many: '{n} участков', other: '{n} участка' },
+    },
     extraFields: {
       neighborhoods_he: {
         label: { he: 'שכונות באזור', en: 'Neighborhoods in this area', ru: 'Кварталы на участке' },
         shortLabel: { he: 'שכונות', en: 'Neighborhoods', ru: 'Кварталы' },
+        searchTerm: { he: 'שכונה', en: 'neighborhood', ru: 'квартал' },
       },
       streets_he: { label: { he: 'רחובות עיקריים', en: 'Main streets', ru: 'Главные улицы' } },
     },

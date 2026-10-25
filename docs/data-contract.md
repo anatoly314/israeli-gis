@@ -95,7 +95,8 @@ boundaries, not legal municipal jurisdictions.
 "extraFields": [
   { "property": "neighborhoods_he", "kind": "list", "textLang": "he", "searchable": true,
     "label": { "he": "שכונות באזור", "en": "Neighborhoods in this area", "ru": "Кварталы на участке" },
-    "shortLabel": { "he": "שכונות", "en": "Neighborhoods", "ru": "Кварталы" } },
+    "shortLabel": { "he": "שכונות", "en": "Neighborhoods", "ru": "Кварталы" },
+    "searchTerm": { "he": "שכונה", "en": "neighborhood", "ru": "квартал" } },
   { "property": "streets_he", "kind": "list", "textLang": "he", "searchable": false,
     "label": { "he": "רחובות עיקריים", "en": "Main streets", "ru": "Главные улицы" } }
 ]
@@ -107,6 +108,9 @@ boundaries, not legal municipal jurisdictions.
 - `searchable`: the viewer should index the values, so typing "קרית קמניץ" finds SA 30000112.
 - `shortLabel` (optional): a compact form of `label` for passing mentions, such as the search hint "also
   searchable: Neighborhoods". Fall back to `label` when it is absent.
+- `searchTerm` (required when `searchable`): one value as a noun inside running text, singular and in sentence case,
+  for the search placeholder: "Search a place or neighborhood" / "חיפוש יישוב או שכונה" / "Поиск: город, посёлок,
+  квартал". The build fails if a searchable field lacks it.
 - Labels come from `pipeline/terminology.ts` (`extraFields` of the level kind), like all other level wording. A
   future `statistical-areas-2022` with its own companion file gets the same labels.
 - **Source data.** The values come straight from CBS "רחובות עיקריים ושכונות לא"ס 2011" (28.7.2021), listed in
@@ -249,8 +253,10 @@ interface Level {
   featureLabel?: I18n;                  // template, {name} / {<property>}
   featureType?: I18n;                   // what one feature is called ("Area"); set on every shipped level
   featureTypes?: { property: string; labels: Record<string, I18n> };   // per-feature type, when it varies
-  extraFields?: { property: string; kind: 'list'; textLang: 'he' | 'en' | 'ru'; label: I18n; shortLabel?: I18n; searchable: boolean }[];
+  extraFields?: { property: string; kind: 'list'; textLang: 'he' | 'en' | 'ru'; label: I18n; shortLabel?: I18n; searchTerm?: I18n; searchable: boolean }[];
   parentCode?: string;                  // property with the code of the place a feature is part of (SA → locality_code)
+  countForms?: Record<'he' | 'en' | 'ru', { zero?: string; one?: string; two?: string; few?: string; many?: string; other: string }>;
+                                        // "N features" by plural category, {n} = the number; required with parentCode
   populationYear?: number;              // year of the features' `population` (2020 on every shipped level)
 }
 
@@ -503,3 +509,16 @@ Don't imply CBS endorsement.
 **The viewer must know:**
 1. Use `shortLabel ?? label` in the "also searchable" hint.
 2. Tests pinned to "neighborhood 437" / "שכונה" now read "area 437" / "אזור".
+
+### Changes for counts and the search placeholder (additive, still `version: 1`)
+
+- New `levels[*].countForms` on levels with a `parentCode` (here `statistical-areas-2011`): "N areas" phrases per
+  language and CLDR plural category, `{n}` for the number:
+  `ru: { one: "{n} участок", few: "{n} участка", many: "{n} участков", other: "{n} участка" }`,
+  `he: { one: "אזור אחד", two: "{n} אזורים", other: "{n} אזורים" }`, `en: { one: "{n} area", other: "{n} areas" }`.
+  The build fails if a level with a `parentCode` has none, or if any integer category `Intl.PluralRules` uses for a
+  language (he: one/two/other, en: one/other, ru: one/few/many) has no form.
+- New `extraFields[*].searchTerm` (singular noun in running text), required on searchable fields.
+
+**The viewer must know:** pick the count form with `new Intl.PluralRules(lang).select(n)` (fall back to `other`),
+and build the search placeholder from the searchable fields' `searchTerm`s.

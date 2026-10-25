@@ -1,3 +1,4 @@
+import type { CountForms } from '../../pipeline/lib/contract.ts';
 import type { Lang } from './i18n.ts';
 
 const LRI = '⁦';
@@ -23,6 +24,16 @@ export function rangeLabel(lo: number | undefined, hi: number | undefined, lang:
   if (lo == null && hi != null) return ltr(`< ${plain(hi, lang)}`);
   if (hi == null && lo != null) return ltr(`≥ ${plain(lo, lang)}`);
   return ltr(`${plain(lo!, lang)} – ${plain(hi!, lang)}`);
+}
+
+/**
+ * "169 участков" / "169 אזורים" / "169 areas": the level's count phrase for `n`, picked by `Intl.PluralRules`
+ * (falling back to `other`), with the number formatted like every other.
+ */
+export function countText(forms: CountForms, n: number, lang: Lang): string {
+  const byCategory = forms[lang] as Partial<Record<string, string>> & { other: string };
+  const form = byCategory[new Intl.PluralRules(lang).select(n)] ?? byCategory.other;
+  return form.replace('{n}', formatNumber(n, lang));
 }
 
 /** "1–3" for a run of categorical values. */

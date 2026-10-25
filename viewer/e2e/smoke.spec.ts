@@ -98,7 +98,8 @@ test('loads, switches layers, searches in three scripts, flips direction', async
   await ready(page, 'ses-2021-statistical-areas');
   await expect(page).toHaveURL(/layer=ses-2021-statistical-areas/);
   await page.getByRole('combobox').fill('Тель-Авив');
-  await expect(page.getByRole('option').first()).toContainText(/Кварталы/);
+  // The city group counts its areas with the Russian plural: "169 участков".
+  await expect(page.getByRole('option').first().locator('.result-meta')).toHaveText(/^Кварталы · ⁦169⁩ участков$/);
   await page.getByRole('combobox').press('Enter');
   await expect(page.locator('body')).toHaveAttribute('data-layer', 'ses-2021-statistical-areas');
 
@@ -290,6 +291,15 @@ for (const lang of ['he', 'ru'] as const) {
     expect(errors).toEqual([]);
   });
 }
+
+test('search placeholder and city group count come from the manifest (he)', async ({ page }) => {
+  await page.goto('./?lang=he&layer=ses-2021-statistical-areas');
+  await ready(page, 'ses-2021-statistical-areas');
+  const box = page.getByRole('combobox');
+  await expect(box).toHaveAttribute('placeholder', 'חיפוש יישוב או שכונה');
+  await box.fill('תל אביב');
+  await expect(page.getByRole('option').first().locator('.result-meta')).toHaveText(/^שכונות · ⁦169⁩ אזורים$/);
+});
 
 test('statistical-area tooltip shows the first neighborhoods on a second line', async ({ page }) => {
   const errors = collectErrors(page);

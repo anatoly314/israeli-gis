@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LANGS, LevelKind, type I18n, type Manifest } from '../pipeline/lib/contract.ts';
 import { DATASET_TITLE } from '../pipeline/datasets/ses-2021/index.ts';
-import { assertTerminology } from '../pipeline/run.ts';
+import { assertTerminology, missingCountForms, pluralCategories } from '../pipeline/run.ts';
 import { LevelTerms, TERMINOLOGY, TITLE_SEP, layerTitle, levelKind, termsFor } from '../pipeline/terminology.ts';
 import { manifest } from './dist.ts';
 
@@ -104,6 +104,31 @@ describe('approved wording', () => {
     const mixed = structuredClone(manifest()) as Manifest;
     mixed.sources[0].name.ru = 'ЦСБ, слой статистических участков 2011';
     expect(() => assertTerminology(mixed)).toThrow(/статистические районы/);
+  });
+
+  it('counts a place\'s parts with a phrase for every plural category of every language', () => {
+    const sa = manifest().levels['statistical-areas-2011'];
+    expect(sa.countForms).toEqual(TERMINOLOGY['statistical-areas'].countForms);
+    for (const lang of LANGS) for (const c of pluralCategories(lang)) expect(sa.countForms![lang][c], `${lang} ${c}`).toBeTruthy();
+    expect(pluralCategories('ru').sort()).toEqual(['few', 'many', 'one']);
+    expect(sa.extraFields?.find((f) => f.searchable)?.searchTerm).toEqual({ he: 'שכונה', en: 'neighborhood', ru: 'квартал' });
+  });
+
+  it('fails the build when a counted level lacks a plural form or a searchable field lacks its search term', () => {
+    const forms = structuredClone(TERMINOLOGY['statistical-areas'].countForms!);
+    expect(missingCountForms(forms)).toEqual([]);
+    delete forms.ru.few;
+    delete forms.he.two;
+    expect(missingCountForms(forms)).toEqual(['he.two', 'ru.few']);
+    const noFew = structuredClone(manifest()) as Manifest;
+    delete noFew.levels['statistical-areas-2011'].countForms!.ru.few;
+    expect(() => assertTerminology(noFew)).toThrow(/countForms/);
+    const noTerm = structuredClone(manifest()) as Manifest;
+    delete noTerm.levels['statistical-areas-2011'].extraFields![0].searchTerm;
+    expect(() => assertTerminology(noTerm)).toThrow(/neighborhoods_he/);
+    const noForms = structuredClone(manifest()) as Manifest;
+    delete noForms.levels['statistical-areas-2011'].countForms;
+    expect(() => assertTerminology(noForms)).toThrow(/countForms/);
   });
 
   it('keeps the dataset title', () => {

@@ -201,14 +201,14 @@ export type AuthorityType = 'city' | 'local-council' | 'regional-council';
  */
 function level(
   id: LevelId,
-  extra: { parentCode?: string; typeProperty?: string; extraFields?: Omit<ExtraField, 'label' | 'shortLabel'>[] } = {},
+  extra: { parentCode?: string; typeProperty?: string; extraFields?: Omit<ExtraField, 'label' | 'shortLabel' | 'searchTerm'>[] } = {},
 ): LevelMeta {
   const terms = termsFor(id);
   if (extra.typeProperty && !terms.featureTypes) throw new Error(`${id}: terminology has no featureTypes for ${extra.typeProperty}`);
   const extraFields = extra.extraFields?.map((f) => {
     const t = terms.extraFields?.[f.property];
     if (!t) throw new Error(`${id}: terminology has no extraFields label for ${f.property}`);
-    return { ...f, label: t.label, ...(t.shortLabel && { shortLabel: t.shortLabel }) };
+    return { ...f, label: t.label, ...(t.shortLabel && { shortLabel: t.shortLabel }), ...(t.searchTerm && { searchTerm: t.searchTerm }) };
   });
   return {
     kind: levelKind(id),
@@ -220,6 +220,7 @@ function level(
     idProperty: 'code',
     populationYear: POPULATION_YEAR,
     featureType: terms.featureType,
+    ...(terms.countForms && { countForms: terms.countForms }),
     ...(terms.featureLabel && { featureLabel: terms.featureLabel }),
     ...(extra.parentCode && { parentCode: extra.parentCode }),
     ...(extra.typeProperty && { featureTypes: { property: extra.typeProperty, labels: terms.featureTypes! } }),

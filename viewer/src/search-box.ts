@@ -1,6 +1,6 @@
 import { formatNumber } from './format.ts';
 import { esc } from './html.ts';
-import { t, type Lang } from './i18n.ts';
+import { searchPlaceholder, t, type Lang } from './i18n.ts';
 import type { SearchEntry } from './search.ts';
 
 export interface ResultView {
@@ -20,6 +20,8 @@ export interface SearchBoxOptions {
   onSelect: (e: SearchEntry) => void;
   /** Extra text for the "no matches" state, e.g. which fields are searched in which language. */
   hint?: (lang: Lang) => string;
+  /** Placeholder text (built from the manifest); "Search a place" when not given. */
+  placeholder?: (lang: Lang) => string;
 }
 
 /** WAI-ARIA combobox with a listbox popup: arrows move, Enter picks, Escape closes then clears. */
@@ -139,7 +141,7 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
   return {
     setLang(l: Lang) {
       lang = l;
-      input.placeholder = t('searchPlaceholder', l);
+      input.placeholder = o.placeholder?.(l) ?? searchPlaceholder(l, []);
       label.textContent = t('searchLabel', l);
       list.setAttribute('aria-label', t('resultsLabel', l));
       if (!list.hidden) render();

@@ -126,6 +126,23 @@
         "en": "Area",
         "ru": "Участок"
       },
+      "countForms": {
+        "he": {
+          "one": "אזור אחד",
+          "two": "{n} אזורים",
+          "other": "{n} אזורים"
+        },
+        "en": {
+          "one": "{n} area",
+          "other": "{n} areas"
+        },
+        "ru": {
+          "one": "{n} участок",
+          "few": "{n} участка",
+          "many": "{n} участков",
+          "other": "{n} участка"
+        }
+      },
       "extraFields": [
         {
           "property": "neighborhoods_he",
@@ -140,6 +157,11 @@
             "he": "שכונות",
             "en": "Neighborhoods",
             "ru": "Кварталы"
+          },
+          "searchTerm": {
+            "he": "שכונה",
+            "en": "neighborhood",
+            "ru": "квартал"
           },
           "searchable": true
         },

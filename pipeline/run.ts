@@ -11,7 +11,7 @@ import {
   type NameStats,
 } from './boundaries/index.ts';
 import { datasets } from './datasets/index.ts';
-import { DatasetValues, LEVEL_IDS, Manifest, manifestJsonSchema, type Layer, type Level, type LevelId } from './lib/contract.ts';
+import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, manifestJsonSchema, type CountForms, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
 import type { JoinReport } from './lib/dataset.ts';
 import { verifyRawFile } from './lib/download.ts';
 import { assertDatumShift, invalidGeometries } from './lib/gdal.ts';
@@ -47,9 +47,21 @@ export function assertTerminology(m: Manifest): void {
     if (applied !== expected) throw new Error(`${id}: level wording differs from pipeline/terminology.ts`);
     for (const f of level.extraFields ?? []) {
       const t = terms.extraFields?.[f.property];
-      if (!t || JSON.stringify([f.label, f.shortLabel ?? null]) !== JSON.stringify([t.label, t.shortLabel ?? null])) {
+      const labels = (x: { label: unknown; shortLabel?: unknown; searchTerm?: unknown }) => JSON.stringify([x.label, x.shortLabel ?? null, x.searchTerm ?? null]);
+      if (!t || labels(f) !== labels(t)) {
         throw new Error(`${id}: extra field ${f.property} has no or a different label in pipeline/terminology.ts`);
       }
+      if (f.searchable && !f.searchTerm) throw new Error(`${id}: searchable extra field ${f.property} needs a searchTerm in pipeline/terminology.ts`);
+    }
+    if (JSON.stringify(level.countForms ?? null) !== JSON.stringify(terms.countForms ?? null)) {
+      throw new Error(`${id}: countForms differ from pipeline/terminology.ts`);
+    }
+    // Parts of a place are counted per place in search results: every language needs a phrase for every plural
+    // category Intl.PluralRules gives integers.
+    if (level.parentCode) {
+      if (!level.countForms) throw new Error(`${id}: has a parentCode but no countForms in pipeline/terminology.ts`);
+      const missing = missingCountForms(level.countForms);
+      if (missing.length) throw new Error(`${id}: countForms lack ${missing.join(', ')}`);
     }
   }
   // One Russian rendering of the CBS term: "статистические районы", never mixed with "статистические участки".
@@ -64,6 +76,20 @@ export function assertTerminology(m: Manifest): void {
       throw new Error(`${l.id}: title is not datasets["${l.dataset}"].title + the level title`);
     }
   }
+}
+
+/** Plural categories `Intl.PluralRules(lang)` uses for the integers 0–1000. */
+export function pluralCategories(lang: Lang): PluralCategory[] {
+  const rules = new Intl.PluralRules(lang);
+  const out = new Set<PluralCategory>();
+  for (let n = 0; n <= 1000; n++) out.add(rules.select(n) as PluralCategory);
+  return [...out];
+}
+type PluralCategory = (typeof PLURAL_CATEGORIES)[number];
+
+/** `lang.category` pairs that have no count phrase ("ru.few"); [] when every language is covered. */
+export function missingCountForms(forms: CountForms): string[] {
+  return LANGS.flatMap((lang) => pluralCategories(lang).filter((c) => !forms[lang][c]).map((c) => `${lang}.${c}`));
 }
 
 export const allRawFiles = () => [...boundaryFiles, ...datasets.flatMap((d) => d.rawFiles)];

@@ -2,8 +2,9 @@ import { Popup, type MapGeoJSONFeature, type PointLike } from 'maplibre-gl';
 import { classKeys } from './classify.ts';
 import { MANIFEST_URL } from './config.ts';
 import { joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
-import { formatNumber } from './format.ts';
-import { detectLang, dirOf, featureName, inLangNote, t, type Lang } from './i18n.ts';
+import type { ExtraField } from '../../pipeline/lib/contract.ts';
+import { countText, formatNumber } from './format.ts';
+import { detectLang, dirOf, featureName, inLangNote, searchPlaceholder, t, type Lang } from './i18n.ts';
 import { groupLayers, isChoropleth, loadManifest, type Layer, type Level, type Manifest } from './manifest.ts';
 import {
   addDataLayer,
@@ -47,6 +48,7 @@ const searchBox = createSearchBox($('search'), {
   ensureIndex,
   find: (q) => searchEntries(q),
   hint: searchHint,
+  placeholder: placeholderText,
   view: resultView,
   onSelect: selectEntry,
 });
@@ -362,16 +364,27 @@ function searchEntries(q: string) {
  * "Also searchable: Neighborhoods (in Hebrew)": the searchable extra fields whose values are in another language than
  * the UI, from the levels of the layers. Empty when there are none (always in the Hebrew UI today).
  */
+/** Searchable extra fields of the layers' levels, once per property. */
+function searchableFields(): ExtraField[] {
+  if (!manifest) return [];
+  const fields = new Map<string, ExtraField>();
+  for (const l of manifest.layers) for (const f of levelOf(l)?.extraFields ?? []) if (f.searchable) fields.set(f.property, f);
+  return [...fields.values()];
+}
+
 function searchHint(lang: Lang): string {
-  if (!manifest) return '';
-  const fields = new Map<string, string>();
-  for (const l of manifest.layers) {
-    for (const f of levelOf(l)?.extraFields ?? []) {
-      const note = inLangNote(f.textLang, lang);
-      if (f.searchable && note) fields.set(f.property, `${(f.shortLabel ?? f.label)[lang]} ${note}`);
-    }
-  }
-  return fields.size ? t('alsoSearchable', lang, { fields: [...fields.values()].join(', ') }) : '';
+  const parts = searchableFields()
+    .filter((f) => inLangNote(f.textLang, lang))
+    .map((f) => `${(f.shortLabel ?? f.label)[lang]} ${inLangNote(f.textLang, lang)}`);
+  return parts.length ? t('alsoSearchable', lang, { fields: parts.join(', ') }) : '';
+}
+
+/** "Search a place or neighborhood": the searchable fields' `searchTerm`s (contract), else just "Search a place". */
+function placeholderText(lang: Lang): string {
+  return searchPlaceholder(
+    lang,
+    searchableFields().flatMap((f) => (f.searchTerm ? [f.searchTerm] : [])),
+  );
 }
 
 function resultView(e: SearchEntry, lang: Lang) {
@@ -379,7 +392,8 @@ function resultView(e: SearchEntry, lang: Lang) {
   const levelTitle = level?.title[lang] ?? layerById(e.level.slice('layer:'.length))?.title[lang] ?? '';
   if (e.code == null) {
     const name = featureName({ name_he: e.names.he, name_en: e.names.en, name_ru: e.names.ru }, lang).text;
-    return { name, meta: `${levelTitle} · ${formatNumber(e.codes.length, lang)}` };
+    const count = level?.countForms ? countText(level.countForms, e.codes.length, lang) : formatNumber(e.codes.length, lang);
+    return { name, meta: `${levelTitle} · ${count}` };
   }
   const props = levelData.get(e.level)?.features.get(e.code)?.props;
   if (!props) return { name: e.names[lang], meta: levelTitle };

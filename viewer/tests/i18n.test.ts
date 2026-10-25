@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { detectLang, dirOf, featureName, fillTemplate, inLangNote, t } from '../src/i18n.ts';
+import { detectLang, dirOf, featureName, fillTemplate, inLangNote, searchPlaceholder, t } from '../src/i18n.ts';
 import { featureTitle, featureType, formatField, headerLines, popupHtml } from '../src/popup.ts';
-import { layer } from './fixtures.ts';
+import { layer, manifest } from './fixtures.ts';
 
 const bare = (s: string) => s.replace(/[⁦⁩]/g, '');
 
@@ -17,6 +17,23 @@ describe('language choice', () => {
 
   it('is RTL only for Hebrew', () => {
     expect([dirOf('he'), dirOf('en'), dirOf('ru')]).toEqual(['rtl', 'ltr', 'ltr']);
+  });
+
+  it('builds the search placeholder from the searchable fields\' search terms', () => {
+    const neighborhood = manifest().levels['statistical-areas-2011'].extraFields!.find((f) => f.searchable)!.searchTerm!;
+    expect([searchPlaceholder('he', [neighborhood]), searchPlaceholder('en', [neighborhood]), searchPlaceholder('ru', [neighborhood])]).toEqual([
+      'חיפוש יישוב או שכונה',
+      'Search a place or neighborhood',
+      'Поиск: город, посёлок, квартал',
+    ]);
+    expect([searchPlaceholder('he', []), searchPlaceholder('en', []), searchPlaceholder('ru', [])]).toEqual([
+      'חיפוש יישוב',
+      'Search a place',
+      'Поиск: город, посёлок',
+    ]);
+    const street = { he: 'רחוב', en: 'street', ru: 'улица' };
+    expect(searchPlaceholder('en', [neighborhood, street])).toBe('Search a place or neighborhood or street');
+    expect(searchPlaceholder('ru', [neighborhood, street])).toBe('Поиск: город, посёлок, квартал или улица');
   });
 
   it('interpolates UI strings', () => {

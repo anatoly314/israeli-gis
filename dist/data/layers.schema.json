@@ -156,6 +156,116 @@
             ],
             "additionalProperties": false
           },
+          "countForms": {
+            "type": "object",
+            "properties": {
+              "he": {
+                "type": "object",
+                "properties": {
+                  "zero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "one": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "two": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "few": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "many": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "other": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "other"
+                ],
+                "additionalProperties": false
+              },
+              "en": {
+                "type": "object",
+                "properties": {
+                  "zero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "one": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "two": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "few": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "many": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "other": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "other"
+                ],
+                "additionalProperties": false
+              },
+              "ru": {
+                "type": "object",
+                "properties": {
+                  "zero": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "one": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "two": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "few": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "many": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "other": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "other"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "he",
+              "en",
+              "ru"
+            ],
+            "additionalProperties": false
+          },
           "featureTypes": {
             "type": "object",
             "properties": {
@@ -244,6 +354,29 @@
                   "additionalProperties": false
                 },
                 "shortLabel": {
+                  "type": "object",
+                  "properties": {
+                    "he": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ru": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "he",
+                    "en",
+                    "ru"
+                  ],
+                  "additionalProperties": false
+                },
+                "searchTerm": {
                   "type": "object",
                   "properties": {
                     "he": {

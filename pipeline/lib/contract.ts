@@ -33,9 +33,34 @@ export const ExtraField = z.strictObject({
   label: I18n,
   /** Compact form of `label` for passing mentions (e.g. a search hint: "also searchable: Neighborhoods"). */
   shortLabel: I18n.optional(),
+  /**
+   * One value as a noun inside running text, singular and in sentence case ("neighborhood" / "שכונה" / "квартал"),
+   * for the search placeholder ("Search a place or neighborhood"). Required when `searchable`.
+   */
+  searchTerm: I18n.optional(),
   searchable: z.boolean(),
 });
 export type ExtraField = z.infer<typeof ExtraField>;
+
+/** CLDR plural categories, as `Intl.PluralRules` returns them. */
+export const PLURAL_CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other'] as const;
+const countForm = text.refine((s) => s.includes('{n}') || !/\d/.test(s), { message: 'a count form holds {n} or no digits' });
+/** Count phrases for one language, by plural category; `{n}` is the number ("{n} участков"). `other` is required. */
+const CountFormsLang = z.strictObject({
+  zero: countForm.optional(),
+  one: countForm.optional(),
+  two: countForm.optional(),
+  few: countForm.optional(),
+  many: countForm.optional(),
+  other: countForm,
+});
+/**
+ * "N features" for a level, per language and plural category ("169 участков", "169 אזורים", "169 areas"); the viewer
+ * picks the form with `Intl.PluralRules(lang).select(n)`. The build checks every integer category of each language
+ * has a form.
+ */
+export const CountForms = z.strictObject({ he: CountFormsLang, en: CountFormsLang, ru: CountFormsLang });
+export type CountForms = z.infer<typeof CountForms>;
 
 export const Level = z.strictObject({
   kind: LevelKind,
@@ -64,6 +89,8 @@ export const Level = z.strictObject({
   populationYear: z.number().int().optional(),
   /** What one feature of this level is called ("Statistical area"). */
   featureType: I18n.optional(),
+  /** "N features" phrases ("169 участков"); set on levels with a `parentCode`, whose parts are counted per place. */
+  countForms: CountForms.optional(),
   /** When the type varies within the level: the feature property holding it and a label per value. */
   featureTypes: z.strictObject({ property: text, labels: z.record(z.string(), I18n) }).optional(),
   /** Descriptive properties on the features (e.g. neighbourhood and street names), in display order. */
