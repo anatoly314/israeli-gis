@@ -132,6 +132,8 @@ export const PopupFormat = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('rank'), total: z.number().int().positive() }),
 ]);
 
+export type PopupFormat = z.infer<typeof PopupFormat>;
+
 export const PopupField = z.strictObject({ field: text, label: I18n, format: PopupFormat });
 export type PopupField = z.infer<typeof PopupField>;
 

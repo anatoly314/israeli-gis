@@ -134,7 +134,7 @@ test('keyboard: search → pick → Escape closes the popup and returns to the s
   await box.fill('Haifa');
   await box.press('Enter');
   await expect(page.locator('.maplibregl-popup')).toBeVisible();
-  await page.getByRole('radio', { name: 'Municipalities' }).focus();
+  await page.getByRole('group', { name: /Socio-economic index/ }).getByRole('radio', { name: 'Municipalities' }).focus();
   await page.keyboard.press('Escape');
   await expect(page.locator('.maplibregl-popup')).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -289,6 +289,57 @@ for (const lang of ['he', 'ru'] as const) {
       await page.screenshot({ path: path.join(process.env.SCREENS, `sa-popup-${lang}.png`) });
     }
     expect(errors).toEqual([]);
+  });
+}
+
+test('highlight is kept across levels of one dataset and cleared when the dataset changes', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en&layer=ses-2021-local-authorities&hl=1-3');
+  await ready(page, 'ses-2021-local-authorities');
+  const pressedCount = () => page.locator('#legend .legend-list [aria-pressed=true]').count();
+  // Same dataset, other level: SES clusters 1–3 still mean the same thing.
+  await page.locator('input[name=layer][value="ses-2021-localities"]').check();
+  await ready(page, 'ses-2021-localities');
+  await expect(page).toHaveURL(/hl=1-3(&|#|$)/);
+  expect(await pressedCount()).toBe(3);
+  // Other dataset: peripherality 1–3 is a different scale, so the highlight goes.
+  await page.locator('input[name=layer][value="peripherality-2020-local-authorities"]').check();
+  await ready(page, 'peripherality-2020-local-authorities');
+  await expect(page).not.toHaveURL(/hl=/);
+  expect(await pressedCount()).toBe(0);
+  await expect(page.locator('#range')).toHaveClass(/empty/);
+  // …and within peripherality the same rule holds.
+  await page.locator('#legend [data-key="2"]').click();
+  await page.locator('input[name=layer][value="peripherality-2020-localities"]').check();
+  await ready(page, 'peripherality-2020-localities');
+  await expect(page).toHaveURL(/hl=2(&|#|$)/);
+  expect(errors).toEqual([]);
+});
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`collapsed sheet names the dataset and the level at 358 px (${lang})`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 358, height: 650 } });
+    const page = await context.newPage();
+    await page.goto(`./?lang=${lang}&embed=1&layer=peripherality-2020-local-authorities`);
+    await ready(page, 'peripherality-2020-local-authorities');
+    const m = JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8'));
+    const title = page.locator('#sheet-title');
+    await expect(title.locator('.sheet-dataset')).toHaveText(m.datasets['peripherality-2020'].title[lang]);
+    await expect(title.locator('.sheet-level')).toHaveText(m.levels['local-authorities-2011'].title[lang]);
+    // Both parts are on screen, within the toggle, without horizontal scroll.
+    const toggle = (await page.locator('#sheet-toggle').boundingBox())!;
+    for (const part of ['.sheet-dataset', '.sheet-level']) {
+      const b = (await title.locator(part).boundingBox())!;
+      expect(b.width).toBeGreaterThan(20);
+      expect(b.x).toBeGreaterThanOrEqual(toggle.x);
+      expect(b.x + b.width).toBeLessThanOrEqual(toggle.x + toggle.width + 0.5);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    if (process.env.SCREENS && test.info().project.name === 'chromium') {
+      await page.waitForTimeout(1500);
+      await page.screenshot({ path: path.join(process.env.SCREENS, `sheet-title-358-${lang}.png`) });
+    }
+    await context.close();
   });
 }
 

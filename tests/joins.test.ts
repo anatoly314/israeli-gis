@@ -55,11 +55,18 @@ describe('dataset values equal the raw CBS rows', () => {
 
 describe('built outputs', () => {
   it('has one dataset row per table row, every key present in its geometry level', () => {
-    const expected: Partial<Record<string, number>> = { 'local-authorities-2011': 255, 'rc-localities-2011': 996, 'statistical-areas-2011': 1641 };
+    const expected: Record<string, number> = {
+      'ses-2021-local-authorities': 255,
+      'ses-2021-localities': 996,
+      'ses-2021-statistical-areas': 1641,
+      'peripherality-2020-local-authorities': 255,
+      'peripherality-2020-localities': 1213,
+    };
+    expect(manifest().layers.map((l) => l.id)).toEqual(Object.keys(expected));
     for (const layer of manifest().layers as ChoroplethLayer[]) {
       const values = dataset(layer.data);
       const codes = levelCodes(layer.level);
-      expect(Object.keys(values)).toHaveLength(expected[layer.level]!);
+      expect(Object.keys(values)).toHaveLength(expected[layer.id]);
       expect(Object.keys(values).filter((c) => !codes.has(c))).toEqual([]);
     }
   });

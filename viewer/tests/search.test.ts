@@ -51,11 +51,17 @@ describe('search over the shipped levels', () => {
   const SA = 'statistical-areas-2011';
   const RC = 'rc-localities-2011';
   // The current layer's level ranks first, the rest in manifest order.
-  const rankFor = (current: string) => (lvl: string) => (lvl === current ? 0 : [LA, RC, SA].indexOf(lvl) + 1);
+  const rankFor = (current: string) => (lvl: string) => (lvl === current ? 0 : [LA, RC, SA, 'localities-2011'].indexOf(lvl) + 1);
   const find = (q: string, current = LA) => search(entries, q, { levelRank: rankFor(current) });
 
   beforeAll(() => {
-    entries = manifest().layers.flatMap((l) => {
+    // One index per level, as main.ts builds it: two datasets on one level share its entries.
+    // One layer per level (the first), as the viewer indexes each level once whatever datasets use it.
+    const layers = manifest().layers;
+    const byLevel = new Map<string, (typeof layers)[number]>();
+    for (const l of layers) if (!byLevel.has((l as { level: string }).level)) byLevel.set((l as { level: string }).level, l);
+    const firstPerLevel = [...byLevel.values()];
+    entries = firstPerLevel.flatMap((l) => {
       const { level, data } = layer(l.id);
       return buildEntries((l as { level: string }).level, level, data);
     });

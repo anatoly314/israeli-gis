@@ -844,15 +844,42 @@ fieldset legend {
   min-height: 36px;
 }
 
+/* "dataset · level" on one line: both parts shrink with an ellipsis, the level keeps at least half the room. */
 .compact .sheet-toggle #sheet-title {
+  display: flex;
   max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.sheet-dataset,
+.sheet-level {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.sheet-dataset {
+  flex: 0 1 auto;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.sheet-level {
+  flex: 0 0 auto;
+  max-width: 55%;
+}
+
+.sheet-sep {
+  flex: none;
+  white-space: pre;
+  color: var(--muted);
 }
 
 .compact .sheet-toggle #sheet-title::after {
   content: ' ▴';
+  flex: none;
+  white-space: pre;
   color: var(--muted);
 }
 

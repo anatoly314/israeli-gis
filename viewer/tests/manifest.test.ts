@@ -18,7 +18,7 @@ function inside([x, y]: number[], ring: number[][]): boolean {
 describe('layer grouping', () => {
   it('groups the shipped layers by dataset, items by level title with the official term', () => {
     const groups = groupLayers(manifest());
-    expect(groups).toHaveLength(1);
+    expect(groups.map((g) => g.dataset)).toEqual(['ses-2021', 'peripherality-2020']);
     expect(groups[0].title).toEqual({ he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic index 2021', ru: 'Социально-экономический индекс 2021' });
     expect(groups[0].items.map((i) => i.label.en)).toEqual(['Municipalities', 'Kibbutzim, moshavim & villages', 'Neighborhoods']);
     expect(groups[0].items.map((i) => i.label.he)).toEqual(['רשויות מקומיות', 'קיבוצים, מושבים ויישובים', 'שכונות']);
@@ -50,7 +50,7 @@ describe('layer grouping', () => {
     const datasets = { ...m.datasets, 'crime-2024': { title: { he: 'פשיעה 2024', en: 'Crime 2024', ru: 'Преступность 2024' } } };
     const extended: Manifest = { ...m, datasets, layers: [crime, ...m.layers] };
     const groups = groupLayers(extended);
-    expect(groups.map((g) => g.dataset)).toEqual(['crime-2024', 'ses-2021']);
+    expect(groups.map((g) => g.dataset)).toEqual(['crime-2024', 'ses-2021', 'peripherality-2020']);
     expect(groups[0].title.en).toBe('Crime 2024');
     expect(groups[0].items[0].label.en).toBe('Localities');
   });

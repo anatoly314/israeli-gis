@@ -1,8 +1,8 @@
-import type { ChoroplethLayer, Classification, I18n, LevelId, PopupField, Source } from '../../lib/contract.ts';
+import type { LevelId, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
-import { palette10 } from '../../lib/palettes.ts';
 import { raw } from '../../lib/paths.ts';
-import { layerTitle } from '../../terminology.ts';
+import { datasetTerms } from '../../terminology.ts';
+import { clusterLayer } from '../cluster-index.ts';
 import { parseAuthorities, parseLocalities, parseStatisticalAreas, type IndexRecord } from './parse.ts';
 
 const ID = 'ses-2021';
@@ -23,61 +23,6 @@ const LEVELS = {
 } as const satisfies Partial<Record<LevelId, string>>;
 type SesLevel = keyof typeof LEVELS;
 
-// ColorBrewer RdYlBu (colourblind-safe, owner's choice): cluster 1 (lowest socio-economic level) red → 10 (highest) blue.
-const PALETTE = palette10('RdYlBu');
-
-const NOT_CALCULATED: Record<SesLevel, I18n> = {
-  'local-authorities-2011': {
-    he: 'הלמ"ס לא חישבה מדד לרשות זו.',
-    en: 'CBS did not calculate the index for this authority.',
-    ru: 'ЦСБ не рассчитывало индекс для этого органа власти.',
-  },
-  'rc-localities-2011': {
-    he: 'הלמ"ס לא חישבה מדד ליישוב זה (פחות מ-120 תושבים, יישוב מוסדי או שאינו יישוב מגורים).',
-    en: 'CBS did not calculate the index for this locality (fewer than 120 residents, institutional or non-residential).',
-    ru: 'ЦСБ не рассчитывало индекс для этого населённого пункта (менее 120 жителей, учреждение или нежилая территория).',
-  },
-  'statistical-areas-2011': {
-    he: 'הלמ"ס לא חישבה מדד לאזור זה: פחות מ-120 תושבים, אזור שאינו למגורים, או עיר שאין לה נתונים ברמת אזור סטטיסטי (בעיקר יישובים ערביים ודרוזיים).',
-    en: 'CBS did not calculate the index for this area: fewer than 120 residents, a non-residential area, or a city without statistical-area data (mostly Arab and Druze cities).',
-    ru: 'ЦСБ не рассчитывало индекс для этого участка: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города).',
-  },
-};
-
-function classification(level: SesLevel): Classification {
-  return {
-    type: 'categorical',
-    classes: PALETTE.map((color, i) => ({
-      value: i + 1,
-      color,
-      label: { he: `אשכול ${i + 1}`, en: `Cluster ${i + 1}`, ru: `Кластер ${i + 1}` },
-    })),
-    missing: {
-      color: '#c8c8c8',
-      label: { he: 'לא חושב', en: 'Not calculated', ru: 'Не рассчитан' },
-      description: NOT_CALCULATED[level],
-    },
-    note: {
-      he: '1 – הרמה החברתית-כלכלית הנמוכה ביותר, 10 – הגבוהה ביותר',
-      en: '1 = lowest socio-economic level, 10 = highest',
-      ru: '1 – самый низкий социально-экономический уровень, 10 – самый высокий',
-    },
-  };
-}
-
-function popup(rankTotal: number): PopupField[] {
-  return [
-    { field: 'cluster', format: { type: 'integer' }, label: { he: 'אשכול', en: 'Cluster', ru: 'Кластер' } },
-    { field: 'index', format: { type: 'decimal', decimals: 3 }, label: { he: 'ערך מדד', en: 'Index value', ru: 'Значение индекса' } },
-    { field: 'rank', format: { type: 'rank', total: rankTotal }, label: { he: 'דירוג', en: 'Rank', ru: 'Место' } },
-    {
-      field: 'population',
-      format: { type: 'integer' },
-      label: { he: 'אוכלוסיית המדד', en: 'Index population', ru: 'Население (для индекса)' },
-    },
-  ];
-}
-
 const source: Source = {
   name: {
     he: 'הלמ"ס, אפיון יחידות גאוגרפיות וסיווגן לפי הרמה החברתית-כלכלית של האוכלוסייה בשנת 2021',
@@ -93,36 +38,10 @@ const source: Source = {
     'הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
 };
 
-const attribution: I18n = {
-  he: 'מדד חברתי-כלכלי 2021: הלמ"ס',
-  en: 'Socio-Economic Index 2021: CBS Israel',
-  ru: 'Социально-экономический индекс 2021: ЦСБ Израиля',
-};
-
-/** Dataset title; each layer title is this plus the level's plain name from pipeline/terminology.ts. */
-export const DATASET_TITLE: I18n = {
-  he: 'מדד חברתי-כלכלי 2021',
-  en: 'Socio-economic index 2021',
-  ru: 'Социально-экономический индекс 2021',
-};
+/** Dataset title (from pipeline/terminology.ts); each layer title is this plus the level's plain name. */
+export const DATASET_TITLE = datasetTerms(ID).title;
 
 const dataPath = (level: SesLevel) => `datasets/${ID}/${level}.json`;
-
-function layer(level: SesLevel, rankTotal: number): ChoroplethLayer {
-  return {
-    id: `${ID}-${LEVELS[level]}`,
-    dataset: ID,
-    kind: 'choropleth',
-    level,
-    title: layerTitle(DATASET_TITLE, level),
-    data: dataPath(level),
-    valueField: 'cluster',
-    classification: classification(level),
-    popup: popup(rankTotal),
-    attribution,
-    source,
-  };
-}
 
 const values = (records: IndexRecord[]) =>
   Object.fromEntries(records.map(({ code, cluster, index, rank, population }) => [code, { cluster, index, rank, population }]));
@@ -168,7 +87,19 @@ const sesModule: DatasetModule = {
     const levels = Object.keys(LEVELS) as SesLevel[];
     return {
       files: Object.fromEntries(levels.map((l) => [dataPath(l), values(byLevel[l])])),
-      layers: levels.map((l) => layer(l, byLevel[l].length)),
+      layers: levels.map((l) =>
+        clusterLayer({
+          dataset: ID,
+          id: `${ID}-${LEVELS[l]}`,
+          level: l,
+          data: dataPath(l),
+          // ColorBrewer RdYlBu (colourblind-safe, owner's choice): cluster 1 (lowest socio-economic level) red → 10 blue.
+          palette: 'RdYlBu',
+          rankTotal: byLevel[l].length,
+          extraFields: [{ field: 'population', format: { type: 'integer' } }],
+          source,
+        }),
+      ),
       joins,
     };
   },

@@ -54,9 +54,9 @@
         "ru": "Населённые пункты"
       },
       "officialTerm": {
-        "he": "יישובים (קובץ היישובים של הלמ\"ס)",
-        "en": "CBS localities",
-        "ru": "населённые пункты ЦСБ"
+        "he": "כל היישובים, כולל ערים (קובץ היישובים של הלמ\"ס)",
+        "en": "All CBS localities, cities included",
+        "ru": "все населённые пункты ЦСБ, включая города"
       },
       "file": "geometry/localities-2011.topo.json",
       "object": "localities-2011",
@@ -186,6 +186,13 @@
         "en": "Socio-economic index 2021",
         "ru": "Социально-экономический индекс 2021"
       }
+    },
+    "peripherality-2020": {
+      "title": {
+        "he": "מדד פריפריאליות 2020",
+        "en": "Peripherality index 2020",
+        "ru": "Индекс периферийности 2020"
+      }
     }
   },
   "layers": [
@@ -308,7 +315,7 @@
         },
         "note": {
           "he": "1 – הרמה החברתית-כלכלית הנמוכה ביותר, 10 – הגבוהה ביותר",
-          "en": "1 = lowest socio-economic level, 10 = highest",
+          "en": "1 – lowest socio-economic level, 10 – highest",
           "ru": "1 – самый низкий социально-экономический уровень, 10 – самый высокий"
         }
       },
@@ -498,7 +505,7 @@
         },
         "note": {
           "he": "1 – הרמה החברתית-כלכלית הנמוכה ביותר, 10 – הגבוהה ביותר",
-          "en": "1 = lowest socio-economic level, 10 = highest",
+          "en": "1 – lowest socio-economic level, 10 – highest",
           "ru": "1 – самый низкий социально-экономический уровень, 10 – самый высокий"
         }
       },
@@ -688,7 +695,7 @@
         },
         "note": {
           "he": "1 – הרמה החברתית-כלכלית הנמוכה ביותר, 10 – הגבוהה ביותר",
-          "en": "1 = lowest socio-economic level, 10 = highest",
+          "en": "1 – lowest socio-economic level, 10 – highest",
           "ru": "1 – самый низкий социально-экономический уровень, 10 – самый высокий"
         }
       },
@@ -758,6 +765,398 @@
       },
       "kind": "choropleth",
       "level": "statistical-areas-2011"
+    },
+    {
+      "id": "peripherality-2020-local-authorities",
+      "dataset": "peripherality-2020",
+      "title": {
+        "he": "מדד פריפריאליות 2020 – רשויות מקומיות",
+        "en": "Peripherality index 2020 – Municipalities",
+        "ru": "Индекс периферийности 2020 – Муниципалитеты"
+      },
+      "data": "datasets/peripherality-2020/local-authorities-2011.json",
+      "valueField": "cluster",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "אשכול 1",
+              "en": "Cluster 1",
+              "ru": "Кластер 1"
+            },
+            "color": "#ffffe5"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "אשכול 2",
+              "en": "Cluster 2",
+              "ru": "Кластер 2"
+            },
+            "color": "#f5fbc0"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "אשכול 3",
+              "en": "Cluster 3",
+              "ru": "Кластер 3"
+            },
+            "color": "#dff2a8"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "אשכול 4",
+              "en": "Cluster 4",
+              "ru": "Кластер 4"
+            },
+            "color": "#bbe395"
+          },
+          {
+            "value": 5,
+            "label": {
+              "he": "אשכול 5",
+              "en": "Cluster 5",
+              "ru": "Кластер 5"
+            },
+            "color": "#8fd082"
+          },
+          {
+            "value": 6,
+            "label": {
+              "he": "אשכול 6",
+              "en": "Cluster 6",
+              "ru": "Кластер 6"
+            },
+            "color": "#60ba6c"
+          },
+          {
+            "value": 7,
+            "label": {
+              "he": "אשכול 7",
+              "en": "Cluster 7",
+              "ru": "Кластер 7"
+            },
+            "color": "#389d55"
+          },
+          {
+            "value": 8,
+            "label": {
+              "he": "אשכול 8",
+              "en": "Cluster 8",
+              "ru": "Кластер 8"
+            },
+            "color": "#1b7f41"
+          },
+          {
+            "value": 9,
+            "label": {
+              "he": "אשכול 9",
+              "en": "Cluster 9",
+              "ru": "Кластер 9"
+            },
+            "color": "#046335"
+          },
+          {
+            "value": 10,
+            "label": {
+              "he": "אשכול 10",
+              "en": "Cluster 10",
+              "ru": "Кластер 10"
+            },
+            "color": "#004529"
+          }
+        ],
+        "missing": {
+          "label": {
+            "he": "לא חושב",
+            "en": "Not calculated",
+            "ru": "Не рассчитан"
+          },
+          "description": {
+            "he": "הלמ\"ס לא חישבה מדד לרשות זו.",
+            "en": "CBS did not calculate the index for this authority.",
+            "ru": "ЦСБ не рассчитывало индекс для этого органа власти."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "1 – הכי פריפריאלי, 10 – הכי מרכזי",
+          "en": "1 – most peripheral, 10 – most central",
+          "ru": "1 – самая периферия, 10 – самый центр"
+        }
+      },
+      "popup": [
+        {
+          "field": "cluster",
+          "label": {
+            "he": "אשכול",
+            "en": "Cluster",
+            "ru": "Кластер"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "index",
+          "label": {
+            "he": "ערך מדד",
+            "en": "Index value",
+            "ru": "Значение индекса"
+          },
+          "format": {
+            "type": "decimal",
+            "decimals": 3
+          }
+        },
+        {
+          "field": "rank",
+          "label": {
+            "he": "דירוג",
+            "en": "Rank",
+            "ru": "Место"
+          },
+          "format": {
+            "type": "rank",
+            "total": 255
+          }
+        },
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה 2020",
+            "en": "Population 2020",
+            "ru": "Население 2020"
+          },
+          "format": {
+            "type": "integer"
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מדד פריפריאליות 2020: הלמ\"ס",
+        "en": "Peripherality Index 2020: CBS Israel",
+        "ru": "Индекс периферийности 2020: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מדד הפריפריאליות של יישובים ושל רשויות מקומיות, 2020",
+          "en": "CBS, Peripherality Index of Localities and Local Authorities, 2020",
+          "ru": "ЦСБ, индекс периферийности населённых пунктов и органов местной власти, 2020"
+        },
+        "url": "https://www.cbs.gov.il/he/mediarelease/Pages/2022/%D7%9E%D7%93%D7%93-%D7%94%D7%A4%D7%A8%D7%99%D7%A4%D7%A8%D7%99%D7%90%D7%9C%D7%99%D7%95%D7%AA-%D7%A9%D7%9C-%D7%99%D7%99%D7%A9%D7%95%D7%91%D7%99%D7%9D-%D7%95%D7%A9%D7%9C-%D7%A8%D7%A9%D7%95%D7%99%D7%95%D7%AA-%D7%9E%D7%A7%D7%95%D7%9E%D7%99%D7%95%D7%AA,-2020.aspx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מדד הפריפריאליות של יישובים ושל רשויות מקומיות 2020 (הודעה לתקשורת 420/2022), (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/mediarelease/DocLib/2022/420/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "local-authorities-2011"
+    },
+    {
+      "id": "peripherality-2020-localities",
+      "dataset": "peripherality-2020",
+      "title": {
+        "he": "מדד פריפריאליות 2020 – יישובים",
+        "en": "Peripherality index 2020 – Localities",
+        "ru": "Индекс периферийности 2020 – Населённые пункты"
+      },
+      "data": "datasets/peripherality-2020/localities-2011.json",
+      "valueField": "cluster",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "אשכול 1",
+              "en": "Cluster 1",
+              "ru": "Кластер 1"
+            },
+            "color": "#ffffe5"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "אשכול 2",
+              "en": "Cluster 2",
+              "ru": "Кластер 2"
+            },
+            "color": "#f5fbc0"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "אשכול 3",
+              "en": "Cluster 3",
+              "ru": "Кластер 3"
+            },
+            "color": "#dff2a8"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "אשכול 4",
+              "en": "Cluster 4",
+              "ru": "Кластер 4"
+            },
+            "color": "#bbe395"
+          },
+          {
+            "value": 5,
+            "label": {
+              "he": "אשכול 5",
+              "en": "Cluster 5",
+              "ru": "Кластер 5"
+            },
+            "color": "#8fd082"
+          },
+          {
+            "value": 6,
+            "label": {
+              "he": "אשכול 6",
+              "en": "Cluster 6",
+              "ru": "Кластер 6"
+            },
+            "color": "#60ba6c"
+          },
+          {
+            "value": 7,
+            "label": {
+              "he": "אשכול 7",
+              "en": "Cluster 7",
+              "ru": "Кластер 7"
+            },
+            "color": "#389d55"
+          },
+          {
+            "value": 8,
+            "label": {
+              "he": "אשכול 8",
+              "en": "Cluster 8",
+              "ru": "Кластер 8"
+            },
+            "color": "#1b7f41"
+          },
+          {
+            "value": 9,
+            "label": {
+              "he": "אשכול 9",
+              "en": "Cluster 9",
+              "ru": "Кластер 9"
+            },
+            "color": "#046335"
+          },
+          {
+            "value": 10,
+            "label": {
+              "he": "אשכול 10",
+              "en": "Cluster 10",
+              "ru": "Кластер 10"
+            },
+            "color": "#004529"
+          }
+        ],
+        "missing": {
+          "label": {
+            "he": "לא חושב",
+            "en": "Not calculated",
+            "ru": "Не рассчитан"
+          },
+          "description": {
+            "he": "הלמ\"ס לא חישבה מדד ליישוב זה: המדד אינו כולל שבטים בדואיים, אזורי תעשייה, מרכזים אזוריים ומקומות ללא מעמד מוניציפלי.",
+            "en": "CBS did not calculate the index for this locality: it does not cover Bedouin tribes, industrial zones, regional centres or places without municipal status.",
+            "ru": "ЦСБ не рассчитывало индекс для этого населённого пункта: индекс не охватывает бедуинские племена, промзоны, региональные центры и места без муниципального статуса."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "1 – הכי פריפריאלי, 10 – הכי מרכזי",
+          "en": "1 – most peripheral, 10 – most central",
+          "ru": "1 – самая периферия, 10 – самый центр"
+        }
+      },
+      "popup": [
+        {
+          "field": "cluster",
+          "label": {
+            "he": "אשכול",
+            "en": "Cluster",
+            "ru": "Кластер"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "index",
+          "label": {
+            "he": "ערך מדד",
+            "en": "Index value",
+            "ru": "Значение индекса"
+          },
+          "format": {
+            "type": "decimal",
+            "decimals": 3
+          }
+        },
+        {
+          "field": "rank",
+          "label": {
+            "he": "דירוג",
+            "en": "Rank",
+            "ru": "Место"
+          },
+          "format": {
+            "type": "rank",
+            "total": 1213
+          }
+        },
+        {
+          "field": "distance_km",
+          "label": {
+            "he": "מרחק מגבול מחוז תל אביב (ק\"מ)",
+            "en": "Distance from the Tel Aviv District boundary (km)",
+            "ru": "Расстояние до границы Тель-Авивского округа (км)"
+          },
+          "format": {
+            "type": "decimal",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה 2020",
+            "en": "Population 2020",
+            "ru": "Население 2020"
+          },
+          "format": {
+            "type": "integer"
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מדד פריפריאליות 2020: הלמ\"ס",
+        "en": "Peripherality Index 2020: CBS Israel",
+        "ru": "Индекс периферийности 2020: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מדד הפריפריאליות של יישובים ושל רשויות מקומיות, 2020",
+          "en": "CBS, Peripherality Index of Localities and Local Authorities, 2020",
+          "ru": "ЦСБ, индекс периферийности населённых пунктов и органов местной власти, 2020"
+        },
+        "url": "https://www.cbs.gov.il/he/mediarelease/Pages/2022/%D7%9E%D7%93%D7%93-%D7%94%D7%A4%D7%A8%D7%99%D7%A4%D7%A8%D7%99%D7%90%D7%9C%D7%99%D7%95%D7%AA-%D7%A9%D7%9C-%D7%99%D7%99%D7%A9%D7%95%D7%91%D7%99%D7%9D-%D7%95%D7%A9%D7%9C-%D7%A8%D7%A9%D7%95%D7%99%D7%95%D7%AA-%D7%9E%D7%A7%D7%95%D7%9E%D7%99%D7%95%D7%AA,-2020.aspx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מדד הפריפריאליות של יישובים ושל רשויות מקומיות 2020 (הודעה לתקשורת 420/2022), (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/mediarelease/DocLib/2022/420/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
     }
   ],
   "attribution": {

@@ -45,7 +45,13 @@ export const TERMINOLOGY: Record<LevelKind, LevelTerms> = Terminology.parse({
   },
   localities: {
     title: { he: 'יישובים', en: 'Localities', ru: 'Населённые пункты' },
-    officialTerm: { he: 'יישובים (קובץ היישובים של הלמ"ס)', en: 'CBS localities', ru: 'населённые пункты ЦСБ' },
+    // Says what sets this level apart from "kibbutzim, moshavim & villages" (cities included) instead of repeating
+    // the title; a missing officialTerm would leave the two locality levels looking alike in the layer list.
+    officialTerm: {
+      he: 'כל היישובים, כולל ערים (קובץ היישובים של הלמ"ס)',
+      en: 'All CBS localities, cities included',
+      ru: 'все населённые пункты ЦСБ, включая города',
+    },
     featureType: LOCALITY,
   },
   'rc-localities': {
@@ -105,4 +111,106 @@ export const TITLE_SEP = ' – ';
 export function layerTitle(dataset: I18n, level: LevelId): I18n {
   const t = termsFor(level).title;
   return { he: `${dataset.he}${TITLE_SEP}${t.he}`, en: `${dataset.en}${TITLE_SEP}${t.en}`, ru: `${dataset.ru}${TITLE_SEP}${t.ru}` };
+}
+
+// Dataset wording, keyed by dataset id (pipeline/datasets/<id>). Dataset modules read it from here, so every
+// user-facing string still lives in this file.
+
+/** Wording shared by the CBS cluster indices (socio-economic, peripherality): clusters 1–10 + index + rank. */
+export const CLUSTER_INDEX = {
+  classLabel: (n: number): I18n => ({ he: `אשכול ${n}`, en: `Cluster ${n}`, ru: `Кластер ${n}` }),
+  missingLabel: { he: 'לא חושב', en: 'Not calculated', ru: 'Не рассчитан' } satisfies I18n,
+  fields: {
+    cluster: { he: 'אשכול', en: 'Cluster', ru: 'Кластер' },
+    index: { he: 'ערך מדד', en: 'Index value', ru: 'Значение индекса' },
+    rank: { he: 'דירוג', en: 'Rank', ru: 'Место' },
+  } satisfies Record<string, I18n>,
+  /**
+   * Legend note "1 – <low>, 10 – <high>", one style for every cluster index. An en dash rather than "=": it is the
+   * usual Hebrew way to gloss a number, and in an RTL paragraph "1 – הכי פריפריאלי" keeps the digit at the start of
+   * its phrase (the dash is a neutral between a number and Hebrew letters, so it stays with the phrase).
+   */
+  note: (scale: { low: I18n; high: I18n }): I18n => ({
+    he: `1 – ${scale.low.he}, 10 – ${scale.high.he}`,
+    en: `1 – ${scale.low.en}, 10 – ${scale.high.en}`,
+    ru: `1 – ${scale.low.ru}, 10 – ${scale.high.ru}`,
+  }),
+};
+
+export const DatasetTerms = z.strictObject({
+  /** Dataset title: the group heading and the first half of every layer title. */
+  title: I18n,
+  /** Short credit for the map attribution control. */
+  attribution: I18n,
+  /** What cluster 1 and cluster 10 mean; the legend note is CLUSTER_INDEX.note(scale). */
+  scale: z.strictObject({ low: I18n, high: I18n }),
+  /** "Not calculated" explanation for each level kind the dataset ships. */
+  missing: z.partialRecord(LevelKind, I18n),
+  /** Popup labels of the dataset's own fields (beyond CLUSTER_INDEX.fields), keyed by record field. */
+  fields: z.record(z.string(), I18n),
+});
+export type DatasetTerms = z.infer<typeof DatasetTerms>;
+
+const NOT_CALCULATED_AUTHORITY: I18n = {
+  he: 'הלמ"ס לא חישבה מדד לרשות זו.',
+  en: 'CBS did not calculate the index for this authority.',
+  ru: 'ЦСБ не рассчитывало индекс для этого органа власти.',
+};
+
+export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), DatasetTerms).parse({
+  'ses-2021': {
+    title: { he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic index 2021', ru: 'Социально-экономический индекс 2021' },
+    attribution: { he: 'מדד חברתי-כלכלי 2021: הלמ"ס', en: 'Socio-Economic Index 2021: CBS Israel', ru: 'Социально-экономический индекс 2021: ЦСБ Израиля' },
+    scale: {
+      low: { he: 'הרמה החברתית-כלכלית הנמוכה ביותר', en: 'lowest socio-economic level', ru: 'самый низкий социально-экономический уровень' },
+      high: { he: 'הגבוהה ביותר', en: 'highest', ru: 'самый высокий' },
+    },
+    missing: {
+      'local-authorities': NOT_CALCULATED_AUTHORITY,
+      'rc-localities': {
+        he: 'הלמ"ס לא חישבה מדד ליישוב זה (פחות מ-120 תושבים, יישוב מוסדי או שאינו יישוב מגורים).',
+        en: 'CBS did not calculate the index for this locality (fewer than 120 residents, institutional or non-residential).',
+        ru: 'ЦСБ не рассчитывало индекс для этого населённого пункта (менее 120 жителей, учреждение или нежилая территория).',
+      },
+      'statistical-areas': {
+        he: 'הלמ"ס לא חישבה מדד לאזור זה: פחות מ-120 תושבים, אזור שאינו למגורים, או עיר שאין לה נתונים ברמת אזור סטטיסטי (בעיקר יישובים ערביים ודרוזיים).',
+        en: 'CBS did not calculate the index for this area: fewer than 120 residents, a non-residential area, or a city without statistical-area data (mostly Arab and Druze cities).',
+        ru: 'ЦСБ не рассчитывало индекс для этого участка: менее 120 жителей, нежилая территория или город без данных на уровне статистических районов (в основном арабские и друзские города).',
+      },
+    },
+    fields: {
+      population: { he: 'אוכלוסיית המדד', en: 'Index population', ru: 'Население (для индекса)' },
+    },
+  },
+  'peripherality-2020': {
+    title: { he: 'מדד פריפריאליות 2020', en: 'Peripherality index 2020', ru: 'Индекс периферийности 2020' },
+    attribution: { he: 'מדד פריפריאליות 2020: הלמ"ס', en: 'Peripherality Index 2020: CBS Israel', ru: 'Индекс периферийности 2020: ЦСБ Израиля' },
+    scale: {
+      low: { he: 'הכי פריפריאלי', en: 'most peripheral', ru: 'самая периферия' },
+      high: { he: 'הכי מרכזי', en: 'most central', ru: 'самый центр' },
+    },
+    missing: {
+      'local-authorities': NOT_CALCULATED_AUTHORITY,
+      localities: {
+        he: 'הלמ"ס לא חישבה מדד ליישוב זה: המדד אינו כולל שבטים בדואיים, אזורי תעשייה, מרכזים אזוריים ומקומות ללא מעמד מוניציפלי.',
+        en: 'CBS did not calculate the index for this locality: it does not cover Bedouin tribes, industrial zones, regional centres or places without municipal status.',
+        ru: 'ЦСБ не рассчитывало индекс для этого населённого пункта: индекс не охватывает бедуинские племена, промзоны, региональные центры и места без муниципального статуса.',
+      },
+    },
+    fields: {
+      distance_km: {
+        he: 'מרחק מגבול מחוז תל אביב (ק"מ)',
+        en: 'Distance from the Tel Aviv District boundary (km)',
+        ru: 'Расстояние до границы Тель-Авивского округа (км)',
+      },
+      population: { he: 'אוכלוסייה 2020', en: 'Population 2020', ru: 'Население 2020' },
+    },
+  },
+});
+
+/** Wording for a dataset id; throws when it has no entry, so a new dataset can't ship unnamed. */
+export function datasetTerms(id: string): DatasetTerms {
+  const terms = DATASET_TERMS[id];
+  if (!terms) throw new Error(`No wording for dataset "${id}" (add it to DATASET_TERMS in pipeline/terminology.ts)`);
+  return terms;
 }

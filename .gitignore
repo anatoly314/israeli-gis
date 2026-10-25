@@ -24,3 +24,23 @@ data/raw/cbs-localities-file/index2021.xlsx
 data/raw/datagov-localities-multilingual/
 # Superseded by p3466_items.csv (adds P576 and the ru.wikipedia title)
 data/raw/wikidata-p3466/p3466_labels.csv
+
+# Spike 2 downloads (docs/data-sources-2.md §9) not read by the pipeline yet. Each later step un-ignores what it uses.
+# Peripherality 2020 uses only t1 and t2; t3 is a subset of t2, t4 is a code list, the publication duplicates them.
+data/raw/cbs-peripherality-2020/24_22_420t3.xlsx
+data/raw/cbs-peripherality-2020/24_22_420t4.xls
+data/raw/cbs-peripherality-2020-publication-1917/
+data/raw/cbs-localities-file/bycode2022.xlsx
+data/raw/cbs-localities-file/bycode2023Sofi.xlsx
+data/raw/cbs-localities-file/bycode2024.xlsx
+data/raw/cbs-localities-file/change2024-2023Araii-2023Sofi.xlsx
+data/raw/cbs-localities-file/changes-1948-2024.xlsx
+data/raw/cbs-localities-file/index2024.xlsx
+data/raw/cbs-census-2022/
+data/raw/cbs-local-authorities-2022-publication-1957/
+data/raw/cbs-population-sa2022-2023/
+data/raw/datagov-census-2022/
+data/raw/datagov-moe-coordinates/
+data/raw/datagov-moe-mosdot-edu/
+data/raw/datagov-moe-mosdot/
+data/raw/moe-shkifut-api-samples/

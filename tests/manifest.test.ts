@@ -17,12 +17,14 @@ describe('layers.json', () => {
   it('describes the three SES 2021 choropleths with a "not calculated" state', () => {
     const m = manifest();
     expect(Object.keys(m.levels).sort()).toEqual([...LEVEL_IDS].sort());
-    expect(m.layers.map((l) => [l.id, (l as ChoroplethLayer).level])).toEqual([
+    const ses = m.layers.filter((l) => l.dataset === 'ses-2021');
+    expect(ses.map((l) => [l.id, (l as ChoroplethLayer).level])).toEqual([
       ['ses-2021-local-authorities', 'local-authorities-2011'],
       ['ses-2021-localities', 'rc-localities-2011'],
       ['ses-2021-statistical-areas', 'statistical-areas-2011'],
     ]);
-    for (const l of m.layers) {
+    expect(m.layers.map((l) => l.dataset)).toEqual(['ses-2021', 'ses-2021', 'ses-2021', 'peripherality-2020', 'peripherality-2020']);
+    for (const l of ses) {
       expect(l.kind).toBe('choropleth');
       expect(l.valueField).toBe('cluster');
       expect(l.classification.type).toBe('categorical');
@@ -35,7 +37,7 @@ describe('layers.json', () => {
   it('colours the SES clusters with ColorBrewer RdYlBu, red (1) → blue (10)', () => {
     const rdylbu = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee090', '#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'];
     expect(palette10('RdYlBu')).toEqual(rdylbu);
-    for (const l of manifest().layers) {
+    for (const l of manifest().layers.filter((x) => x.dataset === 'ses-2021')) {
       if (l.classification.type === 'categorical') expect(l.classification.classes.map((c) => c.color)).toEqual(rdylbu);
     }
   });

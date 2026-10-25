@@ -1,6 +1,6 @@
 // Named colour scales for classifications, so a dataset picks one by name instead of copying hex lists.
 // Values are the published 10-class schemes, checked against d3-scale-chromatic (src/diverging/RdYlBu.js,
-// src/sequential-multi/viridis.js sampled at 10) and the ColorBrewer export (colorbrewer.json).
+// src/sequential-multi/viridis.js and interpolateYlGn sampled at 10) and the ColorBrewer export (colorbrewer.json).
 
 const PALETTES = {
   /**
@@ -14,6 +14,14 @@ const PALETTES = {
    * one-directional data (rates, counts) where a diverging scale's middle would suggest a meaningful midpoint.
    */
   viridis: ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725'],
+  /**
+   * ColorBrewer YlGn, sequential multi-hue and colourblind-safe: pale yellow (low) → dark green (high). ColorBrewer
+   * publishes sequential schemes up to 9 classes, so these are d3-scale-chromatic 3.0.0 (installed via mapshaper) `interpolateYlGn` (a basis
+   * spline through the 9-class scheme) sampled at t = i/9 with `quantize(interpolateYlGn, 10)`; the ends equal the
+   * ColorBrewer endpoints #ffffe5 and #004529. Its hues don't occur in RdYlBu, so a YlGn layer can't be mistaken
+   * for an SES one.
+   */
+  YlGn: ['#ffffe5', '#f5fbc0', '#dff2a8', '#bbe395', '#8fd082', '#60ba6c', '#389d55', '#1b7f41', '#046335', '#004529'],
 } as const;
 
 export type PaletteName = keyof typeof PALETTES;

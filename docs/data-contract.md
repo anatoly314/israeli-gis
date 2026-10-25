@@ -19,10 +19,14 @@ dist/data/
 │   ├── localities-2011.topo.json                  objects "localities-2011" (1283)       + "…-placeholders" (126)
 │   ├── rc-localities-2011.topo.json               objects "rc-localities-2011" (1074)    + "…-placeholders" (114)
 │   └── statistical-areas-2011.topo.json           objects "statistical-areas-2011" (1917) + "…-placeholders" (0)
-└── datasets/ses-2021/
-    ├── local-authorities-2011.json                code → values (255 rows)
-    ├── rc-localities-2011.json                    code → values (996 rows)
-    └── statistical-areas-2011.json                code → values (1641 rows)
+└── datasets/
+    ├── ses-2021/
+    │   ├── local-authorities-2011.json            code → values (255 rows)
+    │   ├── rc-localities-2011.json                code → values (996 rows)
+    │   └── statistical-areas-2011.json            code → values (1641 rows)
+    └── peripherality-2020/
+        ├── local-authorities-2011.json            code → values (255 rows)
+        └── localities-2011.json                   code → values (1213 rows)
 ```
 
 Read these paths from `layers.json` (`levels[*].file`, `levels[*].object`, `levels[*].placeholderObject`,
@@ -189,6 +193,42 @@ geometry, so a missing key always means CBS did not compute the index.
 | `rc-localities-2011` | 78 / 1074 | Fewer than 120 residents, institutional, or non-residential |
 | `local-authorities-2011` | 2 / 257 | Migdal Tefen (`"1722"`) and Neot Hovav (`"1770"`), which are industrial local councils |
 
+### `peripherality-2020`
+
+CBS peripherality index 2020 (media release 420/2022, publication No. 1917; see `docs/data-sources-2.md` §1). It has no
+statistical-area level. Its locality table covers every locality with municipal status, cities included, so it sits on
+`localities-2011`, not `rc-localities-2011`.
+
+| Layer | Level | Rows | Without data |
+|---|---|---|---|
+| `peripherality-2020-local-authorities` | `local-authorities-2011` | 255 (table 1) | 2 / 257: Migdal Tefen 1722, Neot Hovav 1770 |
+| `peripherality-2020-localities` | `localities-2011` | 1213 (table 2) | 70 / 1283: places the index doesn't cover (Bedouin tribes, industrial zones, regional centres, no municipal status) |
+
+```json
+{ "5000": { "cluster": 10, "index": 4.1901, "rank": 1212, "distance_km": 0, "population": 463808 },
+  "2600": { "cluster": 1, "index": -2.4839, "rank": 3, "distance_km": 323, "population": 52519 } }
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `cluster` | integer 1–10 | CBS peripherality cluster. **1 is the most peripheral** (Eilat, Hevel Elot), **10 the most central** (Tel Aviv, Giv'atayim). The clusters are unequal in size and come from hierarchical clustering of the 255 authorities. This is the `valueField`. |
+| `index` | number, 4 decimals | The index value: 2/3 potential accessibility plus 1/3 proximity to the Tel Aviv District boundary |
+| `rank` | integer 1…N | Ascending, so 1 is the most peripheral. N is 255 or 1213. |
+| `distance_km` | number, 1 decimal | Localities only: distance from the Tel Aviv District boundary in km |
+| `population` | integer | CBS population 2020 (all residents). This is not the SES "index population". |
+
+- **Classification:** categorical clusters 1–10, coloured with ColorBrewer **YlGn** (sequential: pale = peripheral,
+  dark green = central). Its hues don't occur in the SES RdYlBu.
+- **Legend note:** "1 – most peripheral, 10 – most central". Every cluster index uses the same "1 – low, 10 – high"
+  style, built by `CLUSTER_INDEX.note` from each dataset's `scale` in `pipeline/terminology.ts`. The note is one
+  finished string per language; the viewer shows it as is, with no numbers spliced in.
+- **Values are 2020 data on the 2020 municipal map.** The 2022 split of Sha'ar Shomron out of RC Shomron is not
+  reflected.
+
+**Dataset wording.** Each dataset's title, attribution, legend note, "not calculated" texts and popup labels live in
+`DATASET_TERMS` in `pipeline/terminology.ts`, keyed by dataset id. The shared cluster wording (class labels,
+"Not calculated", cluster/index/rank labels) is in `CLUSTER_INDEX`. Dataset modules only read it.
+
 ## Names
 
 | | Source, in order of preference |
@@ -308,6 +348,11 @@ Popup formats:
 | `ses-2021-local-authorities` | `local-authorities-2011` | `datasets/ses-2021/local-authorities-2011.json` |
 | `ses-2021-localities` | `rc-localities-2011` | `datasets/ses-2021/rc-localities-2011.json` |
 | `ses-2021-statistical-areas` | `statistical-areas-2011` | `datasets/ses-2021/statistical-areas-2011.json` |
+| `peripherality-2020-local-authorities` | `local-authorities-2011` | `datasets/peripherality-2020/local-authorities-2011.json` |
+| `peripherality-2020-localities` | `localities-2011` | `datasets/peripherality-2020/localities-2011.json` |
+
+The paragraph below describes the three SES layers. The two peripherality layers are described in
+[`peripherality-2020`](#peripherality-2020).
 
 All three use the same classification: categorical clusters 1–10 coloured with ColorBrewer RdYlBu (10-class,
 colourblind-safe, diverging): cluster 1 `#a50026` (red, lowest) through pale yellow and pale blue (5 `#fee090`,
@@ -332,7 +377,7 @@ Excerpt:
     "type": "categorical",
     "classes": [{ "value": 1, "color": "#a50026", "label": { "he": "אשכול 1", "en": "Cluster 1", "ru": "Кластер 1" } }, "… 2–10 …"],
     "missing": { "color": "#c8c8c8", "label": { "he": "לא חושב", "en": "Not calculated", "ru": "Не рассчитан" }, "description": { "…": "…" } },
-    "note": { "en": "1 = lowest socio-economic level, 10 = highest", "…": "…" }
+    "note": { "en": "1 – lowest socio-economic level, 10 – highest", "…": "…" }
   },
   "popup": [
     { "field": "cluster", "format": { "type": "integer" }, "label": { "en": "Cluster", "…": "…" } },
@@ -372,7 +417,7 @@ All level wording comes from one file, `pipeline/terminology.ts`, keyed by level
 | kind | title (he / en / ru) | officialTerm (he / en / ru) |
 |---|---|---|
 | `local-authorities` | רשויות מקומיות / Municipalities / Муниципалитеты | רשויות מקומיות / Local authorities / органы местного самоуправления |
-| `localities` | יישובים / Localities / Населённые пункты | יישובים (קובץ היישובים של הלמ"ס) / CBS localities / населённые пункты ЦСБ |
+| `localities` | יישובים / Localities / Населённые пункты | כל היישובים, כולל ערים (קובץ היישובים של הלמ"ס) / All CBS localities, cities included / все населённые пункты ЦСБ, включая города |
 | `rc-localities` | קיבוצים, מושבים ויישובים / Kibbutzim, moshavim & villages / Кибуцы, мошавы и посёлки | יישובים במועצות אזוריות / Localities in regional councils / населённые пункты в региональных советах |
 | `statistical-areas` | שכונות / Neighborhoods / Кварталы | אזורים סטטיסטיים של הלמ"ס / CBS statistical areas / статистические районы ЦСБ |
 
@@ -522,3 +567,19 @@ Don't imply CBS endorsement.
 
 **The viewer must know:** pick the count form with `new Intl.PluralRules(lang).select(n)` (fall back to `other`),
 and build the search placeholder from the searchable fields' `searchTerm`s.
+
+### Changes for the peripherality index (additive, still `version: 1`)
+
+- New second dataset, `peripherality-2020`, with two layers: `peripherality-2020-local-authorities` and
+  `peripherality-2020-localities`. See [`peripherality-2020`](#peripherality-2020).
+- These are the first layers on `localities-2011`, and the first time two datasets share a level
+  (`local-authorities-2011`).
+- New popup field `distance_km` (`decimal`, 1 decimal).
+- Layer titles stay unique: dataset title + level title.
+
+**The viewer must know:**
+1. Nothing in the contract changed, so no code change is needed. The new group and layers come from
+   `manifest.datasets` and `layers`.
+2. Build one search index per level, not per layer. Two datasets on one level share features, and indexing per layer
+   would list every authority twice (`main.ts` already does this).
+3. Tests that assumed a single dataset group or three layers need updating.

@@ -6,9 +6,15 @@ An embeddable, multi-layer web map of Israel's open data, in two parts:
 - **viewer**: a static MapLibre page that reads `dist/data/layers.json` and shows every layer in it, in Hebrew, English
   and Russian (`viewer/`, built to `dist/site/`).
 
-Layer 1 is the CBS socio-economic index 2021, coloured by cluster (1–10) at three levels: local authorities,
-localities in regional councils, and statistical areas. A fourth geometry level, all localities, is there for future
-datasets keyed by locality code.
+Datasets (one layer group each, coloured by CBS cluster 1–10):
+
+| Dataset | Levels | Palette |
+|---|---|---|
+| `ses-2021`: CBS socio-economic index 2021 | local authorities, localities in regional councils, statistical areas | RdYlBu |
+| `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | YlGn |
+
+The four geometry levels (local authorities, all localities, localities in regional councils, statistical areas) are
+shared by every dataset.
 
 - `docs/data-sources.md`: research notes covering where every file comes from, its schemas, join keys, and licensing.
 - `docs/data-contract.md`: the spec for `dist/data/` that the viewer codes against.
@@ -74,9 +80,11 @@ pipeline/
   boundaries/                 SA-2011 layer → four geometry levels, placeholder detection, names
   datasets/
     index.ts                  dataset registry
+    cluster-index.ts          shared layer shape of CBS cluster indices (classification, popup, title)
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
+    peripherality-2020/       peripherality index 2020: authorities + all localities
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
-  terminology.ts              user-facing level wording (he/en/ru), keyed by level kind
+  terminology.ts              user-facing wording (he/en/ru): levels by kind, datasets by id
 tests/                        vitest (global setup runs the pipeline)
 viewer/                       the map page (Vite + TypeScript + MapLibre); see docs/viewer.md
   src/                        modules; config.ts holds the basemap config
@@ -146,7 +154,9 @@ A dataset is joined to one of the existing geometry levels by code (a choropleth
      - `files`: `{ "datasets/<id>/<level>.json": { [code]: { field: number } } }`
      - `layers`: a `ChoroplethLayer` per level, or a `PointsLayer`. Use a `categorical` or `stepped` classification.
        Build each title with `layerTitle(DATASET_TITLE, level)` from `pipeline/terminology.ts`; don't write level
-       names yourself.
+       names yourself. A CBS cluster index can use `clusterLayer()` from `pipeline/datasets/cluster-index.ts`.
+   - Put its wording in `DATASET_TERMS` in `pipeline/terminology.ts`: title, attribution, legend note, "not
+     calculated" texts per level kind, and popup labels. Pick a palette from `pipeline/lib/palettes.ts`.
      - `joins`: one `join()` per level, so the build reports and enforces matches
 3. Register it in `pipeline/datasets/index.ts`.
 4. Add tests that pin the join counts and a few values copied by hand from the raw rows. Then run
@@ -180,13 +190,14 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 10 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 10.2 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
 | `cbs-statistical-areas-2011-demography-2020/*.gdb.zip` | All geometry. Only the zip is committed; gdal3.js reads it via `/vsizip/`. |
 | `cbs-socioeconomic-2021/24_24_230t{1,3,4}.xlsx` | Index tables A1, B and C |
 | `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | Neighborhood and main-street names per statistical area (Hebrew) → `neighborhoods_he`, `streets_he` |
+| `cbs-peripherality-2020/24_22_420t{1,2}.xlsx` | Peripherality index 2020: table 1 (255 authorities), table 2 (1,213 localities) |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
 | `datagov-municipal-authorities/localauthorities.csv` | Tests cross-check the `5500+n` authority codes against it |
@@ -203,6 +214,8 @@ Ignored:
 - `24_24_230t2.xlsx`, `24_24_230t5.xlsx`, `index2021.xlsx`
 - the data.gov.il multilingual list
 - the superseded `p3466_labels.csv`
+- spike-2 downloads not used yet (`docs/data-sources-2.md` §9): peripherality t3/t4 and publication 1917, newer
+  localities files, census 2022, SA-2022 population, MoE school lists; later steps un-ignore what they read
 
 ## Why `dist/data` is committed
 

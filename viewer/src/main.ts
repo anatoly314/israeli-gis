@@ -138,7 +138,13 @@ function renderChrome() {
   if (layer) {
     const g = groups.find((x) => x.items.some((i) => i.layer.id === layer.id))!;
     const item = g.items.find((i) => i.layer.id === layer.id)!;
-    $('sheet-title').textContent = item.label[lang];
+    // "dataset · level": with several datasets on one level, the level alone doesn't say which map this is.
+    const title = $('sheet-title');
+    title.replaceChildren(
+      Object.assign(document.createElement('span'), { className: 'sheet-dataset', textContent: g.title[lang] }),
+      Object.assign(document.createElement('span'), { className: 'sheet-sep', textContent: ' · ' }),
+      Object.assign(document.createElement('span'), { className: 'sheet-level', textContent: item.label[lang] }),
+    );
     $('sheet-toggle').title = `${g.title[lang]} · ${item.label[lang]}`;
   }
   renderSelection();
@@ -208,6 +214,10 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   const token = ++switching;
   const previous = state.layerId;
   state.layerId = layer.id;
+  // Class keys mean something else in another dataset (SES cluster 1 ≠ peripherality cluster 1): drop the
+  // highlight when the dataset changes, keep it across levels of the same dataset.
+  const before = layerById(previous);
+  if (before && before.dataset !== layer.dataset) state.hl = [];
   // Accepts URL tokens ("4-7", "1,5,9", "na") as well as keys already expanded for another layer.
   state.hl = expandHl(state.hl, classKeys(layer.classification));
   if (previous !== layer.id) clearSelection();
