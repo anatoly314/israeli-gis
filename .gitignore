@@ -42,6 +42,7 @@ data/raw/cbs-local-authorities-2022-publication-1957/
 data/raw/cbs-population-sa2022-2023/
 data/raw/datagov-census-2022/
 data/raw/datagov-moe-coordinates/
-data/raw/datagov-moe-mosdot-edu/
 data/raw/datagov-moe-mosdot/
+# Schools read the gzip (mosdot_edu.csv.gz); the 10.9 MB original stays local only.
+data/raw/datagov-moe-mosdot-edu/mosdot_edu.csv
 data/raw/moe-shkifut-api-samples/

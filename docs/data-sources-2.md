@@ -518,6 +518,18 @@ data.gov.il copy additionally falls under the data.gov.il licence (§4.6). Use t
 
 ## 4. Schools as a points layer
 
+> **Used (step 5, 2026-10-26):** dataset `schools-2026` (`pipeline/datasets/schools-2026/`) reads
+> `mosdot_edu.csv.gz`, which is committed. It is a deterministic gzip of the download: level 9, mtime 0, OS byte 3,
+> 0.95 MB instead of 10.9 MB. Two sha256 values are pinned: the original CSV (checked on download and again after
+> gunzip at build time) and the `.gz` (checked before every build). `npm run download` fetches the CSV with a browser
+> UA from the `data.gov.il` host and writes the gzip. The original CSV is gitignored and kept local only. It keeps the 6,641
+> schools: no duplicate codes, none dropped for coordinates. Locality join is 6,609 / 6,641; the 32 unmatched schools
+> sit in 11 localities (6 Bedouin tribes, the Tel Nof base, Tel Zion, Sha'ar Shomron, Harsha, Neria).
+>
+> **Licence (recorded):** no licence on the resource, so the data.gov.il terms of use apply (read 2026-10-25, page
+> updated 30/08/2025; §4.6). They allow copying, redistribution and derivative works and require naming the source.
+> The manifest's `source.citation` credits "משרד החינוך, מוסדות חינוך, data.gov.il". Bagrut was **not** scraped.
+
 ### 4.1 Sources
 
 data.gov.il CKAN; checked 2026-10-25.
@@ -560,7 +572,8 @@ data.gov.il CKAN; checked 2026-10-25.
   | medium | 199 |
   | low | 309, placed at the locality centre |
 
-- **546 schools share coordinates** with another school (shared campuses).
+- **1,049 schools sit at 439 points after rounding to ~1 m** (956 at 410 exact source coordinates): shared campuses.
+  The 546 figure in the first draft of this report was wrong.
 
 ### 4.4 Join to `localities-2011` by CBS code
 
@@ -713,7 +726,8 @@ level. New wording is needed for dataset titles, measures and the points feature
    eagerly. Check how the viewer loads levels; ideally lazily per active layer **(not checked)**.
 7. **Schools:**
    - no current student counts, no English names, no open Bagrut
-   - 309 centroid-placed schools, 546 co-located
+   - 309 centroid-placed schools; 1,049 schools at 439 points after rounding to ~1 m (956 at 410 exact source
+     coordinates)
    - unknown update cadence
    - licence is "not specified", so the site licence applies
 8. **Repo footprint.** About 45 MB of new raw files are untracked and **not gitignored**: the census summaries are
@@ -754,7 +768,7 @@ level. New wording is needed for dataset titles, measures and the points feature
 | `datagov-census-2022/*.csv` (3 files) | 25 KB – 949 KB | |
 | `cbs-population-sa2022-2023/population_by_locality_sa_age_end2023.xlsx` | 1,405,937 | 1f13c72f4f65 |
 | `cbs-local-authorities-2022-publication-1957/2.zip`, `list02.xlsx` | 980,841 / 33,344 | not useful |
-| `datagov-moe-mosdot-edu/mosdot_edu.csv` | 10,916,608 | f048c4de263f |
+| `datagov-moe-mosdot-edu/mosdot_edu.csv` | 10,916,608 | f048c4de263f (**used, committed**) |
 | `datagov-moe-mosdot/mosdot.xlsx` | 10,246,108 | e2f64487c196 |
 | `datagov-moe-coordinates/moe_mosdot_coordinates.csv` | 2,582,678 | c9e03d89950f |
 | `moe-shkifut-api-samples/lists.json`, `mosad_540070_2024.json` | 869,133 / 1,123,061 | API probes; don't commit |

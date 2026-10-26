@@ -1,11 +1,22 @@
 import { Popup, type MapGeoJSONFeature, type PointLike } from 'maplibre-gl';
 import { classKeys, isOrdered } from './classify.ts';
 import { MANIFEST_URL } from './config.ts';
-import { joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
+import { colocated, joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
 import type { ExtraField } from '../../pipeline/lib/contract.ts';
 import { countText, formatNumber } from './format.ts';
 import { detectLang, dirOf, featureName, inLangNote, searchPlaceholder, t, type Lang } from './i18n.ts';
-import { describeLayer, featureNote, groupLayers, isChoropleth, loadManifest, type Layer, type Level, type Manifest } from './manifest.ts';
+import {
+  describeLayer,
+  featureNote,
+  groupLayers,
+  isChoropleth,
+  loadManifest,
+  sourceKeyOf,
+  type Layer,
+  type Level,
+  type Manifest,
+  type PointsLayer,
+} from './manifest.ts';
 import {
   addDataLayer,
   createMap,
@@ -20,7 +31,7 @@ import {
   setLabelLanguage,
   setMapLocale,
 } from './map.ts';
-import { featureTitle, featureType, popupHtml, tooltipHtml, valueHtml } from './popup.ts';
+import { featureTitle, featureType, pointsPopupHtml, popupHtml, tooltipHtml, valueHtml } from './popup.ts';
 import { compactHl, expandHl, normalizeSelection } from './range.ts';
 import { createSearchBox } from './search-box.ts';
 import { createSlider } from './slider.ts';
@@ -69,18 +80,21 @@ const manifestReady = new Promise<void>((resolve, reject) => {
 // Only search waits on it; a failed load is reported by boot().
 manifestReady.catch(() => {});
 let base: URL;
-const layerData = new Map<string, LayerData & { byCode: Map<string, Props>; level: LevelData }>();
-/** Decoded geometry per search level key (level id, or `layer:<id>` for a points layer). */
+/** `spots`: on points layers, the codes sharing each co-located point's coordinates. */
+const layerData = new Map<string, LayerData & { byCode: Map<string, Props>; level: LevelData; spots?: Map<string, string[]> }>();
+/** Decoded geometry per search level key (level id, or `points:<file>` for points layers). */
 const levelData = new Map<string, LevelData>();
 let entries: SearchEntry[] = [];
 let indexing: Promise<void> | null = null;
 let switching = 0;
 let hovered: { layerId: string; code: string } | null = null;
+/** The feature the open popup was opened for. */
+let popupAt: { layerId: string; code: string } | null = null;
 
 const layerById = (id: string) => manifest.layers.find((l) => l.id === id);
 const currentLayer = () => layerById(state.layerId)!;
 const levelOf = (l: Layer): Level | undefined => (isChoropleth(l) ? manifest.levels[l.level] : undefined);
-const levelKeyOf = (l: Layer) => (isChoropleth(l) ? l.level : `layer:${l.id}`);
+const levelKeyOf = sourceKeyOf;
 const levelByKey = (key: string): Level | undefined => manifest.levels[key as keyof Manifest['levels']];
 /** Our own labels, except on levels whose features are parts of a named place (they would repeat the place name). */
 const ownLabels = (l: Layer) => isChoropleth(l) && !manifest.levels[l.level].parentCode;
@@ -99,7 +113,14 @@ function hlTokens() {
 
 function syncUrl() {
   const s = serializeUrl(
-    { lang: state.lang, layer: state.layerId || null, hl: hlTokens(), feature: state.selected?.codes.length === 1 ? state.selected.codes[0] : null, embed: state.embed },
+    {
+      lang: state.lang,
+      layer: state.layerId || null,
+      hl: hlTokens(),
+      // The feature whose popup is open (a campus selects several points, the link names the one picked).
+      feature: popupAt?.code ?? (state.selected?.codes.length === 1 ? state.selected.codes[0] : null),
+      embed: state.embed,
+    },
     location.search,
   );
   history.replaceState(history.state, '', `${location.pathname}${s}${location.hash}`);
@@ -160,9 +181,11 @@ function renderChrome() {
     const d = describeLayer(manifest, layer);
     const span = (className: string, textContent: string) => Object.assign(document.createElement('span'), { className, textContent });
     const main = span('sheet-main', '');
-    main.replaceChildren(...(d.measure ? [span('sheet-measure', d.measure[lang]), span('sheet-sep', ' · ')] : []), span('sheet-level', d.level[lang]));
+    // A points layer has no level: the measure alone.
+    const parts = [...(d.measure ? [span('sheet-measure', d.measure[lang])] : []), ...(d.level ? [span('sheet-level', d.level[lang])] : [])];
+    main.replaceChildren(...parts.flatMap((p, i) => (i ? [span('sheet-sep', ' · '), p] : [p])));
     $('sheet-title').replaceChildren(span('sheet-dataset', d.shortDataset[lang]), main);
-    $('sheet-toggle').title = [d.dataset[lang], d.measure?.[lang], d.level[lang]].filter(Boolean).join(' · ');
+    $('sheet-toggle').title = [d.dataset[lang], d.measure?.[lang], d.level?.[lang]].filter(Boolean).join(' · ');
   }
   renderSelection();
   renderAbout($<HTMLDialogElement>('about'), manifest, lang);
@@ -173,7 +196,9 @@ function renderSelection() {
   const layer = manifest && layerById(state.layerId);
   if (!layer) return;
   $('legend-title').textContent = t('legend', state.lang);
-  renderLegend($('legend'), $('strip'), layer, state.hl, state.lang, { toggle: toggleClass, set: setClasses });
+  // Until the layer's data arrives, whether any feature is "not calculated" is unknown: keep that row.
+  const missing = layerData.get(layer.id)?.missing ?? 1;
+  renderLegend($('legend'), $('strip'), layer, state.hl, state.lang, { toggle: toggleClass, set: setClasses }, missing > 0);
   slider.update(layer, state.hl, state.lang);
 }
 
@@ -197,7 +222,7 @@ function setLang(lang: Lang) {
   if (styleLoaded) setBasemapLanguage(map, lang);
   for (const id of layerData.keys()) setLabelLanguage(map, id, lang);
   refreshControls();
-  if (popup.isOpen() && state.selected?.codes.length === 1) showPopup(state.selected.layerId, state.selected.codes[0], popup.getLngLat());
+  if (popup.isOpen() && popupAt) showPopup(popupAt.layerId, popupAt.code, popup.getLngLat());
   syncUrl();
 }
 
@@ -221,7 +246,7 @@ async function prepare(layer: Layer) {
   const joined = joinLayer(level, values, layer);
   const byCode = new Map<string, Props>();
   for (const f of [...joined.polygons.features, ...joined.markers.features]) if (!byCode.has(f.properties.code)) byCode.set(f.properties.code, f.properties);
-  const entry = { ...joined, byCode, level };
+  const entry = { ...joined, byCode, level, ...(!isChoropleth(layer) && { spots: colocated(level) }) };
   layerData.set(layer.id, entry);
   levelData.set(levelKeyOf(layer), level);
   return entry;
@@ -259,6 +284,8 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   setDataLayerVisible(map, layer.id, true);
   setBasemapPlaceLabels(map, !ownLabels(layer));
   setHighlight(map, layer, state.hl);
+  // Now known: whether the legend needs its "not calculated" row.
+  if (data.missing === 0) renderSelection();
   refreshControls();
   status(null);
   document.body.dataset.layer = layer.id;
@@ -268,6 +295,7 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
 function clearSelection() {
   if (state.selected) for (const c of state.selected.codes) setFeatureFlag(map, state.selected.layerId, c, 'selected', false);
   state.selected = null;
+  popupAt = null;
   if (popup.isOpen()) popup.remove();
 }
 
@@ -278,13 +306,49 @@ function select(layerId: string, codes: string[]) {
   syncUrl();
 }
 
+/** The feature and, on a points layer, every other point at exactly its location. */
+const spotCodes = (layerId: string, code: string) => layerData.get(layerId)?.spots?.get(code) ?? [code];
+
 function showPopup(layerId: string, code: string, at: { lng: number; lat: number } | [number, number]) {
   const layer = layerById(layerId);
-  const props = layerData.get(layerId)?.byCode.get(code);
-  if (!layer || !props) return;
-  popup.setLngLat(at).setHTML(popupHtml(layer, levelOf(layer), props, state.lang, featureNote(manifest, layer, code)));
+  const data = layerData.get(layerId);
+  const props = data?.byCode.get(code);
+  if (!layer || !data || !props) return;
+  let html: string;
+  if (isChoropleth(layer)) html = popupHtml(layer, levelOf(layer), props, state.lang, featureNote(manifest, layer, code));
+  else {
+    // The picked point first, then the others at its location by name.
+    const name = (c: string) => String(data.byCode.get(c)?.name_he ?? '');
+    const others = spotCodes(layerId, code).filter((c) => c !== code).sort((a, b) => name(a).localeCompare(name(b), 'he'));
+    html = pointsPopupHtml(layer, [code, ...others].map((c) => data.byCode.get(c)!), state.lang, parentName(layer, props));
+  }
+  popupAt = { layerId, code };
+  popup.setLngLat(at).setHTML(html);
   if (!popup.isOpen()) popup.addTo(map);
+  syncUrl();
   keepPopupInView();
+}
+
+/**
+ * The place a point lies in (its `parent` feature's name), once that level's geometry is loaded. The first popup
+ * that needs it starts the load and is redrawn when it arrives: viewing points alone doesn't fetch the polygons.
+ */
+function parentName(layer: PointsLayer, p: Props): string | undefined {
+  if (!layer.parent) return undefined;
+  const key = layer.parent.level;
+  const parents = levelData.get(key);
+  if (!parents) {
+    const level = manifest.levels[key];
+    void loadLevel(base, level)
+      .then((data) => {
+        levelData.set(key, data);
+        if (popup.isOpen() && popupAt?.layerId === layer.id) showPopup(popupAt.layerId, popupAt.code, popup.getLngLat());
+      })
+      .catch((err) => console.error(err));
+    return undefined;
+  }
+  const f = parents.features.get(String(p[layer.parent.property]));
+  return f ? featureName(f.props, state.lang).text : undefined;
 }
 
 /**
@@ -310,6 +374,7 @@ function keepPopupInView() {
 }
 
 popup.on('close', () => {
+  popupAt = null;
   if (state.selected) {
     for (const c of state.selected.codes) setFeatureFlag(map, state.selected.layerId, c, 'selected', false);
     state.selected = null;
@@ -353,7 +418,8 @@ map.on('mousemove', (e) => {
     const layer = currentLayer();
     const props = layerData.get(layer.id)?.byCode.get(code);
     if (!props) return;
-    tip.innerHTML = tooltipHtml(layer, levelOf(layer), props, state.lang);
+    const more = spotCodes(layer.id, code).length - 1;
+    tip.innerHTML = tooltipHtml(layer, levelOf(layer), props, state.lang) + (more ? `<small>${t('more', state.lang, { n: formatNumber(more, state.lang) })}</small>` : '');
     tip.hidden = false;
     const r = $('map').getBoundingClientRect();
     const x = Math.min(e.point.x + r.left + 14, innerWidth - tip.offsetWidth - 8);
@@ -377,29 +443,40 @@ map.on('click', (e) => {
     return;
   }
   const code = String(f.properties.code);
-  select(state.layerId, [code]);
+  select(state.layerId, spotCodes(state.layerId, code));
   const at = f.geometry.type === 'Point' ? (f.geometry.coordinates as [number, number]) : e.lngLat;
   showPopup(state.layerId, code, at);
 });
 
-/** Search indexes places per level (names, bbox, size): geometry only, no dataset values. */
+/**
+ * Search indexes places per level (names, bbox, size): geometry only, no dataset values. Points files (6.6k schools,
+ * ~170 KB) don't hold up the first answer: unless the map already loaded them, they are indexed after the places, in
+ * the background, and an open result list is refreshed then.
+ */
 function ensureIndex(): Promise<void> {
   // Focus or typing before the manifest arrived: build the index once it does, so that query is answered too.
   if (!manifest) return manifestReady.then(ensureIndex);
   indexing ??= (async () => {
     const keys = [...new Set(manifest.layers.map(levelKeyOf))];
-    const built = await Promise.all(
-      keys.map(async (key) => {
-        let data = levelData.get(key);
-        if (!data) {
-          const level = levelByKey(key);
-          data = level ? await loadLevel(base, level) : (await prepare(manifest.layers.find((l) => levelKeyOf(l) === key)!)).level;
-          levelData.set(key, data);
-        }
-        return buildEntries(key, levelByKey(key), data);
-      }),
-    );
-    entries = built.flat();
+    const index = async (key: string) => {
+      let data = levelData.get(key);
+      if (!data) {
+        const level = levelByKey(key);
+        data = level ? await loadLevel(base, level) : (await loadLayerSource(base, manifest, manifest.layers.find((l) => levelKeyOf(l) === key)!)).level;
+        levelData.set(key, data);
+      }
+      return buildEntries(key, levelByKey(key), data);
+    };
+    const now = keys.filter((k) => levelByKey(k) || levelData.has(k));
+    entries = (await Promise.all(now.map(index))).flat();
+    for (const key of keys.filter((k) => !now.includes(k))) {
+      index(key)
+        .then((more) => {
+          entries = [...entries, ...more];
+          searchBox.refresh();
+        })
+        .catch((err) => console.error(err));
+    }
   })();
   indexing.catch(() => (indexing = null));
   return indexing;
@@ -442,7 +519,14 @@ function placeholderText(lang: Lang): string {
 
 function resultView(e: SearchEntry, lang: Lang) {
   const level = levelByKey(e.level);
-  const levelTitle = level?.title[lang] ?? layerById(e.level.slice('layer:'.length))?.title[lang] ?? '';
+  const pointsLayer = level ? undefined : (manifest.layers.find((l) => levelKeyOf(l) === e.level) as PointsLayer | undefined);
+  if (pointsLayer && e.code != null) {
+    // "School · Jerusalem"; a school's name is Hebrew only, in every language.
+    const props = levelData.get(e.level)?.features.get(e.code)?.props;
+    const place = props && parentName(pointsLayer, props);
+    return { name: e.names.he, meta: [pointsLayer.featureType[lang], place].filter(Boolean).join(' · ') };
+  }
+  const levelTitle = level?.title[lang] ?? pointsLayer?.featureType[lang] ?? '';
   if (e.code == null) {
     const name = featureName({ name_he: e.names.he, name_en: e.names.en, name_ru: e.names.ru }, lang).text;
     const count = level?.countForms ? countText(level.countForms, e.codes.length, lang) : formatNumber(e.codes.length, lang);
@@ -479,8 +563,10 @@ async function selectEntry(e: SearchEntry) {
   const data = layerData.get(layer.id);
   if (!data) return;
   const single = e.code != null;
-  map.fitBounds(e.bbox as BBox, { padding: padding(), maxZoom: single ? 13 : 12, duration: reducedMotion.matches ? 0 : 900 });
-  select(layer.id, e.codes);
+  // A school needs street zoom to tell it from its neighbours.
+  const maxZoom = !isChoropleth(layer) ? 15 : single ? 13 : 12;
+  map.fitBounds(e.bbox as BBox, { padding: padding(), maxZoom, duration: reducedMotion.matches ? 0 : 900 });
+  select(layer.id, single ? spotCodes(layer.id, e.code!) : e.codes);
   if (single) {
     const info = data.level.features.get(e.code!);
     if (info) showPopup(layer.id, e.code!, info.anchor);
@@ -559,9 +645,9 @@ async function boot() {
   await switchLayer(layerById(state.layerId) ? state.layerId : manifest.layers[0].id, { fit: !hadHash });
   if (initial.feature && layerData.get(state.layerId)?.byCode.has(initial.feature)) {
     const info = layerData.get(state.layerId)!.level.features.get(initial.feature)!;
-    select(state.layerId, [initial.feature]);
+    select(state.layerId, spotCodes(state.layerId, initial.feature));
     showPopup(state.layerId, initial.feature, info.anchor);
-    if (!hadHash) map.fitBounds(info.bbox, { padding: padding(), maxZoom: 13, animate: false });
+    if (!hadHash) map.fitBounds(info.bbox, { padding: padding(), maxZoom: isChoropleth(currentLayer()) ? 13 : 15, animate: false });
   }
   map.on('moveend', syncUrl);
 }

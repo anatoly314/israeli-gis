@@ -343,6 +343,41 @@
           }
         }
       ]
+    },
+    "schools-2026": {
+      "title": {
+        "he": "בתי ספר 2026",
+        "en": "Schools 2026",
+        "ru": "Школы 2026"
+      },
+      "shortTitle": {
+        "he": "בתי ספר",
+        "en": "Schools",
+        "ru": "Школы"
+      },
+      "description": {
+        "he": "רשימת מוסדות החינוך של משרד החינוך (data.gov.il, אוקטובר 2026): בתי ספר יסודיים ועל-יסודיים, כולל ישיבות קטנות ותלמודי תורה, בלי גני ילדים. אין מספרי תלמידים. 309 בתי ספר מוקמו במרכז היישוב בלבד.",
+        "en": "Ministry of Education list of institutions (data.gov.il, October 2026): primary and secondary schools, including yeshivot ketanot and talmudei torah, without kindergartens. No student counts. 309 schools are placed only at their locality centre.",
+        "ru": "Список учебных заведений Министерства образования (data.gov.il, октябрь 2026): начальные и средние школы, включая малые ешивы и талмуд-торы, без детских садов. Числа учеников нет. 309 школ размещены лишь в центре населённого пункта."
+      },
+      "measures": [
+        {
+          "id": "stream",
+          "title": {
+            "he": "זרם חינוך",
+            "en": "Education stream",
+            "ru": "Тип школы"
+          }
+        },
+        {
+          "id": "stage",
+          "title": {
+            "he": "שלב חינוך",
+            "en": "School level",
+            "ru": "Ступень"
+          }
+        }
+      ]
     }
   },
   "layers": [
@@ -3608,6 +3643,585 @@
       },
       "kind": "choropleth",
       "level": "localities-2011"
+    },
+    {
+      "id": "schools-2026-stream",
+      "dataset": "schools-2026",
+      "measure": "stream",
+      "title": {
+        "he": "בתי ספר 2026 – זרם חינוך",
+        "en": "Schools 2026 – Education stream",
+        "ru": "Школы 2026 – Тип школы"
+      },
+      "data": "datasets/schools-2026/schools.geojson",
+      "valueField": "stream",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "ממלכתי",
+              "en": "State",
+              "ru": "Государственные"
+            },
+            "color": "#0072b2"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "ממלכתי-דתי",
+              "en": "State-religious",
+              "ru": "Государственно-религиозные"
+            },
+            "color": "#009e73"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "חרדי",
+              "en": "Haredi",
+              "ru": "Харедимные (ультраортодоксальные)"
+            },
+            "color": "#cc79a7"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "ערבי ובדואי",
+              "en": "Arab and Bedouin",
+              "ru": "Арабские и бедуинские"
+            },
+            "color": "#e69f00"
+          },
+          {
+            "value": 5,
+            "label": {
+              "he": "דרוזי וצ'רקסי",
+              "en": "Druze and Circassian",
+              "ru": "Друзские и черкесские"
+            },
+            "color": "#d55e00"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "משרד החינוך אינו מסווג מוסד זה.",
+            "en": "The Ministry of Education gives no class for this institution.",
+            "ru": "Министерство образования не классифицирует это учреждение."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "לפי מגזר ופיקוח במשרד החינוך",
+          "en": "By Ministry of Education sector and supervision",
+          "ru": "По сектору и надзору Министерства образования"
+        }
+      },
+      "popup": [
+        {
+          "field": "stream",
+          "label": {
+            "he": "זרם חינוך",
+            "en": "Education stream",
+            "ru": "Тип школы"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "ממלכתי",
+                "en": "State",
+                "ru": "Государственные"
+              },
+              "2": {
+                "he": "ממלכתי-דתי",
+                "en": "State-religious",
+                "ru": "Государственно-религиозные"
+              },
+              "3": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедимные (ультраортодоксальные)"
+              },
+              "4": {
+                "he": "ערבי ובדואי",
+                "en": "Arab and Bedouin",
+                "ru": "Арабские и бедуинские"
+              },
+              "5": {
+                "he": "דרוזי וצ'רקסי",
+                "en": "Druze and Circassian",
+                "ru": "Друзские и черкесские"
+              }
+            }
+          }
+        },
+        {
+          "field": "stage",
+          "label": {
+            "he": "שלב חינוך",
+            "en": "School level",
+            "ru": "Ступень"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יסודי",
+                "en": "Primary",
+                "ru": "Начальная"
+              },
+              "2": {
+                "he": "חטיבת ביניים",
+                "en": "Middle school",
+                "ru": "Средняя (7–9 классы)"
+              },
+              "3": {
+                "he": "תיכון (כולל שש-שנתי)",
+                "en": "High school (incl. grades 7–12)",
+                "ru": "Старшая (включая 7–12 классы)"
+              },
+              "4": {
+                "he": "רב-שלבי (מהיסודי ומעלה)",
+                "en": "Primary through secondary",
+                "ru": "Многоступенчатая (с 1 класса)"
+              }
+            }
+          }
+        },
+        {
+          "field": "status",
+          "label": {
+            "he": "מעמד משפטי",
+            "en": "Legal status",
+            "ru": "Правовой статус"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "רשמי",
+                "en": "Official (state-run)",
+                "ru": "Официальная (государственная)"
+              },
+              "2": {
+                "he": "מוכר שאינו רשמי",
+                "en": "Recognised, unofficial",
+                "ru": "Признанная неофициальная"
+              },
+              "3": {
+                "he": "תרבותי-ייחודי",
+                "en": "Unique cultural",
+                "ru": "Уникально-культурная"
+              },
+              "4": {
+                "he": "פטור",
+                "en": "Exempt (Compulsory Education Law)",
+                "ru": "Освобождённая (закон об обязательном образовании)"
+              }
+            }
+          }
+        },
+        {
+          "field": "gender",
+          "label": {
+            "he": "הרכב תלמידים",
+            "en": "Students",
+            "ru": "Ученики"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "בנים",
+                "en": "Boys",
+                "ru": "Мальчики"
+              },
+              "2": {
+                "he": "בנות",
+                "en": "Girls",
+                "ru": "Девочки"
+              },
+              "3": {
+                "he": "מעורב",
+                "en": "Mixed",
+                "ru": "Смешанная"
+              }
+            }
+          }
+        },
+        {
+          "field": "special",
+          "label": {
+            "he": "סוג חינוך",
+            "en": "Education type",
+            "ru": "Тип обучения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חינוך מיוחד",
+                "en": "Special education",
+                "ru": "Специальное образование"
+              }
+            }
+          }
+        },
+        {
+          "field": "approx",
+          "label": {
+            "he": "מיקום",
+            "en": "Location",
+            "ru": "Расположение"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "משוער – במרכז היישוב",
+                "en": "Approximate: locality centre",
+                "ru": "Приблизительно: центр населённого пункта"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "בתי ספר: משרד החינוך, data.gov.il",
+        "en": "Schools: Ministry of Education, data.gov.il",
+        "ru": "Школы: Министерство образования, data.gov.il"
+      },
+      "source": {
+        "name": {
+          "he": "משרד החינוך, מוסדות חינוך (data.gov.il)",
+          "en": "Ministry of Education, Educational institutions (data.gov.il)",
+          "ru": "Министерство образования, учебные заведения (data.gov.il)"
+        },
+        "url": "https://data.gov.il/dataset/55ef9f65-c6af-47c8-8f0f-7ce6990420ad",
+        "license": "data.gov.il terms of use",
+        "licenseUrl": "https://data.gov.il/he/terms-of-use",
+        "citation": "משרד החינוך, מוסדות חינוך (mosdot_edu), data.gov.il, עודכן 05.10.2026 (נשלף 25.10.2026). Israel Ministry of Education, Educational institutions, via data.gov.il."
+      },
+      "kind": "points",
+      "featureType": {
+        "he": "בית ספר",
+        "en": "School",
+        "ru": "Школа"
+      },
+      "countForms": {
+        "he": {
+          "one": "בית ספר אחד",
+          "two": "{n} בתי ספר",
+          "other": "{n} בתי ספר"
+        },
+        "en": {
+          "one": "{n} school",
+          "other": "{n} schools"
+        },
+        "ru": {
+          "one": "{n} школа",
+          "few": "{n} школы",
+          "many": "{n} школ",
+          "other": "{n} школы"
+        }
+      },
+      "parent": {
+        "level": "localities-2011",
+        "property": "locality_code"
+      }
+    },
+    {
+      "id": "schools-2026-stage",
+      "dataset": "schools-2026",
+      "measure": "stage",
+      "title": {
+        "he": "בתי ספר 2026 – שלב חינוך",
+        "en": "Schools 2026 – School level",
+        "ru": "Школы 2026 – Ступень"
+      },
+      "data": "datasets/schools-2026/schools.geojson",
+      "valueField": "stage",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "יסודי",
+              "en": "Primary",
+              "ru": "Начальная"
+            },
+            "color": "#56b4e9"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "חטיבת ביניים",
+              "en": "Middle school",
+              "ru": "Средняя (7–9 классы)"
+            },
+            "color": "#f0e442"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "תיכון (כולל שש-שנתי)",
+              "en": "High school (incl. grades 7–12)",
+              "ru": "Старшая (включая 7–12 классы)"
+            },
+            "color": "#0072b2"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "רב-שלבי (מהיסודי ומעלה)",
+              "en": "Primary through secondary",
+              "ru": "Многоступенчатая (с 1 класса)"
+            },
+            "color": "#cc79a7"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "משרד החינוך אינו מסווג מוסד זה.",
+            "en": "The Ministry of Education gives no class for this institution.",
+            "ru": "Министерство образования не классифицирует это учреждение."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "השכבות שבית הספר מלמד",
+          "en": "The grades a school teaches",
+          "ru": "Классы, в которых учит школа"
+        }
+      },
+      "popup": [
+        {
+          "field": "stream",
+          "label": {
+            "he": "זרם חינוך",
+            "en": "Education stream",
+            "ru": "Тип школы"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "ממלכתי",
+                "en": "State",
+                "ru": "Государственные"
+              },
+              "2": {
+                "he": "ממלכתי-דתי",
+                "en": "State-religious",
+                "ru": "Государственно-религиозные"
+              },
+              "3": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедимные (ультраортодоксальные)"
+              },
+              "4": {
+                "he": "ערבי ובדואי",
+                "en": "Arab and Bedouin",
+                "ru": "Арабские и бедуинские"
+              },
+              "5": {
+                "he": "דרוזי וצ'רקסי",
+                "en": "Druze and Circassian",
+                "ru": "Друзские и черкесские"
+              }
+            }
+          }
+        },
+        {
+          "field": "stage",
+          "label": {
+            "he": "שלב חינוך",
+            "en": "School level",
+            "ru": "Ступень"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "יסודי",
+                "en": "Primary",
+                "ru": "Начальная"
+              },
+              "2": {
+                "he": "חטיבת ביניים",
+                "en": "Middle school",
+                "ru": "Средняя (7–9 классы)"
+              },
+              "3": {
+                "he": "תיכון (כולל שש-שנתי)",
+                "en": "High school (incl. grades 7–12)",
+                "ru": "Старшая (включая 7–12 классы)"
+              },
+              "4": {
+                "he": "רב-שלבי (מהיסודי ומעלה)",
+                "en": "Primary through secondary",
+                "ru": "Многоступенчатая (с 1 класса)"
+              }
+            }
+          }
+        },
+        {
+          "field": "status",
+          "label": {
+            "he": "מעמד משפטי",
+            "en": "Legal status",
+            "ru": "Правовой статус"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "רשמי",
+                "en": "Official (state-run)",
+                "ru": "Официальная (государственная)"
+              },
+              "2": {
+                "he": "מוכר שאינו רשמי",
+                "en": "Recognised, unofficial",
+                "ru": "Признанная неофициальная"
+              },
+              "3": {
+                "he": "תרבותי-ייחודי",
+                "en": "Unique cultural",
+                "ru": "Уникально-культурная"
+              },
+              "4": {
+                "he": "פטור",
+                "en": "Exempt (Compulsory Education Law)",
+                "ru": "Освобождённая (закон об обязательном образовании)"
+              }
+            }
+          }
+        },
+        {
+          "field": "gender",
+          "label": {
+            "he": "הרכב תלמידים",
+            "en": "Students",
+            "ru": "Ученики"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "בנים",
+                "en": "Boys",
+                "ru": "Мальчики"
+              },
+              "2": {
+                "he": "בנות",
+                "en": "Girls",
+                "ru": "Девочки"
+              },
+              "3": {
+                "he": "מעורב",
+                "en": "Mixed",
+                "ru": "Смешанная"
+              }
+            }
+          }
+        },
+        {
+          "field": "special",
+          "label": {
+            "he": "סוג חינוך",
+            "en": "Education type",
+            "ru": "Тип обучения"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חינוך מיוחד",
+                "en": "Special education",
+                "ru": "Специальное образование"
+              }
+            }
+          }
+        },
+        {
+          "field": "approx",
+          "label": {
+            "he": "מיקום",
+            "en": "Location",
+            "ru": "Расположение"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "משוער – במרכז היישוב",
+                "en": "Approximate: locality centre",
+                "ru": "Приблизительно: центр населённого пункта"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "בתי ספר: משרד החינוך, data.gov.il",
+        "en": "Schools: Ministry of Education, data.gov.il",
+        "ru": "Школы: Министерство образования, data.gov.il"
+      },
+      "source": {
+        "name": {
+          "he": "משרד החינוך, מוסדות חינוך (data.gov.il)",
+          "en": "Ministry of Education, Educational institutions (data.gov.il)",
+          "ru": "Министерство образования, учебные заведения (data.gov.il)"
+        },
+        "url": "https://data.gov.il/dataset/55ef9f65-c6af-47c8-8f0f-7ce6990420ad",
+        "license": "data.gov.il terms of use",
+        "licenseUrl": "https://data.gov.il/he/terms-of-use",
+        "citation": "משרד החינוך, מוסדות חינוך (mosdot_edu), data.gov.il, עודכן 05.10.2026 (נשלף 25.10.2026). Israel Ministry of Education, Educational institutions, via data.gov.il."
+      },
+      "kind": "points",
+      "featureType": {
+        "he": "בית ספר",
+        "en": "School",
+        "ru": "Школа"
+      },
+      "countForms": {
+        "he": {
+          "one": "בית ספר אחד",
+          "two": "{n} בתי ספר",
+          "other": "{n} בתי ספר"
+        },
+        "en": {
+          "one": "{n} school",
+          "other": "{n} schools"
+        },
+        "ru": {
+          "one": "{n} школа",
+          "few": "{n} школы",
+          "many": "{n} школ",
+          "other": "{n} школы"
+        }
+      },
+      "parent": {
+        "level": "localities-2011",
+        "property": "locality_code"
+      }
     }
   ],
   "attribution": {

@@ -31,6 +31,17 @@ export const CASING = {
   width: ['interpolate', ['linear'], ['zoom'], 6, 3.6, 12, 5.5] as ExpressionSpecification,
 } as const;
 
+/**
+ * Points layers (schools): small enough at country zoom that 6.6k points read as a density pattern, growing to a
+ * tappable size in town. The ring fades in with zoom; at country zoom it would turn every dot dark.
+ */
+export const POINT_RADIUS: ExpressionSpecification = ['interpolate', ['linear'], ['zoom'], 6, 1.8, 9, 3, 12, 5, 15, 8];
+// `zoom` may only feed a top-level interpolate, so the hover/selected case sits inside each stop.
+const ringAt = (idle: number): ExpressionSpecification => ['case', active, 2.5, idle];
+export const POINT_STROKE_WIDTH: ExpressionSpecification = ['interpolate', ['linear'], ['zoom'], 7, ringAt(0), 10, ringAt(0.8), 13, ringAt(1.2)];
+/** Points outside the highlight: fainter than dimmed polygons, since thousands of grey dots would hide the selection. */
+export const POINT_DIM = 0.3;
+
 /** Placeholder markers: a dark translucent ring when idle, so pale-class markers stay visible on the basemap. */
 export const MARKER_STROKE: ExpressionSpecification = ['case', active, '#111111', 'rgba(58,58,58,0.65)'];
 export const MARKER_STROKE_WIDTH: ExpressionSpecification = ['case', active, 2.5, 1.2];

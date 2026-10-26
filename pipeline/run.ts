@@ -11,12 +11,12 @@ import {
   type NameStats,
 } from './boundaries/index.ts';
 import { datasets } from './datasets/index.ts';
-import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, manifestJsonSchema, type CountForms, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
+import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, PointsData, manifestJsonSchema, type CountForms, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
 import { unexpectedUnmatched, type JoinReport } from './lib/dataset.ts';
 import { verifyRawFile } from './lib/download.ts';
 import { assertDatumShift, invalidGeometries } from './lib/gdal.ts';
 import { writeOut, writeOutJson, type WrittenFile } from './lib/io.ts';
-import { layerTitle, levelKind, termsFor } from './terminology.ts';
+import { layerTitle, levelKind, pointsLayerTitle, termsFor } from './terminology.ts';
 
 export interface BuildReport {
   datumErrorM: number;
@@ -29,6 +29,8 @@ export interface BuildReport {
   companions: (CompanionJoin & { layers: { id: string; rows: number; matched: number }[] })[];
   /** What the passed checks covered. */
   checks: { rawFiles: number; validFeatures: number };
+  /** Extra per-dataset report lines (points counts and drops). */
+  notes: string[];
   written: WrittenFile[];
 }
 
@@ -71,10 +73,14 @@ export function assertTerminology(m: Manifest): void {
   }
   // Layer titles are derived, never written by hand: datasets[id].title [+ measure title] + the level's title.
   for (const l of m.layers) {
-    if (l.kind !== 'choropleth') continue;
     const measure = m.datasets[l.dataset].measures?.find((x) => x.id === l.measure)?.title;
-    if (JSON.stringify(l.title) !== JSON.stringify(layerTitle(m.datasets[l.dataset].title, l.level, measure))) {
-      throw new Error(`${l.id}: title is not datasets["${l.dataset}"].title + the measure title + the level title`);
+    const expected = l.kind === 'choropleth' ? layerTitle(m.datasets[l.dataset].title, l.level, measure) : pointsLayerTitle(m.datasets[l.dataset].title, measure);
+    if (JSON.stringify(l.title) !== JSON.stringify(expected)) {
+      throw new Error(`${l.id}: title is not datasets["${l.dataset}"].title + the measure title (+ the level title)`);
+    }
+    if (l.kind === 'points' && l.countForms) {
+      const missing = missingCountForms(l.countForms);
+      if (missing.length) throw new Error(`${l.id}: countForms lack ${missing.join(', ')}`);
     }
   }
   // Titles end up in one layer list, so they must be unique per language.
@@ -149,15 +155,25 @@ export async function buildAll(outDir: string): Promise<BuildReport> {
   const layers: Layer[] = [];
   const joins: JoinReport[] = [];
   const datasetCodes = new Map<string, string[]>();
+  const notes: string[] = [];
   for (const d of datasets) {
     const out = await d.build({ geometryCodes });
+    const pointsFiles = new Set(out.layers.filter((l) => l.kind === 'points').map((l) => l.data));
     for (const [path, data] of Object.entries(out.files)) {
-      DatasetValues.parse(data);
-      datasetCodes.set(path, Object.keys(data as object));
+      if (pointsFiles.has(path)) {
+        // A points file: GeoJSON, unique codes, inside Israel. Compact (no indent): it is the biggest data file.
+        const fc = PointsData.parse(data);
+        const outside = fc.features.filter(({ geometry: { coordinates: [lon, lat] } }) => !(lon > 34 && lon < 36 && lat > 29 && lat < 33.5));
+        if (outside.length) throw new Error(`${path}: ${outside.length} points outside Israel`);
+      } else {
+        DatasetValues.parse(data);
+        datasetCodes.set(path, Object.keys(data as object));
+      }
       written.push(writeOutJson(outDir, path, data));
     }
     layers.push(...out.layers);
     joins.push(...out.joins);
+    notes.push(...(out.notes ?? []));
   }
 
   const companions = boundaries.companions.map((c) => {
@@ -202,6 +218,7 @@ export async function buildAll(outDir: string): Promise<BuildReport> {
     dropped: boundaries.dropped,
     review: boundaries.review,
     companions,
+    notes,
     checks: { rawFiles: verified.length, validFeatures },
     written,
   };

@@ -1,7 +1,7 @@
 import { basemap } from './config.ts';
 import { isOrdered, layerUnit, legendEntries, textOn } from './classify.ts';
 import { LANGS, t, type Lang } from './i18n.ts';
-import { isChoropleth, layerForMeasure, type Layer, type LayerGroup, type LayerItem, type Manifest } from './manifest.ts';
+import { isChoropleth, layerForMeasure, sourceKeyOf, type Layer, type LayerGroup, type LayerItem, type Manifest } from './manifest.ts';
 import { esc, swatch } from './html.ts';
 import type { Source } from '../../pipeline/lib/contract.ts';
 
@@ -41,9 +41,11 @@ const radio = (value: string, checked: boolean, body: string) =>
  */
 function measuresHtml(g: LayerGroup, current: Layer | undefined, lang: Lang): string {
   // Every measure on the same single level (census on localities): name the level once, not under each measure.
-  const levelIds = new Set(g.measures!.flatMap((m) => m.items.map((i) => (isChoropleth(i.layer) ? i.layer.level : i.layer.id))));
+  // Points (schools) have no level to name.
+  const levelIds = new Set(g.measures!.flatMap((m) => m.items.map((i) => sourceKeyOf(i.layer))));
   const oneLevel = levelIds.size === 1 && g.measures!.every((m) => m.items.length === 1);
-  const header = oneLevel ? `<p class="official dataset-level">${esc(g.measures![0].items[0].label[lang])}</p>` : '';
+  const points = g.items.every((i) => !isChoropleth(i.layer));
+  const header = oneLevel && !points ? `<p class="official dataset-level">${esc(g.measures![0].items[0].label[lang])}</p>` : '';
   return (
     header +
     g
@@ -112,7 +114,16 @@ export interface LegendHandlers {
   set: (keys: string[]) => void;
 }
 
-export function renderLegend(el: HTMLElement, strip: HTMLElement, layer: Layer, hl: readonly string[], lang: Lang, h: LegendHandlers) {
+/** `showMissing`: false once the layer's data is known to have no "not calculated" feature (schools): no such row. */
+export function renderLegend(
+  el: HTMLElement,
+  strip: HTMLElement,
+  layer: Layer,
+  hl: readonly string[],
+  lang: Lang,
+  h: LegendHandlers,
+  showMissing = true,
+) {
   const c = layer.classification;
   const { classes, missing } = legendEntries(c, lang, layerUnit(layer));
   const on = (k: string) => hl.includes(k);
@@ -124,15 +135,15 @@ export function renderLegend(el: HTMLElement, strip: HTMLElement, layer: Layer, 
   el.innerHTML =
     (c.note ? `<p class="note">${esc(c.note[lang])}</p>` : '') +
     // Nominal swatches carry no text on the strip, so the compact sheet shows this list for them (CSS).
-    `<ul class="legend-list${hl.length ? ' filtering' : ''}${ordered ? '' : ' nominal'}">${classes.map((e) => item(e)).join('')}${item(missing, true)}</ul>` +
+    `<ul class="legend-list${hl.length ? ' filtering' : ''}${ordered ? '' : ' nominal'}">${classes.map((e) => item(e)).join('')}${showMissing ? item(missing, true) : ''}</ul>` +
     // Nominal classes have no range slider, which holds "Clear": it sits here instead.
     (ordered ? '' : `<div class="legend-actions"><button type="button" class="range-clear" data-clear ${hl.length ? '' : 'disabled'}>${esc(t('clear', lang))}</button></div>`) +
     `<p class="hint">${esc(t(ordered ? 'legendHint' : 'legendHintNominal', lang))}</p>`;
 
   // One grid: the class cells, the "not calculated" cell, the clear button; the low/high caption spans the classes only.
   strip.innerHTML =
-    `<div class="strip-row${hl.length ? ' filtering' : ''}" style="grid-template-columns: repeat(${classes.length}, minmax(0, 1fr)) minmax(0, 0.9fr) auto">` +
-    [...classes.map((e) => ({ e, m: false })), { e: missing, m: true }]
+    `<div class="strip-row${hl.length ? ' filtering' : ''}" style="grid-template-columns: repeat(${classes.length}, minmax(0, 1fr))${showMissing ? ' minmax(0, 0.9fr)' : ''} auto">` +
+    [...classes.map((e) => ({ e, m: false })), ...(showMissing ? [{ e: missing, m: true }] : [])]
       .map(
         ({ e, m }) =>
           `<button type="button" data-key="${esc(e.key)}" aria-pressed="${on(e.key)}" aria-label="${esc(e.label)}" title="${esc(e.label)}"` +

@@ -28,8 +28,10 @@ console.log(`datum shift check: max error ${report.datumErrorM.toFixed(3)} m ove
 console.log('\njoin report (table rows matched to geometry):');
 for (const j of report.joins) {
   const parts = j.breakdown.map((b) => `${b.label} ${b.matched}/${b.rows}`).join(', ');
-  console.log(`  ✓ ${j.label.padEnd(28)} ${`${j.matched}/${j.rows}`.padEnd(10)} ${parts ? `(${parts}) ` : ''}` +
-    `— ${j.geometryWithoutData} ${j.level} features without data → "not calculated"`);
+  const tail = j.pointsNoun
+    ? `${j.rows - j.matched} ${j.pointsNoun} in ${new Set(j.unmatched).size} ${j.level} codes without a polygon`
+    : `${j.geometryWithoutData} ${j.level} features without data → "not calculated"`;
+  console.log(`  ✓ ${j.label.padEnd(28)} ${`${j.matched}/${j.rows}`.padEnd(10)} ${parts ? `(${parts}) ` : ''}— ${tail}`);
   for (const [code, why] of Object.entries(j.expectedUnmatched ?? {})) console.log(`      no polygon (expected): ${code} ${why}`);
 }
 for (const c of report.companions) {
@@ -53,6 +55,7 @@ console.log(
 
 console.log(`\nreview: ${report.review.length} lone Wikidata items whose labels differ from the CBS name (re-check WIKIDATA_REJECT):`);
 for (const line of report.review) console.log(`  review ${line}`);
+if (report.notes.length) console.log(`\n${report.notes.join('\n')}`);
 
 console.log('\noutput (dist/data):');
 for (const f of report.written) console.log(`  ${f.path.padEnd(48)} ${kb(f.bytes).padStart(8)}  gzip ${kb(f.gzipBytes).padStart(7)}`);

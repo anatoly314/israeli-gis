@@ -3,7 +3,7 @@ import polylabel from 'polylabel';
 import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import type { DatasetValues } from '../../pipeline/lib/contract.ts';
-import { CLASS_PROP, classKey } from './classify.ts';
+import { CLASS_PROP, MISSING, classKey } from './classify.ts';
 import type { Layer, Level, Manifest } from './manifest.ts';
 
 export type Props = Record<string, unknown> & { code: string; name_he: string; name_en: string; name_ru: string; placeholder: boolean };
@@ -34,6 +34,8 @@ export interface LayerData {
   markers: FeatureCollection<Point, Props>;
   labels: FeatureCollection<Point, Props>;
   values: DatasetValues;
+  /** Features without the layer's value ("not calculated"); with none, the legend leaves out that class. */
+  missing: number;
 }
 
 const ringArea = (r: Position[]) => {
@@ -112,6 +114,18 @@ export function decodePoints(fc: FeatureCollection<Point, Partial<Props>>): Leve
   return { polygons: { type: 'FeatureCollection', features: [] }, markers, features, bbox: unionBBox([...features.values()].map((f) => f.bbox)) };
 }
 
+/** Codes of the points at exactly the same coordinates (a shared campus), keyed by each of their codes. */
+export function colocated(level: LevelData): Map<string, string[]> {
+  const bySpot = new Map<string, string[]>();
+  for (const [code, f] of level.features) {
+    const spot = f.anchor.join(',');
+    bySpot.set(spot, [...(bySpot.get(spot) ?? []), code]);
+  }
+  const out = new Map<string, string[]>();
+  for (const codes of bySpot.values()) if (codes.length > 1) for (const c of codes) out.set(c, codes);
+  return out;
+}
+
 /** Copies each feature with its dataset record and class key; codes without a record become "not calculated". */
 export function joinLayer(level: LevelData, values: DatasetValues, layer: Layer): LayerData {
   const points = layer.kind === 'points';
@@ -125,9 +139,13 @@ export function joinLayer(level: LevelData, values: DatasetValues, layer: Layer)
     return { ...f, properties: props };
   };
   const polygons = level.polygons.features.map(withValues);
+  const markers = level.markers.features.map(withValues);
+  // Placeholder markers repeat their polygon's code: count polygons, or the points of a points layer.
+  const missing = (points ? markers : polygons).filter((f) => f.properties[CLASS_PROP] === MISSING).length;
   return {
     polygons: { type: 'FeatureCollection', features: polygons },
-    markers: { type: 'FeatureCollection', features: level.markers.features.map(withValues) },
+    markers: { type: 'FeatureCollection', features: markers },
+    missing,
     labels: {
       type: 'FeatureCollection',
       features: polygons.map((f) => {
@@ -177,6 +195,12 @@ export async function loadLayerSource(base: URL, m: Manifest, layer: Layer): Pro
     const [level, values] = await Promise.all([loadLevel(base, m.levels[layer.level]), loadValues(base, layer)]);
     return { level, values };
   }
-  if (!points.has(layer.id)) points.set(layer.id, fetchJson<FeatureCollection<Point, Partial<Props>>>(new URL(layer.data, base)).then(decodePoints));
-  return { level: await points.get(layer.id)!, values: {} };
+  // By file: the measures of a points dataset share one file and one decoded copy.
+  const key = new URL(layer.data, base).href;
+  if (!points.has(key)) {
+    const p = fetchJson<FeatureCollection<Point, Partial<Props>>>(new URL(layer.data, base)).then(decodePoints);
+    p.catch(() => points.delete(key));
+    points.set(key, p);
+  }
+  return { level: await points.get(key)!, values: {} };
 }

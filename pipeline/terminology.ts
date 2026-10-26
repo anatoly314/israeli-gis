@@ -120,6 +120,12 @@ export function layerTitle(dataset: I18n, level: LevelId, measure?: I18n): I18n 
   return { he: join('he'), en: join('en'), ru: join('ru') };
 }
 
+/** Points layers have no level: title = dataset title (+ measure title), e.g. "Schools 2026 – Education stream". */
+export function pointsLayerTitle(dataset: I18n, measure?: I18n): I18n {
+  const join = (l: keyof I18n) => [dataset[l], ...(measure ? [measure[l]] : [])].join(TITLE_SEP);
+  return { he: join('he'), en: join('en'), ru: join('ru') };
+}
+
 // Dataset wording, keyed by dataset id (pipeline/datasets/<id>). Dataset modules read it from here, so every
 // user-facing string still lives in this file.
 
@@ -151,6 +157,8 @@ export const MeasureTerms = z.strictObject({
   note: I18n.optional(),
   /** "Not calculated" explanation for each level kind the measure is mapped on. */
   missing: z.partialRecord(LevelKind, I18n),
+  /** Points layers (no level): explanation for a point without a value. */
+  missingPoint: I18n.optional(),
   /** Labels of nominal classes, keyed by the class value. */
   classes: z.record(z.string(), I18n).optional(),
 });
@@ -167,6 +175,10 @@ export const DatasetTerms = z.strictObject({
   notes: z.partialRecord(LevelKind, z.record(z.string(), I18n)).optional(),
   /** Short credit for the map attribution control. */
   attribution: I18n,
+  /** Points datasets: what one point is called ("School"). */
+  featureType: I18n.optional(),
+  /** Points datasets: "N schools" phrases by plural category (contract `CountForms`), copied to each points layer. */
+  countForms: CountForms.optional(),
   /** Cluster indices: what cluster 1 and cluster 10 mean; the legend note is CLUSTER_INDEX.note(scale). */
   scale: z.strictObject({ low: I18n, high: I18n }).optional(),
   /** Single-measure datasets: "not calculated" explanation for each level kind the dataset ships. */
@@ -175,6 +187,8 @@ export const DatasetTerms = z.strictObject({
   fields: z.record(z.string(), I18n),
   /** Multi-measure datasets, in display order (object key order), keyed by measure id. */
   measures: z.record(z.string(), MeasureTerms).optional(),
+  /** Class labels of popup-only category fields, by field and value. */
+  popupClasses: z.record(z.string(), z.record(z.string(), I18n)).optional(),
 });
 export type DatasetTerms = z.infer<typeof DatasetTerms>;
 
@@ -191,6 +205,11 @@ const NO_POPULATION_LOCALITY: I18n = {
   he: 'הלמ"ס אינה מפרסמת אוכלוסייה למקום זה (שטח לא מיושב, אזור תעשייה או שבט בדואי).',
   en: 'CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).',
   ru: 'ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя).',
+};
+const NOT_CLASSIFIED_SCHOOL: I18n = {
+  he: 'משרד החינוך אינו מסווג מוסד זה.',
+  en: 'The Ministry of Education gives no class for this institution.',
+  ru: 'Министерство образования не классифицирует это учреждение.',
 };
 const NO_CENSUS_LOCALITY: I18n = {
   he: 'הלמ"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).',
@@ -428,6 +447,79 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
           4: { he: 'חרדי', en: 'Haredi', ru: 'Харедим (ультраортодоксы)' },
           6: { he: 'אחר', en: 'Other', ru: 'Другое' },
         },
+      },
+    },
+  },
+  'schools-2026': {
+    title: { he: 'בתי ספר 2026', en: 'Schools 2026', ru: 'Школы 2026' },
+    shortTitle: { he: 'בתי ספר', en: 'Schools', ru: 'Школы' },
+    description: {
+      he: 'רשימת מוסדות החינוך של משרד החינוך (data.gov.il, אוקטובר 2026): בתי ספר יסודיים ועל-יסודיים, כולל ישיבות קטנות ותלמודי תורה, בלי גני ילדים. אין מספרי תלמידים. 309 בתי ספר מוקמו במרכז היישוב בלבד.',
+      en: 'Ministry of Education list of institutions (data.gov.il, October 2026): primary and secondary schools, including yeshivot ketanot and talmudei torah, without kindergartens. No student counts. 309 schools are placed only at their locality centre.',
+      ru: 'Список учебных заведений Министерства образования (data.gov.il, октябрь 2026): начальные и средние школы, включая малые ешивы и талмуд-торы, без детских садов. Числа учеников нет. 309 школ размещены лишь в центре населённого пункта.',
+    },
+    attribution: { he: 'בתי ספר: משרד החינוך, data.gov.il', en: 'Schools: Ministry of Education, data.gov.il', ru: 'Школы: Министерство образования, data.gov.il' },
+    featureType: { he: 'בית ספר', en: 'School', ru: 'Школа' },
+    // Schools at one location (a shared campus): "15 школ". Hebrew 1 is "בית ספר אחד" (number after the noun).
+    countForms: {
+      he: { one: 'בית ספר אחד', two: '{n} בתי ספר', other: '{n} בתי ספר' },
+      en: { one: '{n} school', other: '{n} schools' },
+      ru: { one: '{n} школа', few: '{n} школы', many: '{n} школ', other: '{n} школы' },
+    },
+    fields: {
+      stream: { he: 'זרם חינוך', en: 'Education stream', ru: 'Тип школы' },
+      stage: { he: 'שלב חינוך', en: 'School level', ru: 'Ступень' },
+      status: { he: 'מעמד משפטי', en: 'Legal status', ru: 'Правовой статус' },
+      gender: { he: 'הרכב תלמידים', en: 'Students', ru: 'Ученики' },
+      special: { he: 'סוג חינוך', en: 'Education type', ru: 'Тип обучения' },
+      approx: { he: 'מיקום', en: 'Location', ru: 'Расположение' },
+    },
+    measures: {
+      stream: {
+        title: { he: 'זרם חינוך', en: 'Education stream', ru: 'Тип школы' },
+        note: {
+          he: 'לפי מגזר ופיקוח במשרד החינוך',
+          en: 'By Ministry of Education sector and supervision',
+          ru: 'По сектору и надзору Министерства образования',
+        },
+        missing: {},
+        missingPoint: NOT_CLASSIFIED_SCHOOL,
+        classes: {
+          1: { he: 'ממלכתי', en: 'State', ru: 'Государственные' },
+          2: { he: 'ממלכתי-דתי', en: 'State-religious', ru: 'Государственно-религиозные' },
+          3: { he: 'חרדי', en: 'Haredi', ru: 'Харедимные (ультраортодоксальные)' },
+          4: { he: 'ערבי ובדואי', en: 'Arab and Bedouin', ru: 'Арабские и бедуинские' },
+          5: { he: "דרוזי וצ'רקסי", en: 'Druze and Circassian', ru: 'Друзские и черкесские' },
+        },
+      },
+      stage: {
+        title: { he: 'שלב חינוך', en: 'School level', ru: 'Ступень' },
+        note: { he: 'השכבות שבית הספר מלמד', en: 'The grades a school teaches', ru: 'Классы, в которых учит школа' },
+        missing: {},
+        missingPoint: NOT_CLASSIFIED_SCHOOL,
+        classes: {
+          1: { he: 'יסודי', en: 'Primary', ru: 'Начальная' },
+          2: { he: 'חטיבת ביניים', en: 'Middle school', ru: 'Средняя (7–9 классы)' },
+          3: { he: 'תיכון (כולל שש-שנתי)', en: 'High school (incl. grades 7–12)', ru: 'Старшая (включая 7–12 классы)' },
+          4: { he: 'רב-שלבי (מהיסודי ומעלה)', en: 'Primary through secondary', ru: 'Многоступенчатая (с 1 класса)' },
+        },
+      },
+    },
+    popupClasses: {
+      status: {
+        1: { he: 'רשמי', en: 'Official (state-run)', ru: 'Официальная (государственная)' },
+        2: { he: 'מוכר שאינו רשמי', en: 'Recognised, unofficial', ru: 'Признанная неофициальная' },
+        3: { he: 'תרבותי-ייחודי', en: 'Unique cultural', ru: 'Уникально-культурная' },
+        4: { he: 'פטור', en: 'Exempt (Compulsory Education Law)', ru: 'Освобождённая (закон об обязательном образовании)' },
+      },
+      gender: {
+        1: { he: 'בנים', en: 'Boys', ru: 'Мальчики' },
+        2: { he: 'בנות', en: 'Girls', ru: 'Девочки' },
+        3: { he: 'מעורב', en: 'Mixed', ru: 'Смешанная' },
+      },
+      special: { 1: { he: 'חינוך מיוחד', en: 'Special education', ru: 'Специальное образование' } },
+      approx: {
+        1: { he: 'משוער – במרכז היישוב', en: 'Approximate: locality centre', ru: 'Приблизительно: центр населённого пункта' },
       },
     },
   },

@@ -1,8 +1,8 @@
-import type { ChoroplethLayer, Layer, Level, LevelId, Manifest } from '../../pipeline/lib/contract.ts';
+import type { ChoroplethLayer, Layer, Level, LevelId, Manifest, PointsLayer } from '../../pipeline/lib/contract.ts';
 import type { I18n } from './i18n.ts';
 import { LANGS } from './i18n.ts';
 
-export type { ChoroplethLayer, Layer, Level, LevelId, Manifest };
+export type { ChoroplethLayer, Layer, Level, LevelId, Manifest, PointsLayer };
 
 export async function loadManifest(url: string): Promise<{ manifest: Manifest; base: URL }> {
   const base = new URL(url, document.baseURI);
@@ -15,7 +15,7 @@ export async function loadManifest(url: string): Promise<{ manifest: Manifest; b
 
 export const isChoropleth = (l: Layer): l is ChoroplethLayer => l.kind === 'choropleth';
 
-/** One layer in the switcher, labelled by its level (points layers by their own title). */
+/** One layer in the switcher, labelled by its level (points layers by what one point is, "School"). */
 export interface LayerItem {
   layer: Layer;
   label: I18n;
@@ -40,7 +40,7 @@ export interface LayerGroup {
 }
 
 const itemOf = (m: Manifest, layer: Layer): LayerItem => {
-  if (!isChoropleth(layer)) return { layer, label: layer.title };
+  if (!isChoropleth(layer)) return { layer, label: layer.featureType };
   const level = m.levels[layer.level];
   return { layer, label: level.title, official: level.officialTerm };
 };
@@ -70,16 +70,23 @@ export function layerForMeasure(group: MeasureGroup, current: Layer | undefined)
   return group.items.find((i) => isChoropleth(i.layer) && i.layer.level === level)?.layer ?? group.items[0].layer;
 }
 
-/** Words naming a layer: its dataset, its measure (multi-measure datasets) and its level. */
 /** The dataset's note on one feature (`datasets[id].notes[level][code]`), e.g. a merged locality. */
 export function featureNote(m: Manifest, layer: Layer, code: string): I18n | undefined {
   if (!isChoropleth(layer)) return undefined;
   return m.datasets[layer.dataset]?.notes?.[layer.level]?.[code];
 }
 
-export function describeLayer(m: Manifest, layer: Layer): { dataset: I18n; shortDataset: I18n; measure?: I18n; level: I18n } {
+/**
+ * Words naming a layer: its dataset, its measure (multi-measure datasets) and its level. A points layer has no level;
+ * without a measure it is named by its title.
+ */
+export function describeLayer(m: Manifest, layer: Layer): { dataset: I18n; shortDataset: I18n; measure?: I18n; level?: I18n } {
   const info = m.datasets[layer.dataset];
   const measure = layer.measure ? info?.measures?.find((x) => x.id === layer.measure)?.title : undefined;
   const dataset = info?.title ?? layer.title;
-  return { dataset, shortDataset: info?.shortTitle ?? dataset, ...(measure && { measure }), level: itemOf(m, layer).label };
+  const level = isChoropleth(layer) ? itemOf(m, layer).label : measure ? undefined : layer.title;
+  return { dataset, shortDataset: info?.shortTitle ?? dataset, ...(measure && { measure }), ...(level && { level }) };
 }
+
+/** Points layers sharing one data file are one set of places (one search index, one geometry). */
+export const sourceKeyOf = (l: Layer) => (isChoropleth(l) ? l.level : `points:${l.data}`);

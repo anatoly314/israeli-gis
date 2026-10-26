@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import zlib from 'node:zlib';
 import { parse } from 'csv-parse/sync';
 import { readSheet } from 'read-excel-file/node';
 
@@ -11,7 +12,10 @@ export async function readSheetRows(file: string, sheet?: string): Promise<Row[]
 
 /** CSV as objects keyed by header; every cell stays a string, so "0046" stays "0046". */
 export function readCsv(file: string): Record<string, string>[] {
-  return parse(fs.readFileSync(file, 'utf8'), { columns: true, bom: true, skip_empty_lines: true, relax_column_count: true });
+  // `.csv.gz`: large sources are stored gzipped (see RawFile.gunzipSha256).
+  const buf = fs.readFileSync(file);
+  const text = (file.endsWith('.gz') ? zlib.gunzipSync(buf) : buf).toString('utf8');
+  return parse(text, { columns: true, bom: true, skip_empty_lines: true, relax_column_count: true });
 }
 
 /** Fail loudly if CBS shifts the layout: some row above the data must contain `text` in column `col`. */

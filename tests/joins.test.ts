@@ -74,8 +74,10 @@ describe('built outputs', () => {
       'census-2022-renting-localities': 1184,
       'census-2022-religiosity-localities': 1184,
     };
-    expect(manifest().layers.map((l) => l.id)).toEqual(Object.keys(expected));
-    for (const layer of manifest().layers as ChoroplethLayer[]) {
+    const choropleths = manifest().layers.filter((l): l is ChoroplethLayer => l.kind === 'choropleth');
+    expect(choropleths.map((l) => l.id)).toEqual(Object.keys(expected));
+    expect(manifest().layers.filter((l) => l.kind === 'points').map((l) => l.id)).toEqual(['schools-2026-stream', 'schools-2026-stage']);
+    for (const layer of choropleths) {
       const values = dataset(layer.data);
       const codes = levelCodes(layer.level);
       expect(Object.keys(values)).toHaveLength(expected[layer.id]);

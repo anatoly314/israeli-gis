@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildEntries, matchScore, normalize, search, skeleton, type SearchEntry } from '../src/search.ts';
+import { isChoropleth } from '../src/manifest.ts';
 import { layer, manifest } from './fixtures.ts';
 
 describe('normalize', () => {
@@ -57,13 +58,14 @@ describe('search over the shipped levels', () => {
   beforeAll(() => {
     // One index per level, as main.ts builds it: two datasets on one level share its entries.
     // One layer per level (the first), as the viewer indexes each level once whatever datasets use it.
-    const layers = manifest().layers;
+    // Polygon levels only; points layers are indexed (and tested) on their own below.
+    const layers = manifest().layers.filter(isChoropleth);
     const byLevel = new Map<string, (typeof layers)[number]>();
-    for (const l of layers) if (!byLevel.has((l as { level: string }).level)) byLevel.set((l as { level: string }).level, l);
+    for (const l of layers) if (!byLevel.has(l.level)) byLevel.set(l.level, l);
     const firstPerLevel = [...byLevel.values()];
     entries = firstPerLevel.flatMap((l) => {
       const { level, data } = layer(l.id);
-      return buildEntries((l as { level: string }).level, level, data);
+      return buildEntries(l.level, level, data);
     });
   });
 

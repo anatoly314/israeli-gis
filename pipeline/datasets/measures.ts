@@ -1,7 +1,7 @@
 // Building blocks for multi-measure datasets (population, census): stepped and nominal classifications, popup
 // fields and layers, all worded from the dataset's entry in pipeline/terminology.ts.
-import type { ChoroplethLayer, Classification, I18n, LevelId, PopupField, PopupFormat, Source } from '../lib/contract.ts';
-import { datasetTerms, layerTitle, levelKind, NO_DATA, type MeasureTerms } from '../terminology.ts';
+import type { ChoroplethLayer, Classification, I18n, LevelId, PointsLayer, PopupField, PopupFormat, Source } from '../lib/contract.ts';
+import { datasetTerms, layerTitle, levelKind, NO_DATA, pointsLayerTitle, type MeasureTerms } from '../terminology.ts';
 import { MISSING_COLOR } from './cluster-index.ts';
 
 type Categorical = Extract<Classification, { type: 'categorical' }>;
@@ -33,7 +33,7 @@ export function measureKit(dataset: string, source: Source) {
   });
 
   /** Unordered classes in the given order; labels from the measure's `classes` in the terminology. */
-  const nominal = (measure: string, level: LevelId, colors: Record<number, string>): Categorical => {
+  const nominal = (measure: string, level: LevelId, colors: Record<number, string>, missingOverride?: Categorical['missing']): Categorical => {
     const labels = measureTerms(measure).classes ?? {};
     return {
       type: 'categorical',
@@ -43,7 +43,7 @@ export function measureKit(dataset: string, source: Source) {
         return { value: Number(value), label, color };
       }),
       ordered: false,
-      missing: missing(measure, level),
+      missing: missingOverride ?? missing(measure, level),
       note: measureTerms(measure).note,
     };
   };
@@ -73,5 +73,40 @@ export function measureKit(dataset: string, source: Source) {
     source,
   });
 
-  return { terms, missing, stepped, nominal, classLabels, popup, layer };
+  /** Nominal classes for a points layer (no level, so the measure's `missingPoint` wording). */
+  const nominalPoints = (measure: string, colors: Record<number, string>): Categorical => {
+    const description = measureTerms(measure).missingPoint;
+    if (!description) throw new Error(`${dataset}/${measure}: no missingPoint wording in pipeline/terminology.ts`);
+    return nominal(measure, 'localities-2011', colors, { color: MISSING_COLOR, label: NO_DATA, description });
+  };
+
+  const pointsLayer = (
+    measure: string,
+    valueField: string,
+    classification: Classification,
+    fields: PopupField[],
+    data: string,
+    parent?: { level: LevelId; property: string },
+  ): PointsLayer => {
+    const featureType = terms.featureType;
+    if (!featureType) throw new Error(`${dataset}: points datasets need a featureType in pipeline/terminology.ts`);
+    return {
+      id: `${dataset}-${measure}`,
+      dataset,
+      measure,
+      kind: 'points',
+      title: pointsLayerTitle(terms.title, measureTerms(measure).title),
+      data,
+      valueField,
+      classification,
+      popup: fields,
+      attribution: terms.attribution,
+      source,
+      featureType,
+      ...(terms.countForms && { countForms: terms.countForms }),
+      ...(parent && { parent }),
+    };
+  };
+
+  return { terms, missing, stepped, nominal, nominalPoints, classLabels, popup, layer, pointsLayer };
 }

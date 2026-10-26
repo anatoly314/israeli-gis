@@ -62,6 +62,10 @@ const UI = {
     ru: 'Примерное место: ЦСБ не публикует границу',
   },
   noRuName: { he: '', en: '', ru: 'нет русского названия' },
+  /** Popup title for several points at exactly one location (a shared campus); {count} = "15 schools" (countForms). */
+  atOneSpot: { he: '{count} באותו מיקום', en: '{count} at this location', ru: '{count} в этом месте' },
+  /** The same without the layer's count phrases. */
+  atOneSpotN: { he: '{n} מוסדות באותו מיקום', en: '{n} at this location', ru: '{n} в этом месте' },
   basemap: { he: 'מפת רקע', en: 'Basemap', ru: 'Подложка' },
   noEndorsement: {
     he: 'המפה אינה מטעם הלמ"ס, והלמ"ס אינה תומכת בה. הנתונים מוצגים כמות שהם.',

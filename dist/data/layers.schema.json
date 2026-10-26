@@ -1787,6 +1787,162 @@
               "kind": {
                 "type": "string",
                 "const": "points"
+              },
+              "featureType": {
+                "type": "object",
+                "properties": {
+                  "he": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ru": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "he",
+                  "en",
+                  "ru"
+                ],
+                "additionalProperties": false
+              },
+              "countForms": {
+                "type": "object",
+                "properties": {
+                  "he": {
+                    "type": "object",
+                    "properties": {
+                      "zero": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "one": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "two": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "few": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "many": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "other": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "other"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "en": {
+                    "type": "object",
+                    "properties": {
+                      "zero": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "one": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "two": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "few": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "many": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "other": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "other"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "ru": {
+                    "type": "object",
+                    "properties": {
+                      "zero": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "one": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "two": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "few": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "many": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "other": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "other"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "he",
+                  "en",
+                  "ru"
+                ],
+                "additionalProperties": false
+              },
+              "parent": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "local-authorities-2011",
+                      "localities-2011",
+                      "rc-localities-2011",
+                      "statistical-areas-2011"
+                    ]
+                  },
+                  "property": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "level",
+                  "property"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -1799,7 +1955,8 @@
               "popup",
               "attribution",
               "source",
-              "kind"
+              "kind",
+              "featureType"
             ],
             "additionalProperties": false
           }

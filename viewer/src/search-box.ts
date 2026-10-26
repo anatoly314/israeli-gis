@@ -158,6 +158,10 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
   });
 
   return {
+    /** The index grew (a points file arrived): answer what is typed again, while the box has focus. */
+    refresh() {
+      if (input.value.trim() && document.activeElement === input) update();
+    },
     setLang(l: Lang) {
       lang = l;
       input.placeholder = o.placeholder?.(l) ?? searchPlaceholder(l, []);

@@ -310,6 +310,42 @@ parser takes whichever column holds numbers.
   degree, wage, renting, religiosity.
 - **Caveat:** the dataset `description` states the ~20% sample basis and the rounding.
 
+### `schools-2026` (points)
+
+The Ministry of Education list of institutions (`mosdot_edu`, data.gov.il, updated 2026-10-05), restricted to schools
+(`SHLAV_CHINUH` 1–7). That gives 6,641 points; kindergartens and day-care are left out. It is the first points layer.
+
+| Layer | `valueField` | Classes (nominal, Okabe-Ito) |
+|---|---|---|
+| `schools-2026-stream` | `stream` | 1 state (blue) · 2 state-religious (bluish green) · 3 Haredi (reddish purple, as in census) · 4 Arab and Bedouin (orange, as in population) · 5 Druze and Circassian (vermillion) |
+| `schools-2026-stage` | `stage` | 1 primary · 2 middle school · 3 high school (incl. 7–12) · 4 all-through from primary |
+
+- **Point properties:**
+  - `code`: MoE `SEMEL_MOSAD`, unique.
+  - `name_he`: the MoE has no English or Russian names, so the viewer falls back to Hebrew.
+  - `locality_code`: CBS code, the `parent` on `localities-2011`.
+  - `stream`: from sector × supervision.
+  - `stage`: from `SHLAV_CHINUH`.
+  - `status`: legal status. 1 official, 2 recognised unofficial, 3 unique cultural, 4 exempt.
+  - `gender`: 1 boys, 2 girls, 3 mixed. Absent for 483 schools where the MoE has "NULL".
+  - `special`: 1 for the 811 special-education schools, absent otherwise.
+  - `approx`: 1 for the 309 schools the MoE placed only at their locality centre, absent otherwise.
+- **Fill rates:** every school has `stream`, `stage` and `status`.
+- **Coordinates:** reprojected from the MoE's ITM (`X`, `Y`) through the same 7-parameter datum path as the polygons
+  (a test checks one school against pyproj), then rounded to 5 decimals (~1 m). The build drops points outside Israel
+  and reports them: none in this snapshot.
+- **Parent join:** 6,609 of 6,641 schools have a locality polygon. The other 32 sit in 11 localities, declared in
+  `expectedUnmatched`: 6 Bedouin tribes, the Tel Nof base, Tel Zion, Sha'ar Shomron, Harsha and Neria. They stay on the
+  map, because points don't need a polygon.
+- **Format:** plain GeoJSON, 1.40 MB raw / 157 KB gzipped (119 KB with brotli). A columnar array format would be
+  117 KB gzipped. I didn't take it: saving about 40 KB, on a file loaded only when a schools layer is opened, isn't
+  worth a custom decoder, and MapLibre needs GeoJSON in the end anyway.
+- **Shared locations:** 1,049 schools sit at 439 points after rounding to ~1 m (956 at 410 exact source coordinates):
+  shared campuses.
+- **Raw file:** stored as `mosdot_edu.csv.gz` (0.95 MB). Its sha256 and the original CSV's are both pinned.
+- **Licence:** the data.gov.il terms of use require naming the source. The credit line and citation are in
+  `layer.source`.
+
 ## Names
 
 | | Source, in order of preference |
@@ -400,7 +436,22 @@ interface LayerBase {
   source: Source;
 }
 interface ChoroplethLayer extends LayerBase { kind: 'choropleth'; level: LevelId }
-interface PointsLayer extends LayerBase { kind: 'points' }      // data = GeoJSON FeatureCollection<Point>
+interface PointsLayer extends LayerBase {
+  kind: 'points';                       // data = GeoJSON FeatureCollection<Point> (PointsData below)
+  featureType: I18n;                    // what one point is called ("School")
+  countForms?: Level['countForms'];     // "N schools", same shape as on levels; for several points at one location
+  parent?: { level: LevelId; property: string };   // properties[property] = code of the containing feature on level
+}
+// Points layers are titled "dataset – measure" (no level).
+
+interface PointsData {                  // the file at a points layer's `data`
+  type: 'FeatureCollection';
+  features: {
+    type: 'Feature';
+    geometry: { type: 'Point'; coordinates: [lon: number, lat: number] };   // WGS84, 5 decimals
+    properties: { code: string; name_he: string; name_en?: string; name_ru?: string; [k: string]: string | number };
+  }[];                                  // codes unique; an absent numeric property = not applicable / unknown
+}
 
 interface Categorical {
   type: 'categorical';
@@ -452,6 +503,7 @@ Popup formats:
 | `population-2024-{size,growth}-local-authorities` | `local-authorities-2011` | `datasets/population-2024/local-authorities-2011.json` |
 | `population-2024-{size,growth,group,type}-localities` | `localities-2011` | `datasets/population-2024/localities-2011.json` |
 | `census-2022-{median-age,aged-65,academic,wage,renting,religiosity}-localities` | `localities-2011` | `datasets/census-2022/localities-2011.json` |
+| `schools-2026-{stream,stage}` (points) | — (parent `localities-2011`) | `datasets/schools-2026/schools.geojson` |
 
 The paragraph below describes the three SES layers. The two peripherality layers are described in
 [`peripherality-2020`](#peripherality-2020).
@@ -775,3 +827,36 @@ number of locality-type classes (now seven) need updating.
 2. When the layer's `valueField` has a `currency` (or `percent`) popup format, use that formatter for the legend bin
    labels and the slider too, so the wage legend reads "₪80,000 – ₪100,000". This is the generic unit rule: the
    legend's unit is the valueField's popup format.
+
+### Changes for the first points layer (additive, still `version: 1`)
+
+- `PointsLayer` gains `featureType: I18n` (required) and `parent?: { level, property }`. A points layer is titled
+  "dataset – measure".
+- `PointsLayer` gains `countForms?`, with the same shape as `levels[*].countForms`. It gives the "N schools" phrase
+  for a popup that lists several points at one location ("15 schools at this location"). The build checks that every
+  integer plural category is covered. Both schools layers carry it.
+- The new zod schema `PointsData` covers the points file and is validated at build time: unique codes, points inside
+  Israel, WGS84 with 5 decimals.
+- New dataset `schools-2026` with two points layers, stream and stage, sharing one GeoJSON file. See
+  [`schools-2026`](#schools-2026-points).
+- `DatasetOutput.notes` adds build-report lines (points counts and drops).
+
+**The viewer must know** (`decodePoints` already reads this shape):
+1. **Points:** 6,641, file 157 KB gzipped.
+   - Clustering is optional: about 6.6k circles render fine without it.
+   - 1,049 schools sit at 439 points after rounding to ~1 m (956 at 410 exact source coordinates). Exactly co-located
+     points never separate when zoomed, with or without clustering,
+     so the popup should list every school at a clicked location.
+   - Suggestion: plain circles coloured by class from about zoom 9. Below that, either cluster or show small circles at
+     low opacity.
+2. **Popup:**
+   - Title: `name_he`, then `featureType[lang]`, then the parent locality's name. Look up `parent.property` on the
+     `parent.level` features; if there is no polygon, show nothing.
+   - Then the `popup` fields, all `category`. Skip absent fields: `gender` is absent for 483 schools, and `special` and
+     `approx` appear only when they apply.
+3. **Search:** index points by `name_he`, and link to the parent locality where it exists.
+4. **Legend:** `ordered: false` nominal classes, the same as the population and census nominal layers. A points layer
+   has no level, so there are no level radios. The measure choice (stream / level) works like other multi-measure
+   datasets.
+5. **Tests:** fixtures that assume every layer has a `level` (`viewer/tests/search.test.ts`) need to skip points
+   layers.

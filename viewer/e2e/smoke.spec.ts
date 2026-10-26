@@ -1026,6 +1026,118 @@ for (const lang of ['he', 'en', 'ru'] as const) {
   });
 }
 
+// Two schools on one campus in Jerusalem (110312 ארגנטינה, 645424 ניסוי ארגנטינה), at the map centre.
+const CAMPUS = '#16/31.77539/35.1681';
+// The count is a formatted number, isolated left-to-right (U+2066 … U+2069).
+const AT_ONE_SPOT = { he: '⁦2⁩ בתי ספר באותו מיקום', en: '⁦2⁩ schools at this location', ru: '⁦2⁩ школы в этом месте' };
+const PLACE = { he: 'ירושלים', en: 'Jerusalem', ru: 'Иерусалим' };
+const schoolsLayer = (id: string) => manifestJson().layers.find((l: { id: string }) => l.id === id);
+
+/**
+ * Clicks (or taps) the centre of the map, where the camera centre is, until a popup opens: `data-layer` is set once
+ * the layer is added, and the worker may not have drawn the circles yet.
+ */
+async function hitMapCentre(page: Page, tap = false) {
+  await expect(async () => {
+    const b = (await page.locator('#map').boundingBox())!;
+    if (tap) await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
+    else await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await expect(page.locator('.maplibregl-popup')).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+}
+
+test('schools: points with a nominal legend, measures without levels, a class highlight in the URL, a campus popup', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`./?lang=en&layer=schools-2026-stream${CAMPUS}`);
+  await ready(page, 'schools-2026-stream');
+  const section = page.locator('details.dataset[data-dataset="schools-2026"]');
+  await expect(section.locator('.measure')).toHaveCount(2);
+  await expect(section.locator('.dataset-level, .levels, .official')).toHaveCount(0);
+  await expect(page.locator('#sheet-title .sheet-level')).toHaveCount(0);
+  // Every school has a stream: no "No data" row in the legend or cell on the strip.
+  const list = page.locator('#legend .legend-list.nominal');
+  await expect(list.locator('[data-key="na"]')).toHaveCount(0);
+  const labels = await list.locator('li button > span:last-child').allTextContents();
+  expect(labels).toEqual(schoolsLayer('schools-2026-stream').classification.classes.map((c: { label: { en: string } }) => c.label.en));
+  await expect(page.locator('#strip [data-key="na"]')).toHaveCount(0);
+  // A layer with gaps keeps it (census 65+: 14 localities without a value).
+  await page.goto('./?lang=en&layer=census-2022-aged-65-localities');
+  await ready(page, 'census-2022-aged-65-localities');
+  await expect(page.locator('#legend [data-key="na"]')).toHaveCount(1);
+  await page.goto(`./?lang=en&layer=schools-2026-stream${CAMPUS}`);
+  await ready(page, 'schools-2026-stream');
+
+  await page.locator('#legend [data-key="3"]').click();
+  await expect(page).toHaveURL(/hl=3(&|#|$)/);
+
+  // Dimmed points stay clickable; the campus lists both schools, in the town they are in (loaded on demand).
+  await hitMapCentre(page);
+  const popup = page.locator('.maplibregl-popup');
+  await expect(popup.locator('h3')).toHaveText(AT_ONE_SPOT.en);
+  await expect(popup.locator('.spot-list li')).toHaveCount(2);
+  await expect(popup.locator('.spot-list li b')).toHaveText([/ארגנטינה/, /ארגנטינה/]);
+  await expect(popup.locator('.popup-type')).toHaveText(`School · ${PLACE.en}`);
+  await expect(page).toHaveURL(/f=(110312|645424)/);
+
+  // The other measure keeps the selection's spot but not the class highlight (other classes).
+  await section.locator('input[name=layer]').nth(1).check();
+  await ready(page, 'schools-2026-stage');
+  await expect(page).not.toHaveURL(/hl=/);
+  expect(errors).toEqual([]);
+});
+
+test('schools: search finds a school by name (also from another layer), and `f` opens it from a link', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en');
+  await ready(page, 'ses-2021-local-authorities');
+  // Not on the schools layer: the schools file is indexed after the places, then the open list refreshes.
+  await searchAndOpen(page, 'בית יעקב מטרסדורף', /בית יעקב מטרסדורף/);
+  await ready(page, 'schools-2026-stream');
+  await expect(page.locator('.maplibregl-popup .popup-type')).toHaveText(`School · ${PLACE.en}`);
+  await expect(page).toHaveURL(/f=110023/);
+
+  await page.goto('./?lang=ru&layer=schools-2026-stage&f=110023');
+  await ready(page, 'schools-2026-stage');
+  const popup = page.locator('.maplibregl-popup');
+  await expect(popup.locator('h3')).toHaveText('בית יעקב מטרסדורף');
+  await expect(popup.locator('.popup-type')).toHaveText(`Школа · ${PLACE.ru}`);
+  await expect(popup.locator('dl div.current dd')).toHaveText('Начальная');
+  expect(errors).toEqual([]);
+});
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`schools on a 390 px phone (${lang}): sheet, legend on screen, campus popup inside the screen`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    const errors = collectErrors(page);
+    await page.goto(`./?lang=${lang}&layer=schools-2026-stage${CAMPUS}`);
+    await ready(page, 'schools-2026-stage');
+    await expect(page.locator('#sheet-title .sheet-measure')).toHaveText(manifestJson().datasets['schools-2026'].measures[1].title[lang]);
+    await expect(page.locator('#sheet-title .sheet-level')).toHaveCount(0);
+
+    await page.locator('#sheet-toggle').tap();
+    const first = (await page.locator('#legend .legend-list li button').first().boundingBox())!;
+    expect(first.y).toBeGreaterThanOrEqual(0);
+    expect(first.y + first.height).toBeLessThanOrEqual(844);
+    await screens(page, `schools-sheet-390-${lang}.png`);
+    await page.locator('#sheet-toggle').tap();
+
+    await hitMapCentre(page, true);
+    const popup = page.locator('.maplibregl-popup');
+    await expect(popup.locator('h3')).toHaveText(AT_ONE_SPOT[lang]);
+    await expect(popup.locator('.spot-list li')).toHaveCount(2);
+    await expect(popup.locator('.popup-type')).toContainText(PLACE[lang]);
+    await page.waitForTimeout(400); // the pan that keeps the popup in view
+    const b = (await popup.boundingBox())!;
+    expect(b.x).toBeGreaterThanOrEqual(0);
+    expect(b.x + b.width).toBeLessThanOrEqual(390);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+    await screens(page, `schools-campus-390-${lang}.png`);
+    expect(errors).toEqual([]);
+    await context.close();
+  });
+}
+
 test('palette screenshots: zoom 7 and 12, and under simulated colour-vision deficiency', async ({ page }) => {
   const dir = process.env.SCREENS;
   test.skip(!dir || test.info().project.name !== 'chromium', 'set SCREENS=<dir> to capture (Chromium)');

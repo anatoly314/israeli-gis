@@ -19,6 +19,11 @@ export interface JoinReport extends JoinCount {
    * `unmatched` differs from this list in either direction, so it can neither hide a new miss nor go stale.
    */
   expectedUnmatched?: Record<string, string>;
+  /**
+   * Set when the rows are points (e.g. "schools") rather than one row per area: several rows share a code, and
+   * polygons without points are normal, so the report counts unmatched rows and codes instead.
+   */
+  pointsNoun?: string;
 }
 
 export interface DatasetOutput {
@@ -26,6 +31,8 @@ export interface DatasetOutput {
   files: Record<string, unknown>;
   layers: Layer[];
   joins: JoinReport[];
+  /** Extra lines for the build report (counts the joins don't show, e.g. points dropped for bad coordinates). */
+  notes?: string[];
 }
 
 export interface BuildContext {

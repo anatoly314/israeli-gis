@@ -69,6 +69,11 @@ values) and indexes each `(level, code)` once, so two datasets on one level don'
 `parentCode` get one entry per parent place (all of a city's statistical areas) plus one per part, the parts only
 matched when the query has a digit ("tel aviv 437").
 
+Points layers are indexed by `name_he`, once per data file. Unless the map already loaded that file, it is indexed
+after the levels, in the background (the schools file is ~170 KB gzipped, against ~1.1 MB for the four levels), and
+an open result list refreshes when it arrives. A school result reads "School · Jerusalem" and opens the schools layer
+at street zoom.
+
 Ranking: match tier (exact, prefix, word prefix, all words, substring), then the current layer's level first, then
 plain before spelling-variant matches (a variant counts at the tier it mirrors), then bigger places. Results on
 another level name that level. Picking one switches to the layer for that level in the current dataset if there is
@@ -129,7 +134,19 @@ Add it to the pipeline (README, "Adding a dataset"). On the next `build:viewer` 
 - in search, by `name_he/en/ru` of its level (see above); a result shows the current layer's value (the category
   label for nominal layers)
 
-`points` layers (a GeoJSON FeatureCollection at `layer.data`) are drawn as markers with the same classification.
+**Points layers** (`kind: "points"`, a GeoJSON FeatureCollection at `layer.data`; `schools-2026`):
+- Drawn as circles coloured by class over the plain basemap (with its place labels), instead of a choropleth: no
+  polygons, no own labels. No clustering: 6.6k circles render fine, a cluster bubble can't show nominal classes,
+  and points at exactly one location never separate anyway. The radius grows with zoom (1.8 px at country zoom,
+  8 px at street zoom); the ring fades in from zoom 7–10. A highlight fades the other points to 30% and draws the
+  highlighted ones on top (`circle-sort-key`).
+- The measures of one dataset share the file: it is fetched and decoded once, and indexed once for search.
+- Switcher: measures only, no level choice or level name; the collapsed sheet reads "dataset · measure".
+- Popup: the name, then "`featureType` · parent place" (the `parent` level's feature, loaded on the first popup that
+  needs it and filled in when it arrives). Points sharing exact coordinates (a campus, up to 15 schools) open one
+  popup listing all of them, the picked one first: name, class, and the other popup fields on one line. The tooltip
+  adds "+N more".
+- `f=<code>` opens a point's popup (its whole location) from a link.
 
 ## Basemap config
 
@@ -191,8 +208,8 @@ Chromium, Firefox and WebKit.
 
 - Desktop: a column of cards at the inline start (left in en/ru, right in he; CSS logical properties throughout).
 - Compact (`embed=1`, or narrower than 720 px): search and language on top; a bottom sheet with an always-visible
-  legend strip (tap a class to highlight) and the range slider under it, expanding to the layer list, legend notes
-  and About. The map ends above the
+  legend strip (tap a class to highlight) and the range slider under it, expanding to the legend (notes, and a
+  nominal layer's labelled list right under the strip), the layer list and About. The map ends above the
   collapsed sheet. In embed mode the map needs two fingers / Ctrl+scroll so the blog page still scrolls, and an
   "Open full map" link opens the same view without `embed`. Zoom buttons show on desktop, and in a desktop embed
   (pointer that can hover); on touch devices pinch is enough. Touch targets are 40–44 px.
@@ -203,7 +220,8 @@ Chromium, Firefox and WebKit.
 
 - `viewer/tests/*.test.ts` (vitest, project `viewer`): bidi-safe formatting, search normalisation and ranking
   against the shipped data, classification and colours (categorical and stepped), i18n and name fallbacks, popup
-  formats (stepped values), URL state, layer grouping, join and label points.
+  formats (stepped values), URL state, layer grouping, join and label points; points layers (schools: decoding,
+  campuses, popup, one search index for both measures).
 - `viewer/e2e/smoke.spec.ts` (Playwright, Chromium), against `dist/site` served under `/israeli-gis/` (the GitHub Pages path), each test
   failing on any console error:
   - layer switching, search for תל אביב / Tel Aviv / Тель-Авив opening a popup, RTL/LTR, MapLibre UI language

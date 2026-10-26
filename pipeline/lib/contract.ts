@@ -192,9 +192,44 @@ const layerBase = {
 export const ChoroplethLayer = z.strictObject({ ...layerBase, kind: z.literal('choropleth'), level: LevelId });
 export type ChoroplethLayer = z.infer<typeof ChoroplethLayer>;
 
-/** Self-contained GeoJSON FeatureCollection<Point> at `data`; values live in feature properties. */
-export const PointsLayer = z.strictObject({ ...layerBase, kind: z.literal('points') });
+/**
+ * Self-contained GeoJSON FeatureCollection<Point> at `data` (see `PointsData`); values live in feature properties.
+ * Points have no level, so the layer carries what a level would: the name of one feature, and the level whose
+ * features contain the points (for the popup's "in <locality>" line and search).
+ */
+export const PointsLayer = z.strictObject({
+  ...layerBase,
+  kind: z.literal('points'),
+  /** What one point is called ("School"). */
+  featureType: I18n,
+  /** "N schools" phrases, as on levels; for several points at one location ("15 schools at this location"). */
+  countForms: CountForms.optional(),
+  /** The containing place: `properties[property]` is a feature code on `level` (may have no polygon there). */
+  parent: z.strictObject({ level: LevelId, property: text }).optional(),
+});
 export type PointsLayer = z.infer<typeof PointsLayer>;
+
+/**
+ * A points layer's data file: GeoJSON FeatureCollection of Points in WGS84 lon/lat (5 decimals, ~1 m). Every feature
+ * has a unique string `code` and a Hebrew `name_he`; `name_en`/`name_ru` are optional (the viewer falls back to
+ * `name_he`). Other properties are numbers (class codes) or strings (parent codes). A numeric property that is absent
+ * means "not applicable / unknown" for that point.
+ */
+export const PointsData = z
+  .strictObject({
+    type: z.literal('FeatureCollection'),
+    features: z.array(
+      z.strictObject({
+        type: z.literal('Feature'),
+        geometry: z.strictObject({ type: z.literal('Point'), coordinates: z.tuple([z.number(), z.number()]) }),
+        properties: z
+          .object({ code: z.string().regex(/^\d+$/), name_he: text, name_en: text.optional(), name_ru: text.optional() })
+          .catchall(z.union([z.string(), z.number()])),
+      }),
+    ),
+  })
+  .refine((fc) => new Set(fc.features.map((f) => f.properties.code)).size === fc.features.length, { message: 'point codes must be unique' });
+export type PointsData = z.infer<typeof PointsData>;
 
 export const Layer = z.discriminatedUnion('kind', [ChoroplethLayer, PointsLayer]);
 export type Layer = z.infer<typeof Layer>;

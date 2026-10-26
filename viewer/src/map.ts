@@ -10,7 +10,20 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { CLASS_PROP, MISSING, colorExpression, highlightOpacity } from './classify.ts';
-import { BORDER, CASING, DIM, DIM_COLOR, FILL, MARKER_STROKE, MARKER_STROKE_WIDTH, OUTLINE, active } from './paint.ts';
+import {
+  BORDER,
+  CASING,
+  DIM,
+  DIM_COLOR,
+  FILL,
+  MARKER_STROKE,
+  MARKER_STROKE_WIDTH,
+  OUTLINE,
+  POINT_DIM,
+  POINT_RADIUS,
+  POINT_STROKE_WIDTH,
+  active,
+} from './paint.ts';
 import { basemap, initialView } from './config.ts';
 import type { LayerData } from './data.ts';
 import { MAP_LOCALE, type Lang } from './i18n.ts';
@@ -160,6 +173,7 @@ export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { 
     layout: { ...hidden, 'line-join': 'round' },
     paint: { 'line-color': OUTLINE.color, 'line-width': OUTLINE.width, 'line-opacity': ['case', active, 1, 0] },
   });
+  const points = layer.kind === 'points';
   map.addLayer({
     id: id.markerLayer,
     type: 'circle',
@@ -167,9 +181,9 @@ export function addDataLayer(map: MlMap, layer: Layer, data: LayerData, opts: { 
     layout: hidden,
     paint: {
       'circle-color': color,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 3.5, 10, 5, 14, 7],
+      'circle-radius': points ? POINT_RADIUS : ['interpolate', ['linear'], ['zoom'], 5, 2, 7, 3.5, 10, 5, 14, 7],
       'circle-stroke-color': MARKER_STROKE,
-      'circle-stroke-width': MARKER_STROKE_WIDTH,
+      'circle-stroke-width': points ? POINT_STROKE_WIDTH : MARKER_STROKE_WIDTH,
       'circle-opacity': 0.95,
     },
   });
@@ -219,9 +233,12 @@ export function setHighlight(map: MlMap, layer: Layer, selected: readonly string
   map.setPaintProperty(id.fill, 'fill-color', dimmed);
   map.setPaintProperty(id.fill, 'fill-opacity', highlightOpacity(selected, FILL, DIM));
   map.setPaintProperty(id.hatch, 'fill-opacity', highlightOpacity(selected, 1, 0.15));
+  const points = layer.kind === 'points';
   map.setPaintProperty(id.markerLayer, 'circle-color', dimmed);
-  map.setPaintProperty(id.markerLayer, 'circle-opacity', highlightOpacity(selected, 0.95, 0.5));
-  map.setPaintProperty(id.markerLayer, 'circle-stroke-opacity', highlightOpacity(selected, 1, 0.3));
+  map.setPaintProperty(id.markerLayer, 'circle-opacity', highlightOpacity(selected, 0.95, points ? POINT_DIM : 0.5));
+  map.setPaintProperty(id.markerLayer, 'circle-stroke-opacity', highlightOpacity(selected, 1, points ? 0 : 0.3));
+  // Highlighted points draw over the dimmed ones.
+  if (points) map.setLayoutProperty(id.markerLayer, 'circle-sort-key', selected.length ? highlightOpacity(selected, 1, 0) : 0);
   if (map.getLayer(id.labelLayer)) map.setPaintProperty(id.labelLayer, 'text-opacity', highlightOpacity(selected, 1, 0.45));
 }
 

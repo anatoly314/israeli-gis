@@ -14,6 +14,7 @@ Datasets (one layer group each):
 | `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | clusters 1–10, YlGn |
 | `population-2024`: CBS localities file 2024 | size and growth on local authorities and all localities; population group and locality type on localities | stepped BuPu / BrBG, nominal Okabe-Ito |
 | `census-2022`: CBS Census 2022 | median age, aged 65+, academic degree, median wage, renting, household religiosity on all localities | stepped YlOrBr, nominal Okabe-Ito |
+| `schools-2026`: Ministry of Education schools | 6,641 points: education stream, school level | nominal Okabe-Ito |
 
 The four geometry levels (local authorities, all localities, localities in regional councils, statistical areas) are
 shared by every dataset.
@@ -90,6 +91,7 @@ pipeline/
     peripherality-2020/       peripherality index 2020: authorities + all localities
     population-2024/          population 2024: four measures (size, growth, group, type)
     census-2022/              census 2022, locality level: six measures
+    schools-2026/             MoE schools: the first points layer (stream, school level)
     measures.ts               shared builders for multi-measure datasets (stepped, nominal, popup, layer)
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
   terminology.ts              user-facing wording (he/en/ru): levels by kind, datasets by id
@@ -206,7 +208,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 12 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 13 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
@@ -216,6 +218,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 | `cbs-peripherality-2020/24_22_420t{1,2}.xlsx` | Peripherality index 2020: table 1 (255 authorities), table 2 (1,213 localities) |
 | `cbs-localities-file/bycode2024.xlsx`, `bycode2022.xlsx` | Population 2024, and the 2022 base for growth |
 | `cbs-census-2022/mifkad-2022.xlsx` | Census 2022, selected data by locality (60 columns); the rest of that folder stays ignored |
+| `datagov-moe-mosdot-edu/mosdot_edu.csv.gz` | Ministry of Education institutions, gzipped (0.95 MB; 10.9 MB as downloaded, the plain CSV stays local; data.gov.il terms of use, source must be named); the pipeline reads the 6,641 schools |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
 | `datagov-municipal-authorities/localauthorities.csv` | Tests cross-check the `5500+n` authority codes against it |
