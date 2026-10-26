@@ -18,15 +18,20 @@ dist/data/
 │   ├── local-authorities-2011.topo.json           objects "local-authorities-2011" (257) + "…-placeholders" (126 points)
 │   ├── localities-2011.topo.json                  objects "localities-2011" (1283)       + "…-placeholders" (126)
 │   ├── rc-localities-2011.topo.json               objects "rc-localities-2011" (1074)    + "…-placeholders" (114)
-│   └── statistical-areas-2011.topo.json           objects "statistical-areas-2011" (1917) + "…-placeholders" (0)
+│   ├── statistical-areas-2011.topo.json           objects "statistical-areas-2011" (1917) + "…-placeholders" (0)
+│   └── statistical-areas-2022.topo.json           objects "statistical-areas-2022" (2615) + "…-placeholders" (0)
 └── datasets/
     ├── ses-2021/
     │   ├── local-authorities-2011.json            code → values (255 rows)
     │   ├── rc-localities-2011.json                code → values (996 rows)
     │   └── statistical-areas-2011.json            code → values (1641 rows)
-    └── peripherality-2020/
-        ├── local-authorities-2011.json            code → values (255 rows)
-        └── localities-2011.json                   code → values (1213 rows)
+    ├── peripherality-2020/
+    │   ├── local-authorities-2011.json            code → values (255 rows)
+    │   └── localities-2011.json                   code → values (1213 rows)
+    ├── census-2022/
+    │   ├── localities-2011.json                   code → values (1184 rows)
+    │   └── statistical-areas-2022.json            code → values (2433 rows, 240 of them copies of a combined row)
+    └── …                                          population-2024, schools-2026 (see Shipped layers)
 ```
 
 Read these paths from `layers.json` (`levels[*].file`, `levels[*].object`, `levels[*].placeholderObject`,
@@ -38,13 +43,23 @@ Read these paths from `layers.json` (`levels[*].file`, `levels[*].object`, `leve
 | localities-2011 | 1000 KB | 292 KB |
 | rc-localities-2011 | 432 KB | 117 KB |
 | statistical-areas-2011 | 1631 KB | 399 KB (incl. ~61 KB of neighborhood/street names) |
+| statistical-areas-2022 | 1668 KB | 397 KB (no names lists) |
 
-Each dataset is ≤ 20 KB gzipped, and the manifest is 3 KB.
+Each dataset file is ≤ 20 KB gzipped, except `census-2022/statistical-areas-2022.json` (38 KB) and the schools
+points (157 KB). The manifest is 17 KB gzipped.
 
 ## Geometry levels
 
-Level ids carry the boundary vintage. All four levels derive from the CBS **2011** statistical-areas layer (2020
-edition). A future index built on the 2022 SA layer would add `statistical-areas-2022` and keep these.
+Level ids carry the boundary vintage. The four `-2011` levels derive from the CBS **2011** statistical-areas layer
+(2020 edition). `statistical-areas-2022` comes from the CBS **2022** SA layer (media release 026/2022) and carries the
+census 2022 SA data.
+
+**The two SA levels are different divisions.** Of the 2,615 SA-2022, only 1,283 map 1:1 onto an SA-2011 (CBS key
+`key_sa2011_to_sa2022.xlsx`); the rest were split, merged, renumbered or newly divided. Codes use the same composition
+in both, so **one code can name different areas on the two levels**: 1,346 of the 1,917 SA-2011 codes also exist
+in SA-2022 (1,110 of the 1,641 SES keys), and only the type-1 "identical" ones are the same area (`"50000437"` exists
+in 2011 only). A code
+means something only together with its level; never carry a code from one SA level to the other.
 
 | Level | `code` | Contents |
 |---|---|---|
@@ -52,6 +67,7 @@ edition). A future index built on the 2022 SA layer would add `statistical-areas
 | `localities-2011` | CBS locality code | **Every** CBS locality, municipalities included (1283). Cities that are divided into SAs appear as one dissolved polygon. Use this level for any dataset keyed by locality code. |
 | `rc-localities-2011` | CBS locality code | Only the 1074 localities that belong to a regional council. This is the unit of the SES "table B" index. |
 | `statistical-areas-2011` | `locality_code × 10000 + sa` (`"50000437"`) | Every SA of the 117 cities that are divided into SAs |
+| `statistical-areas-2022` | `locality_code × 10000 + sa` (`"30002312"`), from `YISHUV_STAT_2022` | Every SA of the 145 cities divided into SAs in 2022 (2,615). Single-SA localities (`STAT_2022` 1) and `55xx`/`99xx` areas are not included. No placeholders. |
 
 Bare RC numbers (1–78) never appear as codes, because they collide with locality codes. These are statistical
 boundaries, not legal municipal jurisdictions.
@@ -67,6 +83,12 @@ boundaries, not legal municipal jurisdictions.
 - **Arcs:** written with mapshaper's `fix-geometry`, so a few delta-encoded arcs contain **decimal** values (104 in
   the SA file). `topojson-client` handles this. A decoder that assumes integer deltas does not.
 - **Validity:** every polygon passes GEOS `ST_IsValid`. The build fails otherwise.
+  - `statistical-areas-2022`: the source has one invalid polygon among the divided cities (Shoham SA 6, a ring
+    self-intersection), which mapshaper's `-clean` repairs. Four more (Jerusalem 2221 and 2913, Tel Aviv 916, Ness
+    Ziona 12) have sub-metre necks that simplification or the grid pinched into self-touching rings. This level is
+    cleaned with `snap-interval=0.00001` (~1 m), so mapshaper rebuilds those rings as separate parts. The other four
+    invalid source polygons are `55xx` open land, which this level does not use. The `-2011` levels keep mapshaper's
+    default snapping.
 - **Loading:**
 
   ```ts
@@ -86,10 +108,10 @@ boundaries, not legal municipal jurisdictions.
 | `name_en` | string | all | English name. See [Names](#names) for fallbacks. |
 | `name_ru` | string | all | Russian name. See [Names](#names) for fallbacks. |
 | `placeholder` | boolean | all | `true` if CBS has no real boundary for this unit, only 50 m circles. See below. |
-| `locality_code` | string of digits | statistical-areas-2011 | Code of the city the SA belongs to |
-| `sa` | integer | statistical-areas-2011 | SA number within the city |
+| `locality_code` | string of digits | statistical-areas-2011, -2022 | Code of the city the SA belongs to |
+| `sa` | integer | statistical-areas-2011, -2022 | SA number within the city |
 | `authority_type` | `"city"` \| `"local-council"` \| `"regional-council"` | local-authorities-2011 | Municipal status: CBS status 0 (municipality), 99 (local council), or a regional council (the `55xx` codes) |
-| `population` | integer | all | Residents at the end of `levels[...].populationYear` (2020): the SA layer's `Pop_Total`, summed over every polygon the feature is made of (0 where CBS has none). For ordering places by size (label priority, search ties); it is **not** a dataset value and differs from the SES dataset's own `population` field ("index population"), which takes precedence when a viewer merges dataset records into feature properties. All localities sum to 9,217,568. |
+| `population` | integer | all | Residents in `levels[...].populationYear`. `-2011` levels (2020): the SA layer's `Pop_Total`, summed over every polygon the feature is made of (0 where CBS has none). `statistical-areas-2022` (2022): the census `pop_approx` of the SA's own row; 0 on the 182 SAs without data and on the 240 SAs folded into a combined row (the row's own SA carries the combined count, so a city's SAs still sum to the city). For ordering places by size (label priority, search ties); it is **not** a dataset value and differs from the SES dataset's own `population` field ("index population"), which takes precedence when a viewer merges dataset records into feature properties. All localities sum to 9,217,568. Sizes compare across levels only roughly, since the years differ. |
 | `neighborhoods_he` | string[] (Hebrew) | statistical-areas-2011 | CBS neighborhood names in the SA, in CBS order. **Absent** when CBS lists none (1298 of 1917 SAs have it). |
 | `streets_he` | string[] (Hebrew) | statistical-areas-2011 | CBS main streets of the SA (up to five), in CBS order. **Absent** when none (1761 of 1917 have it). |
 
@@ -115,8 +137,9 @@ boundaries, not legal municipal jurisdictions.
 - `searchTerm` (required when `searchable`): one value as a noun inside running text, singular and in sentence case,
   for the search placeholder: "Search a place or neighborhood" / "חיפוש יישוב או שכונה" / "Поиск: город, посёлок,
   квартал". The build fails if a searchable field lacks it.
-- Labels come from `pipeline/terminology.ts` (`extraFields` of the level kind), like all other level wording. A
-  future `statistical-areas-2022` with its own companion file gets the same labels.
+- Labels come from `pipeline/terminology.ts` (`extraFields` of the level kind), like all other level wording.
+  `statistical-areas-2022` has **no** extra fields: CBS publishes no streets/neighborhoods file for the 2022 division
+  (`docs/data-sources-2.md` §3.6), so it is searchable by city only.
 - **Source data.** The values come straight from CBS "רחובות עיקריים ושכונות לא"ס 2011" (28.7.2021), listed in
   `manifest.sources`:
   - split on commas, trimmed, deduped
@@ -135,12 +158,11 @@ labels each value; prefer that label when the feature has the property:
 
 Counts on `local-authorities-2011`: 79 `city`, 124 `local-council`, 54 `regional-council`.
 
-On `statistical-areas-2011`, `name_*` holds the **city** name. Build the label from `levels[...].featureLabel[lang]`,
+On both SA levels, `name_*` holds the **city** name. Build the label from `levels[...].featureLabel[lang]`,
 replacing `{name}` with `name_<lang>` and `{sa}` with `sa` ("Tel Aviv - Yafo – area 437").
 
 **Parts of a place.** `levels[...].parentCode`, when set, names the property that holds the code of the place each
-feature is part of; the features' `name_*` are then that place's name. Only `statistical-areas-2011` sets it
-(`"locality_code"`). The viewer uses it to search such a level by place (one entry per city) and to skip map labels
+feature is part of; the features' `name_*` are then that place's name. Both SA levels set it (`"locality_code"`). The viewer uses it to search such a level by place (one entry per city) and to skip map labels
 that would repeat the city name on every part.
 
 ### Placeholder circles (West Bank)
@@ -156,7 +178,7 @@ invisible below about zoom 13.
 - **Marker points:** `objects[level.placeholderObject]` holds one `Point` per circle, at the circle centre, with
   `properties.code` matching the polygon it belongs to. An RC made of 20 circles has 20 points sharing one code.
   Draw them as a minimum-size marker (e.g. a `circle` layer with a fixed pixel radius), coloured by the same joined
-  value as the polygon. The statistical-areas level has an empty points object.
+  value as the polygon. Both statistical-areas levels have an empty points object.
 - **Counts:** `levels[...].placeholderCount` is the number of flagged polygons.
 
 ## Datasets (choropleth)
@@ -275,11 +297,11 @@ Reassignments onto the 2011 geometry, which the dataset `description` also state
 
 ### `census-2022`
 
-CBS Population and Housing Census 2022 at locality level, on `localities-2011` only. The statistical-area level
-needs the SA-2022 geometry, which is a later step.
+CBS Population and Housing Census 2022 on two levels: `localities-2011` and `statistical-areas-2022`. The same six
+measures exist on both.
 
 **Source:** CBS `mifkad-2022.xlsx`, "selected data by localities and statistical areas" (60 columns, 1.1 MB), using
-its 1,185 locality rows. I chose it over the 7.9 MB summary file because it has every chosen measure for every
+its 1,185 locality rows and 2,193 SA rows. I chose it over the 7.9 MB summary file because it has every chosen measure for every
 locality, comes from CBS directly, and keeps the repo small; the summary file would add only the per-class religiosity
 shares. In this file, as in the data.gov.il CSV, the headers of the religiosity code and name columns are swapped; the
 parser takes whichever column holds numbers.
@@ -293,9 +315,13 @@ parser takes whichever column holds numbers.
 | `census-2022-renting-localities` | `rent_pct` (of households) | stepped 10/20/30/40/50 % |
 | `census-2022-religiosity-localities` | `religiosity` | **nominal**: 1 secular, 2 traditional, 3 religious or very religious, 4 Haredi, 6 other |
 
+The SA layers are the same six with the `-statistical-areas` suffix (`census-2022-wage-statistical-areas`…), on
+`statistical-areas-2022`, data `datasets/census-2022/statistical-areas-2022.json`, with the same breaks, colours and
+notes. At SA level, religiosity takes only classes 1–4.
+
 - **Breaks** are round numbers near the locality deciles. For example, median age p10/p50/p90 is 19/32/38, and wage is
-  80.6k/118.7k/167.3k. They match the report's SA-level proposals where those fit, so the step-6 SA layers can share
-  legends.
+  80.6k/118.7k/167.3k. The SA layers reuse them, so a measure reads the same on both levels. SA values spread wider
+  (median age p90 43, wage p10 67.8k), so more SAs land in the end classes.
 - **Stepped palette:** a 6-stop YlOrBr ramp sampled from d3 `interpolateYlOrBr` over t = 0.15…1. It is warm, unlike
   BuPu (population) and YlGn (peripherality).
 - **Religiosity** uses Okabe-Ito. It is CBS's own "main household religiosity" category for the locality, a nominal
@@ -306,9 +332,32 @@ parser takes whichever column holds numbers.
   3 for academic degree, and 2 each for wage and religiosity.
 - **No polygon:** 1997, "residents outside localities, Southern District" (the Bedouin dispersion), is a population
   group, not a place. It is declared in `expectedUnmatched`.
-- **Popup:** all six layers show the same seven rows, in reading order: population, median age, 65+, academic
-  degree, wage, renting, religiosity.
-- **Caveat:** the dataset `description` states the ~20% sample basis and the rounding.
+- **Popup:** all six locality layers show the same seven rows, in reading order: population, median age, 65+,
+  academic degree, wage, renting, religiosity. The SA layers use the same seven rows; combined SAs add a
+  per-feature note (see below).
+- **Caveat:** the dataset `description` states the ~20% sample basis, the rounding, and that the SA level is the 2022
+  division and that combined SAs share figures.
+
+**SA level.** 2,433 of 2,615 SA-2022 polygons have a record:
+- **Own rows:** 2,193 / 2,193 SA rows match a polygon.
+- **Combined SAs:** CBS published 193 rows for groups of 2–6 SAs that were too small alone. `StatAreaCmb` lists the
+  group ("3+1"; the row's own SA is not always first, e.g. Jerusalem's "2311+2312" sits on SA 2312). The record is
+  copied onto every SA in the group (240 more SAs), so a combined SA shows the group's figures. Its population is the
+  group's total, not its own.
+  - All 433 SAs in a group get a per-feature note in `datasets["census-2022"].notes["statistical-areas-2022"][code]`,
+    generated at build time with the group size n (2–6), this SA included. en: "Figures published jointly for {n}
+    areas (incl. this one); population is their combined total.", with he/ru equivalents (ru "для {n} участков",
+    genitive plural; "участка" after 21, 31…).
+  - The notes add ~196 KB raw / ~3 KB gzipped to `layers.json`.
+  - Data rows are authoritative: CBS's separate "combined SAs" list disagrees with them for some SAs and is not read.
+- **No data (182):** 179 are on CBS's "not published" list (`sa_not_published_census2022.xlsx`: open land, industry,
+  institutions); the other 3 are in Deir Hanna (492), Kabul (504) or Majdal Shams (4201), whose census is published
+  at locality level only (their other 8 SAs are on the list too). They have **no key**, never 0, and the missing
+  description says why. The build fails if an SA without data is neither on the list nor in those three cities, or if
+  the set of divided cities without SA rows changes.
+- **Missing values within a record:** renting is absent for 8 SAs and academic degree for 1.
+- **Join report:** `census: SA rows 2433/2433 (own rows 2193/2193, folded into a combined row 240/240) — 182
+  statistical-areas-2022 features without data`.
 
 ### `schools-2026` (points)
 
@@ -379,6 +428,7 @@ The Ministry of Education list of institutions (`mosdot_edu`, data.gov.il, updat
 | localities-2011 | 712 / 1283 | 44 |
 | rc-localities-2011 | 506 / 1074 (496 of the 996 with an index) | 43 |
 | statistical-areas-2011 (city names) | 117 / 117 cities | 0 |
+| statistical-areas-2022 (city names) | 144 / 145 cities (Tzur Hadassa has no Russian label) | 0 |
 
 ## `layers.json`
 
@@ -386,7 +436,7 @@ The zod schemas in `pipeline/lib/contract.ts` are authoritative; the shapes belo
 
 ```ts
 type I18n = { he: string; en: string; ru: string };   // all three, non-empty
-type LevelId = 'local-authorities-2011' | 'localities-2011' | 'rc-localities-2011' | 'statistical-areas-2011';
+type LevelId = 'local-authorities-2011' | 'localities-2011' | 'rc-localities-2011' | 'statistical-areas-2011' | 'statistical-areas-2022';
 
 interface Manifest {
   version: 1;
@@ -406,7 +456,7 @@ interface Manifest {
 interface Level {
   kind: 'local-authorities' | 'localities' | 'rc-localities' | 'statistical-areas';   // the id is `<kind>-<vintage>`
   title: I18n;                          // plain name for users ("Neighborhoods")
-  officialTerm?: I18n;                  // the CBS term, for small secondary text ("CBS statistical areas"); set on every shipped level
+  officialTerm?: I18n;                  // the CBS term, for small secondary text ("CBS statistical areas, 2022 division"); set on every shipped level
   popupOfficialTerm?: false;            // false: show officialTerm in the layer switcher only, not in popups
   file: string;
   object: string;                       // polygons
@@ -421,7 +471,7 @@ interface Level {
   parentCode?: string;                  // property with the code of the place a feature is part of (SA → locality_code)
   countForms?: Record<'he' | 'en' | 'ru', { zero?: string; one?: string; two?: string; few?: string; many?: string; other: string }>;
                                         // "N features" by plural category, {n} = the number; required with parentCode
-  populationYear?: number;              // year of the features' `population` (2020 on every shipped level)
+  populationYear?: number;              // year of the features' `population` (2020 on the -2011 levels, 2022 on statistical-areas-2022)
 }
 
 type Layer = ChoroplethLayer | PointsLayer;
@@ -503,6 +553,7 @@ Popup formats:
 | `population-2024-{size,growth}-local-authorities` | `local-authorities-2011` | `datasets/population-2024/local-authorities-2011.json` |
 | `population-2024-{size,growth,group,type}-localities` | `localities-2011` | `datasets/population-2024/localities-2011.json` |
 | `census-2022-{median-age,aged-65,academic,wage,renting,religiosity}-localities` | `localities-2011` | `datasets/census-2022/localities-2011.json` |
+| `census-2022-{median-age,aged-65,academic,wage,renting,religiosity}-statistical-areas` | `statistical-areas-2022` | `datasets/census-2022/statistical-areas-2022.json` |
 | `schools-2026-{stream,stage}` (points) | — (parent `localities-2011`) | `datasets/schools-2026/schools.geojson` |
 
 The paragraph below describes the three SES layers. The two peripherality layers are described in
@@ -573,10 +624,13 @@ All level wording comes from one file, `pipeline/terminology.ts`, keyed by level
 | `local-authorities` | רשויות מקומיות / Municipalities / Муниципалитеты | רשויות מקומיות / Local authorities / органы местного самоуправления |
 | `localities` | יישובים / Localities / Населённые пункты | כל היישובים, כולל ערים (קובץ היישובים של הלמ"ס) / All CBS localities, cities included / все населённые пункты ЦСБ, включая города |
 | `rc-localities` | קיבוצים, מושבים ויישובים / Kibbutzim, moshavim & villages / Кибуцы, мошавы и посёлки | יישובים במועצות אזוריות / Localities in regional councils / населённые пункты в региональных советах |
-| `statistical-areas` | שכונות / Neighborhoods / Кварталы | אזורים סטטיסטיים של הלמ"ס / CBS statistical areas / статистические районы ЦСБ |
+| `statistical-areas` | שכונות / Neighborhoods / Кварталы | אזורים סטטיסטיים של הלמ"ס, חלוקת {vintage} / CBS statistical areas, {vintage} division / статистические районы ЦСБ, деление {vintage} года |
 
 - **How the build applies it.** A level's kind is its id without the vintage (`statistical-areas-2011` →
-  `statistical-areas`). The build writes the kind to `levels[*].kind` and copies that kind's wording into the level.
+  `statistical-areas`). The build writes the kind to `levels[*].kind` and copies that kind's wording into the level,
+  replacing `{vintage}` in the official term with the id's year ("CBS statistical areas, 2011 division" / "…, 2022
+  division"). The two SA levels share a title ("Neighborhoods"); the official term is what tells them apart, in the
+  switcher and in the popup.
 - **Layer titles.** Each layer title is the dataset title, then ` – `, then the level's `title`
   (`Socio-economic index 2021 – Neighborhoods`). Datasets only define their own title, in `DatasetModule.info`,
   which the build writes to `manifest.datasets`.
@@ -587,7 +641,8 @@ All level wording comes from one file, `pipeline/terminology.ts`, keyed by level
 **Changing wording:** edit `pipeline/terminology.ts` → `npm run build:data` → `npm run build:viewer`, then commit the
 changed `dist/data`. The tests pin the approved strings, so update them in `tests/terminology.test.ts` as well.
 
-**A new vintage** (e.g. `statistical-areas-2022`) gets the same wording automatically. **A new level kind** needs
+**A new vintage** (e.g. `statistical-areas-2022`) gets the same wording automatically, with its own year in the
+official term. **A new level kind** needs
 three things:
 1. add it to `LevelKind` in `pipeline/lib/contract.ts`
 2. add a complete entry to `TERMINOLOGY` (the TypeScript type requires one per kind, and the build re-checks)
@@ -860,3 +915,32 @@ number of locality-type classes (now seven) need updating.
    datasets.
 5. **Tests:** fixtures that assume every layer has a `level` (`viewer/tests/search.test.ts`) need to skip points
    layers.
+
+### Changes for `statistical-areas-2022` and census SA layers (additive, still `version: 1`)
+
+- New level `statistical-areas-2022` (2,615 SAs in 145 cities, from the CBS SA-2022 layer). It has the same kind,
+  properties, `featureLabel`, `parentCode` and `countForms` as `statistical-areas-2011`. It has no `extraFields`
+  (no names file exists for the 2022 division), and `populationYear` is 2022 (census `pop_approx`). See
+  [Geometry levels](#geometry-levels).
+- **The same code can name different areas on the two SA levels.** Keep codes scoped by level (URL `f=`, search
+  entries, selection state).
+- `officialTerm` of both SA levels now names the division: "CBS statistical areas, 2011 division" / "…, 2022
+  division" (he "…, חלוקת 2011", ru "…, деление 2011 года"). Titles are unchanged ("Neighborhoods").
+- Six new census layers `census-2022-<measure>-statistical-areas` on `statistical-areas-2022`, with the same popup
+  as the locality layers. SAs whose figures CBS published jointly with neighbours (433) carry a per-feature note
+  under `datasets["census-2022"].notes["statistical-areas-2022"]`. This is the existing notes mechanism, filled at
+  build time (`DatasetOutput.featureNotes`), so its shape is unchanged. See [`census-2022`](#census-2022).
+- The census `description` and the religiosity note now cover both levels. `attribution` and `sources` name the
+  SA-2022 layer.
+
+**The viewer must know:**
+1. **Two "Neighborhoods" levels.** The census switcher now has localities and neighborhoods for every measure. SES
+   neighborhoods are SA-2011 and census neighborhoods are SA-2022, and only the official term tells them apart.
+2. **Search.** Each SA level adds one group entry per city. With both levels loaded, Tel Aviv has a group on each.
+   The SA-2022 group's `population` (census 2022) is larger than the 2020 figures on the `-2011` levels, so in a tie
+   it outranks the authority and locality entries. `viewer/tests/search.test.ts` currently expects
+   `local-authorities-2011` first and fails. Either dedupe city groups across SA levels or break ties by level rather
+   than by size.
+3. **Size.** The SA-2022 geometry is 397 KB gzipped. Load it only when a census SA layer is shown.
+4. **Tests pinning old wording** (`viewer/tests/i18n.test.ts`, `manifest.test.ts`, `census.test.ts`) expect the old
+   official term or six census layers on one level.

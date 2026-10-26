@@ -69,6 +69,14 @@ values) and indexes each `(level, code)` once, so two datasets on one level don'
 `parentCode` get one entry per parent place (all of a city's statistical areas) plus one per part, the parts only
 matched when the query has a digit ("tel aviv 437").
 
+Two divisions of one kind (`statistical-areas-2011` and `-2022`): only the first in manifest order is loaded for the
+first search. The 2022 one adds the same cities, its areas unnamed, for 397 KB gzipped, so it joins the index when
+its layer is first shown. City groups carry a key per kind and parent (`statistical-areas:5000`); search lists one
+per city, from the best-ranked level (the current layer's, else manifest order, so 2011). Single areas are never
+merged: a code names a different area in each division, so codes are always used with their level (search entries,
+`f` with `layer`, feature state per layer source, selection and hover per layer). Sizes only order entries of one
+level; the 2022 census population can't outrank a 2020 figure on another level.
+
 Points layers are indexed by `name_he`, once per data file. Unless the map already loaded that file, it is indexed
 after the levels, in the background (the schools file is ~170 KB gzipped, against ~1.1 MB for the four levels), and
 an open result list refreshes when it arrives. A school result reads "School · Jerusalem" and opens the schools layer
@@ -110,8 +118,10 @@ Add it to the pipeline (README, "Adding a dataset"). On the next `build:viewer` 
   after the feature type)
 - **multi-measure datasets** (`datasets[id].measures`, `layer.measure`): one radio per measure, in `measures`
   order; the selected measure shows its levels as a small segmented choice (a measure on one level shows that
-  level's name instead). Switching measure keeps the level when the measure has it, else takes its first; switching
-  level keeps the measure. The collapsed sheet reads "dataset · measure · level", the dataset giving way first when
+  level's name instead). Switching measure keeps the level when the measure has it, else the same kind in another
+  division (SES neighborhoods 2011 → census neighborhoods 2022), else its first; switching level keeps the measure.
+  Two levels titled "Neighborhoods" never share a switcher section; the pill tooltip, the radio's small text and the
+  popup's type line name the division ("CBS statistical areas, 2022 division"). The collapsed sheet reads "dataset · measure · level", the dataset giving way first when
   space is short. The highlight is cleared when the dataset or the measure changes, kept across levels.
 - with its classification (`categorical` or `stepped`), legend, `note`, range slider over its classes or bins, and
   `missing` style. **Nominal** categories (`ordered: false`): swatches with labels only, no range slider, no
@@ -144,8 +154,9 @@ Add it to the pipeline (README, "Adding a dataset"). On the next `build:viewer` 
 - Switcher: measures only, no level choice or level name; the collapsed sheet reads "dataset · measure".
 - Popup: the name, then "`featureType` · parent place" (the `parent` level's feature, loaded on the first popup that
   needs it and filled in when it arrives). Points sharing exact coordinates (a campus, up to 15 schools) open one
-  popup listing all of them, the picked one first: name, class, and the other popup fields on one line. The tooltip
-  adds "+N more".
+  popup listing all of them, the picked one first: "15 schools at this location" (the layer's `countForms`), the
+  place, the values all of them share once, then each school's name, class and other fields on one line. The
+  tooltip adds "+N more".
 - `f=<code>` opens a point's popup (its whole location) from a link.
 
 ## Basemap config

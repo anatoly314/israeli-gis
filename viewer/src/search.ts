@@ -72,6 +72,11 @@ export interface SearchEntry {
   via?: { items: string[]; keys: string[]; stripped: string[]; skeletons: string[]; lang: Lang };
   /** On a search result from `via`: the item that matched. */
   matched?: string;
+  /**
+   * On a group: `<level kind>:<parent code>`, the same on every vintage of a kind (a city's SAs in the 2011 and in
+   * the 2022 division). Search lists one group per key, from the best-ranked level.
+   */
+  group?: string;
 }
 
 const namesOf = (p: Props): I18n => ({ he: p.name_he, en: p.name_en, ru: p.name_ru });
@@ -136,7 +141,7 @@ function nameEntries(levelKey: string, level: Level | undefined, data: LevelData
     for (const l of LANGS) labels[l] = level.featureLabel ? fillTemplate(level.featureLabel[l], f.props, l) : `${namesOf(f.props)[l]} ${code}`;
     out.push(entry(levelKey, code, [code], labels, true, f.bbox, f.size));
   }
-  for (const g of groups.values()) out.push(entry(levelKey, null, g.codes, g.names, false, unionBBox(g.boxes), g.size));
+  for (const [key, g] of groups) out.push({ ...entry(levelKey, null, g.codes, g.names, false, unionBBox(g.boxes), g.size), group: `${level.kind}:${key}` });
   return out;
 }
 
@@ -213,6 +218,9 @@ export function search(entries: readonly SearchEntry[], query: string, o: Search
     if (tier === Infinity) continue;
     scored.push({ e, band: tier <= 1 ? 0 : 2, tier, variant: plain <= tier ? 0 : 1, level: rank(e.level) });
   }
+  // Size only orders entries of one level: sizes on different levels are from different years (2020, census 2022).
   scored.sort((a, b) => a.band - b.band || a.tier - b.tier || a.level - b.level || a.variant - b.variant || b.e.size - a.e.size);
-  return scored.slice(0, o.limit ?? 8).map((s) => s.e);
+  const groups = new Set<string>();
+  const unique = scored.filter(({ e }) => !e.group || (!groups.has(e.group) && groups.add(e.group)));
+  return unique.slice(0, o.limit ?? 8).map((s) => s.e);
 }

@@ -107,7 +107,7 @@ describe('popup', () => {
     expect(featureType(sa, areas.level, 'he')).toBe('אזור');
     expect(featureTitle(sa, areas.level, 'en').text).toBe('Tel Aviv - Yafo – area 437');
     // Under the title: the type, then the level's official CBS term.
-    expect(headerLines(sa, areas.level, 'he')).toEqual(['אזור · אזורים סטטיסטיים של הלמ"ס']);
+    expect(headerLines(sa, areas.level, 'he')).toEqual(['אזור · אזורים סטטיסטיים של הלמ"ס, חלוקת 2011']);
     expect(headerLines(tlv, authorities.level, 'en')).toEqual(['City · Local authorities']);
     expect(headerLines(tlv, authorities.level, 'he')).toEqual(['עירייה · רשויות מקומיות']);
     // No level (a points layer): just the type, here none.

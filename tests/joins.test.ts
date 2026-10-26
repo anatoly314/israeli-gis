@@ -73,6 +73,13 @@ describe('built outputs', () => {
       'census-2022-wage-localities': 1184,
       'census-2022-renting-localities': 1184,
       'census-2022-religiosity-localities': 1184,
+      // 2193 rows plus the 240 SAs folded into combined rows
+      'census-2022-median-age-statistical-areas': 2433,
+      'census-2022-aged-65-statistical-areas': 2433,
+      'census-2022-academic-statistical-areas': 2433,
+      'census-2022-wage-statistical-areas': 2433,
+      'census-2022-renting-statistical-areas': 2433,
+      'census-2022-religiosity-statistical-areas': 2433,
     };
     const choropleths = manifest().layers.filter((l): l is ChoroplethLayer => l.kind === 'choropleth');
     expect(choropleths.map((l) => l.id)).toEqual(Object.keys(expected));
@@ -98,7 +105,19 @@ describe('built outputs', () => {
       'localities-2011': 1283,
       'rc-localities-2011': 1074,
       'statistical-areas-2011': 1917,
+      'statistical-areas-2022': 2615,
     });
+  });
+
+  it('builds SA-2022 from the 145 divided localities of the 2022 layer, keyed locality × 10000 + STAT_2022', () => {
+    const sa = levelFeatures('statistical-areas-2022').features;
+    expect(new Set(sa.map((f) => f.properties.locality_code)).size).toBe(145);
+    for (const f of sa) expect(f.properties.code).toBe(String(Number(f.properties.locality_code) * 10000 + (f.properties.sa as number)));
+    expect(manifest().levels['statistical-areas-2022'].placeholderCount).toBe(0);
+    // The four polygons the grid pinched before snapping (pipeline/boundaries/index.ts SNAP_INTERVAL) ship valid.
+    for (const code of ['30002221', '30002913', '50000916', '72000012']) expect(byCode('statistical-areas-2022').has(code)).toBe(true);
+    // Shoham SA 6 is the one invalid source polygon in the divided localities; mapshaper's -clean repairs it.
+    expect(byCode('statistical-areas-2022').get('13040006')?.properties.name_en).toBe('Shoham');
   });
 
   it('has only valid geometries (GEOS)', async () => {

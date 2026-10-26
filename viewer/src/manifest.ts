@@ -64,10 +64,17 @@ export function groupLayers(m: Manifest): LayerGroup[] {
   });
 }
 
-/** The layer to show when picking `measure` while `current` is on: same level if the measure has it, else its first. */
+/** A level id is `<kind>-<vintage>`: the kind, the same for every division year. */
+const kindOf = (level: string) => level.replace(/-\d{4}$/, '');
+
+/**
+ * The layer to show when picking `measure` while `current` is on: the same level if the measure has it, else the same
+ * kind in another division (SES neighborhoods, 2011 → census neighborhoods, 2022), else its first.
+ */
 export function layerForMeasure(group: MeasureGroup, current: Layer | undefined): Layer {
   const level = current && isChoropleth(current) ? current.level : undefined;
-  return group.items.find((i) => isChoropleth(i.layer) && i.layer.level === level)?.layer ?? group.items[0].layer;
+  const on = (match: (l: string) => boolean) => group.items.find((i) => isChoropleth(i.layer) && match(i.layer.level))?.layer;
+  return on((l) => l === level) ?? (level ? on((l) => kindOf(l) === kindOf(level)) : undefined) ?? group.items[0].layer;
 }
 
 /** The dataset's note on one feature (`datasets[id].notes[level][code]`), e.g. a merged locality. */

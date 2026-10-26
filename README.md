@@ -13,11 +13,21 @@ Datasets (one layer group each):
 | `ses-2021`: CBS socio-economic index 2021 | local authorities, localities in regional councils, statistical areas | clusters 1–10, RdYlBu |
 | `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | clusters 1–10, YlGn |
 | `population-2024`: CBS localities file 2024 | size and growth on local authorities and all localities; population group and locality type on localities | stepped BuPu / BrBG, nominal Okabe-Ito |
-| `census-2022`: CBS Census 2022 | median age, aged 65+, academic degree, median wage, renting, household religiosity on all localities | stepped YlOrBr, nominal Okabe-Ito |
+| `census-2022`: CBS Census 2022 | median age, aged 65+, academic degree, median wage, renting, household religiosity on all localities and on statistical areas (2022 division) | stepped YlOrBr, nominal Okabe-Ito |
 | `schools-2026`: Ministry of Education schools | 6,641 points: education stream, school level | nominal Okabe-Ito |
 
-The four geometry levels (local authorities, all localities, localities in regional councils, statistical areas) are
-shared by every dataset.
+Five geometry levels are shared by every dataset:
+
+| Level | Features | Source |
+|---|---|---|
+| `local-authorities-2011` | 257 municipalities, local and regional councils | dissolved from the SA-2011 layer |
+| `localities-2011` | 1,283 localities, cities included | dissolved from the SA-2011 layer |
+| `rc-localities-2011` | 1,074 localities in regional councils | dissolved from the SA-2011 layer |
+| `statistical-areas-2011` | 1,917 statistical areas in 117 cities (SES 2021) | CBS SA-2011 layer |
+| `statistical-areas-2022` | 2,615 statistical areas in 145 cities (census 2022) | CBS SA-2022 layer |
+
+The two SA levels have different boundaries and numbering. The same code can name different areas on the two levels,
+so a code means something only together with its level.
 
 - `docs/data-sources.md`: research notes covering where every file comes from, its schemas, join keys, and licensing.
 - `docs/data-contract.md`: the spec for `dist/data/` that the viewer codes against.
@@ -83,14 +93,14 @@ pipeline/
   build.ts                    CLI: build into staging, swap into dist/data, print the report
   run.ts                      buildAll(outDir): raw → outDir with every check
   download.ts                 fetches and verifies every RawFile declared by boundaries and datasets
-  boundaries/                 SA-2011 layer → four geometry levels, placeholder detection, names
+  boundaries/                 SA-2011 layer → four geometry levels, SA-2022 layer → one; placeholder detection, names
   datasets/
     index.ts                  dataset registry
     cluster-index.ts          shared layer shape of CBS cluster indices (classification, popup, title)
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
     peripherality-2020/       peripherality index 2020: authorities + all localities
     population-2024/          population 2024: four measures (size, growth, group, type)
-    census-2022/              census 2022, locality level: six measures
+    census-2022/              census 2022: six measures on localities and on SA-2022
     schools-2026/             MoE schools: the first points layer (stream, school level)
     measures.ts               shared builders for multi-measure datasets (stepped, nominal, popup, layer)
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
@@ -188,7 +198,8 @@ Pick the level by key:
 |---|---|
 | locality code | `localities-2011` (every locality) or `rc-localities-2011` |
 | authority code (own code, or `5500 + n` for RCs) | `local-authorities-2011` |
-| statistical area (`locality*10000 + sa`) | `statistical-areas-2011` |
+| statistical area, 2011 division (`locality*10000 + sa`) | `statistical-areas-2011` |
+| statistical area, 2022 division (`locality*10000 + sa`, same composition, different areas) | `statistical-areas-2022` |
 
 Never use a bare RC number as a key. All keys are strings. If a dataset needs something the contract can't express,
 extend the schemas in `pipeline/lib/contract.ts` and `docs/data-contract.md` together.
@@ -202,22 +213,25 @@ kind (`local-authorities`, `localities`, `rc-localities`, `statistical-areas`).
 2. Run `npm run build:data`, then `npm run build:viewer`.
 3. Commit `dist/data`, after updating the pinned strings in `tests/terminology.test.ts`.
 
-A new vintage (`statistical-areas-2022`) picks up its kind's wording automatically. A new level kind needs an entry in
+A new vintage (`statistical-areas-2022`) picks up its kind's wording automatically; `{vintage}` in an official term
+becomes the level's year ("CBS statistical areas, 2022 division"). A new level kind needs an entry in
 `LevelKind` (`pipeline/lib/contract.ts`) and in `TERMINOLOGY`. The build fails if any level's kind has no complete
 he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 13 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 22 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
-| `cbs-statistical-areas-2011-demography-2020/*.gdb.zip` | All geometry. Only the zip is committed; gdal3.js reads it via `/vsizip/`. |
+| `cbs-statistical-areas-2011-demography-2020/*.gdb.zip` | The four `-2011` levels. Only the zip is committed; gdal3.js reads it via `/vsizip/`. |
+| `cbs-statistical-areas-2022/ezorim_statistiim_2022.gdb.zip` | `statistical-areas-2022` (8.7 MB, already compressed). The 2011↔2022 key and the readme stay local. |
 | `cbs-socioeconomic-2021/24_24_230t{1,3,4}.xlsx` | Index tables A1, B and C |
 | `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | Neighborhood and main-street names per statistical area (Hebrew) → `neighborhoods_he`, `streets_he` |
 | `cbs-peripherality-2020/24_22_420t{1,2}.xlsx` | Peripherality index 2020: table 1 (255 authorities), table 2 (1,213 localities) |
 | `cbs-localities-file/bycode2024.xlsx`, `bycode2022.xlsx` | Population 2024, and the 2022 base for growth |
-| `cbs-census-2022/mifkad-2022.xlsx` | Census 2022, selected data by locality (60 columns); the rest of that folder stays ignored |
+| `cbs-census-2022/mifkad-2022.xlsx` | Census 2022, selected data by locality and statistical area (60 columns); also the SA-2022 population |
+| `cbs-census-2022/sa_not_published_census2022.xlsx` | CBS's list of SA-2022 areas without published census data; the build checks every SA without data against it. The rest of that folder stays ignored. |
 | `datagov-moe-mosdot-edu/mosdot_edu.csv.gz` | Ministry of Education institutions, gzipped (0.95 MB; 10.9 MB as downloaded, the plain CSV stays local; data.gov.il terms of use, source must be named); the pipeline reads the 6,641 schools |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
@@ -229,7 +243,7 @@ and updating its `sha256`.
 
 Ignored:
 - unzipped `.gdb/` directories and all PDFs
-- the SA-2022 layer, which is for a future index edition
+- the SA 2011→2022 key and the SA-2022 readme
 - the publication-1955 folder
 - the OSM dump (ODbL)
 - `24_24_230t2.xlsx`, `24_24_230t5.xlsx`, `index2021.xlsx`
@@ -241,7 +255,7 @@ Ignored:
 ## Why `dist/data` is committed
 
 It is the reviewed form of the data: building the viewer (`npm run dev`, `build:viewer`) needs no 20-second
-GDAL/WebAssembly build, and the Pages deploy rebuilds it from raw only as a check-and-publish step. The output is small (about 3.7 MB raw, 1 MB gzipped across four levels) and
+GDAL/WebAssembly build, and the Pages deploy rebuilds it from raw only as a check-and-publish step. The output is small (about 8.3 MB raw, 1.8 MB gzipped; the five geometry levels are 1.5 MB of that gzipped) and
 deterministic. So a diff in `dist/data` means the data actually changed, and code review can see it. The tests enforce
 that the committed copy matches a fresh build.
 

@@ -73,16 +73,17 @@ export function valueHtml(layer: Layer, p: Props, lang: Lang): string {
  * comes first, and the record's other fields still follow (one dataset file serves all its measures).
  */
 export function popupHtml(layer: Layer, level: Level | undefined, p: Props, lang: Lang, featureNote?: I18n): string {
-  // Small muted lines at the end: the placeholder caveat, and the dataset's note on this feature (`notes`).
-  const note =
-    (p.placeholder ? `<p class="popup-note">${esc(t('placeholderNote', lang))}</p>` : '') +
-    (featureNote ? `<p class="popup-note feature-note">${esc(featureNote[lang])}</p>` : '');
+  // The dataset's note on this feature (`notes`) comes before the figures it explains (a combined SA's population is
+  // the group's); the placeholder caveat, about the shape only, stays at the end.
+  const featureNoteHtml = featureNote ? `<p class="popup-note feature-note">${esc(featureNote[lang])}</p>` : '';
+  const note = p.placeholder ? `<p class="popup-note">${esc(t('placeholderNote', lang))}</p>` : '';
   return (
     `<div class="popup" lang="${lang}">` +
     titleHtml(featureTitle(p, level, lang), lang) +
     headerLines(p, level, lang)
       .map((line) => `<p class="popup-type">${esc(line)}</p>`)
       .join('') +
+    featureNoteHtml +
     extraFieldsHtml(level, p, lang) +
     rowsHtml(layer, p, lang) +
     note +
@@ -119,12 +120,13 @@ function rowsHtml(layer: Layer, p: Props, lang: Lang): string {
  * list, each with its class and the other fields on one line.
  */
 export function pointsPopupHtml(layer: PointsLayer, items: Props[], lang: Lang, place?: string): string {
-  const typeLine = [layer.featureType[lang], place].filter(Boolean).join(' · ');
-  const type = `<p class="popup-type">${esc(typeLine)}</p>`;
   if (items.length === 1) {
     const p = items[0];
+    const type = `<p class="popup-type">${esc([layer.featureType[lang], place].filter(Boolean).join(' · '))}</p>`;
     return `<div class="popup" lang="${lang}">${titleHtml(featureName(p, lang), lang)}${type}${rowsHtml(layer, p, lang)}</div>`;
   }
+  // Under "15 schools at this location" the type would repeat itself: the place alone.
+  const type = place ? `<p class="popup-type">${esc(place)}</p>` : '';
   // A value every point here has (often the stream on a campus) is said once, under the title, not on each item.
   const same = (f: PopupField) => typeof items[0][f.field] === 'number' && items.every((p) => p[f.field] === items[0][f.field]);
   const shared = layer.popup.filter(same);

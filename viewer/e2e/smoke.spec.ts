@@ -496,12 +496,14 @@ for (const lang of ['he', 'en', 'ru'] as const) {
   });
 }
 
-test('census: one level named once, wages in ₪ everywhere the bins show', async ({ page }) => {
+test('census: a level choice under the current measure only, wages in ₪ everywhere the bins show', async ({ page }) => {
   await page.goto('./?lang=en&layer=census-2022-wage-localities');
   await ready(page, 'census-2022-wage-localities');
   const census = page.locator('details.dataset[data-dataset="census-2022"]');
-  await expect(census.locator('.dataset-level')).toHaveCount(1);
-  await expect(census.locator('.measure .official')).toHaveCount(0);
+  // Two levels now (localities, 2022 neighborhoods): pills under the active measure, no single level name.
+  await expect(census.locator('.dataset-level')).toHaveCount(0);
+  await expect(census.locator('.levels')).toHaveCount(1);
+  await expect(census.locator('.measure.active .levels button')).toHaveText(['Localities', 'Neighborhoods']);
   const labels = (await page.locator('#legend .legend-list li:not(:last-child) span:last-child').allTextContents()).map(bare);
   expect(labels.every((l) => l.includes('₪'))).toBe(true);
   expect(bare(await page.locator('#range output').textContent())).toMatch(/^< ₪[\d,]+ … ≥ ₪[\d,]+ · all$/);
@@ -1076,7 +1078,8 @@ test('schools: points with a nominal legend, measures without levels, a class hi
   await expect(popup.locator('h3')).toHaveText(AT_ONE_SPOT.en);
   await expect(popup.locator('.spot-list li')).toHaveCount(2);
   await expect(popup.locator('.spot-list li b')).toHaveText([/ארגנטינה/, /ארגנטינה/]);
-  await expect(popup.locator('.popup-type')).toHaveText(`School · ${PLACE.en}`);
+  // Under "2 schools at this location", the place alone (no repeated "School").
+  await expect(popup.locator('.popup-type')).toHaveText(PLACE.en);
   await expect(page).toHaveURL(/f=(110312|645424)/);
 
   // The other measure keeps the selection's spot but not the class highlight (other classes).
@@ -1133,6 +1136,134 @@ for (const lang of ['he', 'en', 'ru'] as const) {
     expect(b.x + b.width).toBeLessThanOrEqual(390);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
     await screens(page, `schools-campus-390-${lang}.png`);
+    expect(errors).toEqual([]);
+    await context.close();
+  });
+}
+
+// Census 2022 on the 2022 SA division. 310004 (Ofaqim, area 4) shares its figures with one other area, 30002121 with
+// five; 280006 (Mazkeret Batya, area 6) has no census data. 50000611 exists in both divisions as different areas.
+const CENSUS_SA = 'census-2022-median-age-statistical-areas';
+const censusNote = (code: string) => manifestJson().datasets['census-2022'].notes['statistical-areas-2022'][code];
+
+/** The dataset's note sits under the title and type line, above the first figure. */
+async function expectNoteAboveFigures(popup: ReturnType<Page['locator']>, text: string) {
+  const note = popup.locator('.feature-note');
+  await expect(note).toHaveText(text);
+  const n = (await note.boundingBox())!;
+  const type = (await popup.locator('.popup-type').boundingBox())!;
+  const row = (await popup.locator('dl div').first().locator('dt').boundingBox())!;
+  expect(n.y).toBeGreaterThanOrEqual(type.y + type.height - 1);
+  expect(n.y + n.height).toBeLessThanOrEqual(row.y + 1);
+}
+
+test('census on 2022 neighborhoods: a shared-figures area, a no-data area, the division year in the popup', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`./?lang=en&layer=${CENSUS_SA}&f=310004`);
+  await ready(page, CENSUS_SA);
+  const popup = page.locator('.maplibregl-popup');
+  await expect(popup.locator('h3')).toHaveText('Ofaqim – area 4');
+  await expect(popup.locator('.popup-type')).toHaveText('Area · CBS statistical areas, 2022 division');
+  await expectNoteAboveFigures(popup, 'Figures published jointly for 2 areas (incl. this one); population is their combined total.');
+  // Areas without data exist on this layer: the legend keeps its hatched "No data" row.
+  await expect(page.locator('#legend [data-key="na"]')).toHaveCount(1);
+  await page.goto(`./?lang=en&layer=${CENSUS_SA}&f=280006`);
+  await ready(page, CENSUS_SA);
+  await expect(popup.locator('h3')).toHaveText('Mazkeret Batya – area 6');
+  await expect(popup.locator('.popup-missing')).toContainText('CBS publishes no census figure for this area');
+  // The level choice under the measure: localities or (2022) neighborhoods, the division in the tooltip.
+  const pills = page.locator('details.dataset[data-dataset="census-2022"] .measure.active .levels button');
+  await expect(pills).toHaveText(['Localities', 'Neighborhoods']);
+  await expect(pills.nth(1)).toHaveAttribute('title', 'CBS statistical areas, 2022 division');
+  await expect(pills.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  expect(errors).toEqual([]);
+});
+
+test('an SA code means a different area on each division: switching levels leaves nothing selected', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en&layer=ses-2021-statistical-areas&f=50000611');
+  await ready(page, 'ses-2021-statistical-areas');
+  const popup = page.locator('.maplibregl-popup');
+  await expect(popup.locator('h3')).toHaveText('Tel Aviv - Yafo – area 611');
+  await expect(popup.locator('.popup-type')).toContainText('2011 division');
+  // To census: neighborhoods stay neighborhoods, now the 2022 division; the 2011 selection is gone.
+  await page.locator('details.dataset[data-dataset="census-2022"] > summary').click();
+  await page.locator('details.dataset[data-dataset="census-2022"] input[name=layer]').first().check();
+  await ready(page, CENSUS_SA);
+  await expect(popup).toHaveCount(0);
+  await expect(page).not.toHaveURL(/f=/);
+  // The same code on this layer opens this division's area, from its own data.
+  await page.goto(`./?lang=en&layer=${CENSUS_SA}&f=50000611`);
+  await ready(page, CENSUS_SA);
+  await expect(popup.locator('.popup-type')).toContainText('2022 division');
+  await page.locator('.maplibregl-popup-close-button').click();
+  await expect(page).not.toHaveURL(/f=/);
+  expect(errors).toEqual([]);
+});
+
+test('search: the 2022 division is not loaded for a first search, and its city group serves the census layer', async ({ page }) => {
+  const errors = collectErrors(page);
+  const sa22: string[] = [];
+  page.on('request', (r) => r.url().includes('statistical-areas-2022') && sa22.push(r.url()));
+  await page.goto('./?lang=en');
+  await ready(page, 'ses-2021-local-authorities');
+  await searchAndOpen(page, 'Tel Aviv', /Tel Aviv/);
+  expect(sa22).toEqual([]);
+
+  await page.goto(`./?lang=en&layer=${CENSUS_SA}`);
+  await ready(page, CENSUS_SA);
+  const box = page.getByRole('combobox');
+  await box.fill('Tel Aviv');
+  const first = page.getByRole('option').first();
+  // On this layer the city's neighborhoods come first, once (no 2011 duplicate).
+  await expect(first).toContainText(/Neighborhoods/);
+  await expect(page.getByRole('option').filter({ hasText: /Neighborhoods · / })).toHaveCount(1);
+  await box.press('Enter');
+  await expect(page.locator('body')).toHaveAttribute('data-layer', CENSUS_SA);
+  expect(errors).toEqual([]);
+});
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`census neighborhoods on a 390 px phone (${lang}): level pills, noted popups inside the screen`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    const errors = collectErrors(page);
+    const popup = page.locator('.maplibregl-popup');
+    // Two combined SAs (2 and 6 areas), and a population-2024 locality with a note (Kokhav Ya'akov, with Tel Zion).
+    const cases = [
+      { layer: CENSUS_SA, code: '310004', note: censusNote('310004')[lang], shot: 'ofaqim-4' },
+      { layer: CENSUS_SA, code: '30002121', note: censusNote('30002121')[lang], shot: 'six-sa' },
+      {
+        layer: 'population-2024-size-localities',
+        code: '3779',
+        note: manifestJson().datasets['population-2024'].notes['localities-2011']['3779'][lang],
+        shot: 'pop-3779',
+      },
+    ];
+    for (const c of cases) {
+      await page.goto(`./?lang=${lang}&layer=${c.layer}&f=${c.code}`);
+      await ready(page, c.layer);
+      await expectNoteAboveFigures(popup, c.note);
+      await page.waitForTimeout(400); // the pan that keeps the popup in view
+      const b = (await popup.boundingBox())!;
+      const top = (await page.locator('#top').boundingBox())!;
+      const sheet = (await page.locator('#sheet').boundingBox())!;
+      test.info().annotations.push({ type: `popup height 390 px ${lang} ${c.shot}`, description: String(Math.round(b.height)) });
+      expect(b.x).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width).toBeLessThanOrEqual(390);
+      // Between the search bar and the collapsed sheet, close button included.
+      expect(b.y).toBeGreaterThanOrEqual(top.y + top.height);
+      expect(b.y + b.height).toBeLessThanOrEqual(sheet.y);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+      await screens(page, `noted-popup-390-${lang}-${c.shot}.png`);
+    }
+    await page.goto(`./?lang=${lang}&layer=${CENSUS_SA}`);
+    await ready(page, CENSUS_SA);
+    await page.locator('#sheet-toggle').tap();
+    await expect(page.locator('details.dataset[data-dataset="census-2022"] .measure.active .levels button[aria-pressed="true"]')).toHaveText(
+      manifestJson().levels['statistical-areas-2022'].title[lang],
+    );
+    await screens(page, `census-sa-sheet-390-${lang}.png`);
     expect(errors).toEqual([]);
     await context.close();
   });

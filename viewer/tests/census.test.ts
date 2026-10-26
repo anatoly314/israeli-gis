@@ -42,10 +42,14 @@ describe('currency (ILS) — popup format and scale unit', () => {
 });
 
 describe('census-2022 in the switcher and legend', () => {
-  it('has all its measures on one level (so the switcher names that level once)', () => {
+  it('has every measure on localities and on the 2022 neighborhoods (a level choice under each measure)', () => {
     const census = groupLayers(manifest()).find((g) => g.dataset === 'census-2022')!;
-    expect(census.measures!.length).toBeGreaterThan(1);
-    expect(census.measures!.every((m) => m.items.length === 1 && m.items[0].label.en === census.measures![0].items[0].label.en)).toBe(true);
+    expect(census.measures!.length).toBe(6);
+    for (const m of census.measures!) {
+      expect(m.items.map((i) => i.label.en)).toEqual(['Localities', 'Neighborhoods']);
+      // The pill's tooltip names the division, which tells these neighborhoods from the SES (2011) ones.
+      expect(m.items[1].official?.en).toBe('CBS statistical areas, 2022 division');
+    }
   });
 
   it('shows religiosity as nominal classes with labels', () => {

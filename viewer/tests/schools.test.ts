@@ -60,14 +60,14 @@ describe('schools 2026 (points)', () => {
     // Both are state schools, official and mixed: said once under the title; each item keeps its own stage.
     const campus = pointsPopupHtml(stream.layer, [byCode.get('110312')!, byCode.get('645424')!], 'ru', 'Иерусалим');
     expect(text(campus)).toBe(
-      '2 школы в этом месте Школа · Иерусалим Государственные Официальная (государственная) · Смешанная ' +
+      '2 школы в этом месте Иерусалим Государственные Официальная (государственная) · Смешанная ' +
         'ארגנטינה Начальная ניסוי ארגנטינה Старшая (включая 7–12 классы)',
     );
     expect((campus.match(/<li>/g) ?? []).length).toBe(2);
     // On the stage layer the shared stream becomes plain text and each item shows its stage swatch.
     const stageProps = new Map(joinLayer(stage.data, {}, stage.layer).markers.features.map((f) => [f.properties.code, f.properties]));
     const onStage = text(pointsPopupHtml(stage.layer, [stageProps.get('110312')!, stageProps.get('645424')!], 'en'));
-    expect(onStage).toBe('2 schools at this location School State · Official (state-run) · Mixed ארגנטינה Primary ניסוי ארגנטינה High school (incl. grades 7–12)');
+    expect(onStage).toBe('2 schools at this location State · Official (state-run) · Mixed ארגנטינה Primary ניסוי ארגנטינה High school (incl. grades 7–12)');
     // Special education and the approximate location appear where they apply, and only there.
     const approx = [...byCode.values()].find((p) => p.approx === 1 && p.special === 1)!;
     const line = text(pointsPopupHtml(stream.layer, [approx, byCode.get('110023')!], 'en'));
@@ -82,7 +82,7 @@ describe('schools 2026 (points)', () => {
     const big = [...new Set(spots.values())].find((g) => g.length === 15)!;
     const byCode = new Map(joined.markers.features.map((f) => [f.properties.code, f.properties]));
     const title = (l: typeof stream.layer, codes: string[], lang: 'he' | 'en' | 'ru') =>
-      text(pointsPopupHtml(l, codes.map((c) => byCode.get(c)!), lang)).split(` ${l.featureType[lang]}`)[0];
+      text(/<h3>.*?<\/h3>/.exec(pointsPopupHtml(l, codes.map((c) => byCode.get(c)!), lang))![0]);
     expect(stream.layer.countForms).toBeDefined();
     expect(title(stream.layer, big, 'ru')).toBe('15 школ в этом месте');
     expect(title(stream.layer, big.slice(0, 3), 'ru')).toBe('3 школы в этом месте');

@@ -15,7 +15,9 @@ dist/data.previous-*/
 # Raw data: commit only what the pipeline reads (see README "Raw data").
 data/raw/**/*.gdb/
 data/raw/**/*.pdf
-data/raw/cbs-statistical-areas-2022/
+# SA-2022 reads only the layer (already a zip); the key and readme stay local.
+data/raw/cbs-statistical-areas-2022/*
+!data/raw/cbs-statistical-areas-2022/ezorim_statistiim_2022.gdb.zip
 data/raw/cbs-socioeconomic-2021-publication-1955/
 data/raw/osm-places-overpass/
 data/raw/cbs-socioeconomic-2021/24_24_230t2.xlsx
@@ -35,9 +37,10 @@ data/raw/cbs-localities-file/bycode2023Sofi.xlsx
 data/raw/cbs-localities-file/change2024-2023Araii-2023Sofi.xlsx
 data/raw/cbs-localities-file/changes-1948-2024.xlsx
 data/raw/cbs-localities-file/index2024.xlsx
-# Census 2022 at locality level reads only the 60-column CBS file.
+# Census 2022 reads the 60-column CBS file and, for the SA level, CBS's list of SAs not published.
 data/raw/cbs-census-2022/*
 !data/raw/cbs-census-2022/mifkad-2022.xlsx
+!data/raw/cbs-census-2022/sa_not_published_census2022.xlsx
 data/raw/cbs-local-authorities-2022-publication-1957/
 data/raw/cbs-population-sa2022-2023/
 data/raw/datagov-census-2022/

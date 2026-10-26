@@ -105,9 +105,9 @@
         "ru": "Кварталы"
       },
       "officialTerm": {
-        "he": "אזורים סטטיסטיים של הלמ\"ס",
-        "en": "CBS statistical areas",
-        "ru": "статистические районы ЦСБ"
+        "he": "אזורים סטטיסטיים של הלמ\"ס, חלוקת 2011",
+        "en": "CBS statistical areas, 2011 division",
+        "ru": "статистические районы ЦСБ, деление 2011 года"
       },
       "file": "geometry/statistical-areas-2011.topo.json",
       "object": "statistical-areas-2011",
@@ -178,6 +178,54 @@
           "searchable": false
         }
       ]
+    },
+    "statistical-areas-2022": {
+      "kind": "statistical-areas",
+      "title": {
+        "he": "שכונות",
+        "en": "Neighborhoods",
+        "ru": "Кварталы"
+      },
+      "officialTerm": {
+        "he": "אזורים סטטיסטיים של הלמ\"ס, חלוקת 2022",
+        "en": "CBS statistical areas, 2022 division",
+        "ru": "статистические районы ЦСБ, деление 2022 года"
+      },
+      "file": "geometry/statistical-areas-2022.topo.json",
+      "object": "statistical-areas-2022",
+      "placeholderObject": "statistical-areas-2022-placeholders",
+      "idProperty": "code",
+      "featureCount": 2615,
+      "placeholderCount": 0,
+      "featureLabel": {
+        "he": "{name} – אזור {sa}",
+        "en": "{name} – area {sa}",
+        "ru": "{name} – участок {sa}"
+      },
+      "parentCode": "locality_code",
+      "populationYear": 2022,
+      "featureType": {
+        "he": "אזור",
+        "en": "Area",
+        "ru": "Участок"
+      },
+      "countForms": {
+        "he": {
+          "one": "אזור אחד",
+          "two": "{n} אזורים",
+          "other": "{n} אזורים"
+        },
+        "en": {
+          "one": "{n} area",
+          "other": "{n} areas"
+        },
+        "ru": {
+          "one": "{n} участок",
+          "few": "{n} участка",
+          "many": "{n} участков",
+          "other": "{n} участка"
+        }
+      }
     }
   },
   "datasets": {
@@ -289,9 +337,9 @@
         "ru": "Перепись 2022"
       },
       "description": {
-        "he": "מפקד האוכלוסין והדיור 2022 של הלמ\"ס, ברמת היישוב. נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. הפזורה הבדואית בדרום אינה על המפה.",
-        "en": "CBS Population and Housing Census 2022, by locality. Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. The southern Bedouin dispersion is not on the map.",
-        "ru": "Перепись населения и жилья ЦСБ 2022 года по населённым пунктам. Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Бедуинского рассеянного населения на юге на карте нет."
+        "he": "מפקד האוכלוסין והדיור 2022 של הלמ\"ס, לפי יישוב ולפי אזור סטטיסטי (חלוקת 2022, שונה מחלוקת 2011 של המדד החברתי-כלכלי). נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. אזורים קטנים פורסמו לעיתים יחד עם אזור שכן, ואז מוצג הנתון המשותף בכל אחד מהם. הפזורה הבדואית בדרום אינה על המפה.",
+        "en": "CBS Population and Housing Census 2022, by locality and by statistical area (2022 division, which differs from the socio-economic index's 2011 one). Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. Small areas were sometimes published together with a neighbouring one; each then shows the shared figure. The southern Bedouin dispersion is not on the map.",
+        "ru": "Перепись населения и жилья ЦСБ 2022 года по населённым пунктам и статистическим районам (деление 2022 года, отличается от деления 2011 года в социально-экономическом индексе). Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Малые участки иногда опубликованы вместе с соседним; тогда у каждого показаны общие данные. Бедуинского рассеянного населения на юге на карте нет."
       },
       "measures": [
         {
@@ -342,7 +390,2176 @@
             "ru": "Религиозность домохозяйства"
           }
         }
-      ]
+      ],
+      "notes": {
+        "statistical-areas-2022": {
+          "310004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "310005": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "700111": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "700112": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "700121": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "700122": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "700123": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "700124": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "700431": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "700434": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1660006": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1660008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820005": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "1820009": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2290001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2290003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2400002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2400003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2460011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2460016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2460021": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "2460024": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "4690001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "4690002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "4820001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "4820003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "5070001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "5070004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "6270003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "6270004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8310001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8310003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8310005": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8310008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8740004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8740006": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8740008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "8740009": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "9220002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "9220005": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10200001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10200002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10310001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10310003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10340001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10340003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10590001": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "10590002": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "10590005": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "10590007": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "10590009": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "10610014": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10610015": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10610023": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10610025": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10610032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "10610035": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11390011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11390012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610017": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610041": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "11610044": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "12000332": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "12000334": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "12000335": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "12680002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "12680004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "12860002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "12860004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "13040005": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "13040007": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "20340001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "20340002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000022": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000025": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000036": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "22000037": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "24000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "24000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "24000032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "24000033": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25000001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25000002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25300002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25300007": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25300009": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25300014": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25600003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "25600004": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26000011": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "26000012": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "26000013": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26000014": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26000016": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "26000017": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "26000018": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26000032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26000033": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26000041": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26000042": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100112": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100123": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26100124": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26100126": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26100426": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100428": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100431": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26100434": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26200011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26200012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26300011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26300012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400031": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400042": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26400043": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26500012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26500015": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26500016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26500017": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26500043": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26500044": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26500045": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "26600011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26600013": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26600034": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "26600035": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "28000008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "28000009": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000323": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000324": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000511": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000512": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000542": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000543": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000811": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000814": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000923": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30000924": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001021": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001022": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001023": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001024": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001025": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001026": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001114": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001115": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001116": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001151": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001152": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001332": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001336": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001411": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001412": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001514": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001515": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001611": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001612": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001613": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30001712": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001713": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001817": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30001818": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002112": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002121": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002122": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002123": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002124": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002125": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002126": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "30002211": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002212": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002213": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002214": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002221": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002222": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002311": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002312": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002321": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002322": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002323": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002324": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002411": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002412": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002413": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002414": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002611": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002613": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002621": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002622": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002711": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002712": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "30002811": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30002812": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30002813": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "30002911": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002912": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002913": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "30002914": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "36160011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "36160012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000131": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000135": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000211": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000212": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000213": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000214": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000221": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "40000222": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "40000223": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "40000231": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000311": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000321": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000322": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000415": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000416": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000431": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000433": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000434": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "40000713": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "40000812": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000813": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000824": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000825": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000943": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "40000945": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000114": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000115": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000311": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000312": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000531": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000533": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000622": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "50000623": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "50000624": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "50000625": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "50000713": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000714": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000731": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000732": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000733": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000734": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000825": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000826": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000831": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000832": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000912": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000913": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000922": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000923": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000931": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50000933": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001021": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001024": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001223": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001224": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001412": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001414": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001424": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "50001425": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "61000111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "61000113": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "61000115": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "61000116": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "61000117": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "61000521": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "61000522": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "62000523": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "62000525": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "64000223": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "64000224": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "64000312": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "64000313": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "64000315": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "65000311": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "65000312": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "66000111": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000112": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000113": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000114": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000115": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000225": {
+            "he": "נתונים שפורסמו במשותף ל-6 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 6 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 6 участков (включая этот); население — их общая сумма"
+          },
+          "66000511": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "66000512": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "66000623": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "66000624": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "67000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "67000017": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "67000034": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "67000035": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "68000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "68000016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "68000033": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "68000034": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "69000111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "69000112": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "69000115": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "69000116": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "70000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "70000013": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "70000016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "70000018": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000223": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000224": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000231": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000233": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000241": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000242": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000323": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000324": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000413": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "71000414": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "72000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "72000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "72000031": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "72000032": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "72000034": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "73000034": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "73000035": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "74000111": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "74000121": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "74000122": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "74000123": {
+            "he": "נתונים שפורסמו במשותף ל-4 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 4 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 4 участков (включая этот); население — их общая сумма"
+          },
+          "74000534": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "74000536": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "75000001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "75000008": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "76000021": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "76000027": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000014": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000015": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000021": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000023": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000025": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000026": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000041": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000042": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000046": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "77000048": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "78000032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "78000033": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000113": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000415": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000416": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000511": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000518": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "79000623": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "79000624": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "79000625": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "79000626": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "79000627": {
+            "he": "נתונים שפורסמו במשותף ל-5 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 5 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 5 участков (включая этот); население — их общая сумма"
+          },
+          "80000015": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "80000016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "80000031": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "80000032": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000112": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000114": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000426": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000427": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000428": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000621": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000622": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000623": {
+            "he": "נתונים שפורסמו במשותף ל-3 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 3 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 3 участков (включая этот); население — их общая сумма"
+          },
+          "83000631": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000632": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000633": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000635": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000711": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "83000712": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "84000111": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "84000113": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "84000422": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "84000423": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "85000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "85000015": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "85000023": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "85000026": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000322": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000323": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000414": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000415": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000421": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "86000424": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "87000041": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "87000043": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000312": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000314": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000614": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000615": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000621": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000622": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000624": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000625": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000633": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000634": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000724": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000725": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000726": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000727": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000816": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000817": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000821": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "90000827": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "91000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "91000013": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "91000014": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "91000016": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "92000001": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "92000002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "94000002": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "94000003": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "95000011": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "95000012": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "97000033": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "97000034": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "97000041": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          },
+          "97000042": {
+            "he": "נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם",
+            "en": "Figures published jointly for 2 areas (incl. this one); population is their combined total.",
+            "ru": "Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма"
+          }
+        }
+      }
     },
     "schools-2026": {
       "title": {
@@ -3509,9 +5726,9 @@
           "color": "#c8c8c8"
         },
         "note": {
-          "he": "הרמה השכיחה ביותר במשקי הבית ביישוב, בדיווח עצמי (\"אורח חיים עיקרי למשק בית\" בלמ\"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.",
-          "en": "The most common level among the locality's households, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
-          "ru": "Самый частый уровень среди домохозяйств населённого пункта, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка."
+          "he": "הרמה השכיחה ביותר במשקי הבית ביישוב או באזור, בדיווח עצמי (\"אורח חיים עיקרי למשק בית\" בלמ\"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.",
+          "en": "The most common level among the households of the locality or area, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
+          "ru": "Самый частый уровень среди домохозяйств населённого пункта или участка, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка."
         }
       },
       "popup": [
@@ -3643,6 +5860,1101 @@
       },
       "kind": "choropleth",
       "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-median-age-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "median-age",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – גיל חציוני – שכונות",
+        "en": "Census 2022 – Median age – Neighborhoods",
+        "ru": "Перепись населения 2022 – Медианный возраст – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "age_median",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          20,
+          25,
+          30,
+          35,
+          40
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "בשנים; מחצית מהתושבים צעירים יותר",
+          "en": "Years; half of the residents are younger",
+          "ru": "Лет; половина жителей моложе"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
+    },
+    {
+      "id": "census-2022-aged-65-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "aged-65",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – בני 65 ומעלה – שכונות",
+        "en": "Census 2022 – Aged 65+ – Neighborhoods",
+        "ru": "Перепись населения 2022 – 65 лет и старше – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "age65_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          5,
+          10,
+          15,
+          20,
+          25
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% מהתושבים",
+          "en": "% of residents",
+          "ru": "% жителей"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
+    },
+    {
+      "id": "census-2022-academic-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "academic",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – בעלי תואר אקדמי – שכונות",
+        "en": "Census 2022 – Academic degree – Neighborhoods",
+        "ru": "Перепись населения 2022 – С высшим образованием – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "academic_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% מבני 15 ומעלה; אומדן מדגמי",
+          "en": "% of residents aged 15+; sample estimate",
+          "ru": "% жителей от 15 лет; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
+    },
+    {
+      "id": "census-2022-wage-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "wage",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – שכר חציוני של שכירים – שכונות",
+        "en": "Census 2022 – Median employee wage – Neighborhoods",
+        "ru": "Перепись населения 2022 – Медианная зарплата наёмных работников – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "wage_median",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          80000,
+          100000,
+          120000,
+          140000,
+          160000
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "הכנסה שנתית חציונית מעבודה, ₪; אומדן מדגמי",
+          "en": "Median annual income from work, ₪; sample estimate",
+          "ru": "Медианный годовой доход от работы, ₪; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
+    },
+    {
+      "id": "census-2022-renting-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "renting",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – גרים בשכירות – שכונות",
+        "en": "Census 2022 – Renting – Neighborhoods",
+        "ru": "Перепись населения 2022 – Снимают жильё – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "rent_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% ממשקי הבית; אומדן מדגמי",
+          "en": "% of households; sample estimate",
+          "ru": "% домохозяйств; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
+    },
+    {
+      "id": "census-2022-religiosity-statistical-areas",
+      "dataset": "census-2022",
+      "measure": "religiosity",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – רמת דתיות של משק הבית – שכונות",
+        "en": "Census 2022 – Household religiosity – Neighborhoods",
+        "ru": "Перепись населения 2022 – Религиозность домохозяйства – Кварталы"
+      },
+      "data": "datasets/census-2022/statistical-areas-2022.json",
+      "valueField": "religiosity",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "חילוני",
+              "en": "Secular",
+              "ru": "Светские"
+            },
+            "color": "#56b4e9"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "מסורתי",
+              "en": "Traditional",
+              "ru": "Традиционные"
+            },
+            "color": "#f0e442"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "דתי או דתי מאוד",
+              "en": "Religious or very religious",
+              "ru": "Религиозные или очень религиозные"
+            },
+            "color": "#009e73"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "חרדי",
+              "en": "Haredi",
+              "ru": "Харедим (ультраортодоксы)"
+            },
+            "color": "#cc79a7"
+          },
+          {
+            "value": 6,
+            "label": {
+              "he": "אחר",
+              "en": "Other",
+              "ru": "Другое"
+            },
+            "color": "#e69f00"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג'דל שמס); או שאין אומדן אמין לנתון זה.",
+            "en": "CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.",
+            "ru": "ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "הרמה השכיחה ביותר במשקי הבית ביישוב או באזור, בדיווח עצמי (\"אורח חיים עיקרי למשק בית\" בלמ\"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.",
+          "en": "The most common level among the households of the locality or area, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
+          "ru": "Самый частый уровень среди домохозяйств населённого пункта или участка, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка."
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "statistical-areas-2022"
     },
     {
       "id": "schools-2026-stream",
@@ -4225,9 +7537,9 @@
     }
   ],
   "attribution": {
-    "he": "גבולות: הלמ\"ס (אזורים סטטיסטיים 2011) · שמות ברוסית: ויקינתונים",
-    "en": "Boundaries: CBS Israel (Statistical Areas 2011) · Russian names: Wikidata",
-    "ru": "Границы: ЦСБ Израиля (статистические районы 2011) · Названия на русском: Викиданные"
+    "he": "גבולות: הלמ\"ס (אזורים סטטיסטיים 2011, 2022) · שמות ברוסית: ויקינתונים",
+    "en": "Boundaries: CBS Israel (Statistical Areas 2011, 2022) · Russian names: Wikidata",
+    "ru": "Границы: ЦСБ Израиля (статистические районы 2011, 2022) · Названия на русском: Викиданные"
   },
   "sources": [
     {
@@ -4240,6 +7552,17 @@
       "license": "CBS open licence",
       "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
       "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), שכבת אזורים סטטיסטיים 2011 – דמוגרפיה 2020 וקובץ יישובים 2021, (נשלף 24.10.2026), זמין ב: https://www.cbs.gov.il/he/Pages/geo-layers.aspx, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+    },
+    {
+      "name": {
+        "he": "הלמ\"ס, שכבת אזורים סטטיסטיים 2022",
+        "en": "CBS, Statistical Areas 2022 layer",
+        "ru": "ЦСБ, слой статистических районов 2022"
+      },
+      "url": "https://www.cbs.gov.il/he/mediarelease/DocLib/2022/026/ezorim_statistiim_2022.gdb.zip",
+      "license": "CBS open licence",
+      "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+      "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), שכבת אזורים סטטיסטיים 2022, (נשלף 24.10.2026), זמין ב: https://www.cbs.gov.il/he/mediarelease/DocLib/2022/026/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
     },
     {
       "name": {

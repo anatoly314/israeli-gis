@@ -327,8 +327,27 @@ Extremes run from −77% to +138%. These are small localities, and probably also
 
 > **Used at locality level (step 4, 2026-10-25):** dataset `census-2022` (`pipeline/datasets/census-2022/`) reads
 > the locality rows of `mifkad-2022.xlsx` (1184/1185 on `localities-2011`; 1997 is the Bedouin dispersion group). The
-> measures are median age, 65+, academic degree, median employee wage, renting and main household religiosity. The
-> SA level (§3.4–3.6) is still to come.
+> measures are median age, 65+, academic degree, median employee wage, renting and main household religiosity.
+>
+> **Used at SA level (step 6, 2026-10-26):** new level `statistical-areas-2022` from `ezorim_statistiim_2022.gdb.zip`
+> (2,615 SAs in 145 cities, now committed), with the same six measures from the 2,193 SA rows of `mifkad-2022.xlsx`.
+> - **Combined SAs:** the record is copied onto every SA in the `StatAreaCmb` group (+240 SAs). Each of the 433
+>   grouped SAs gets a per-feature note: "published jointly for n areas, population is their total", n = 2–6. That
+>   replaces the `combined_count` field proposed in §3.6.
+> - **No data:** 182 SAs. 179 are on `sa_not_published_census2022.xlsx` (now committed); 3 are in Deir Hanna, Kabul
+>   and Majdal Shams, which have locality rows only. 2 entries on that list are single-SA localities (1111, 392), so
+>   they are not on the level.
+> - **Geometry fixes:** the one invalid source polygon among the divided cities (Shoham 1304/6) is repaired by
+>   mapshaper `-clean`. Four sub-metre necks that the 2·10⁵ grid pinched (Jerusalem 2221 and 2913, Tel Aviv 916, Ness
+>   Ziona 12) are fixed with `-clean snap-interval=0.00001`, on this level only. The other 4 of the 5 invalid
+>   polygons are `55xx` open land, which the level doesn't use.
+> - **Size:** 1,668 KB raw / 397 KB gzipped geometry, and 38 KB gzipped data.
+> - **Population:** census `pop_approx` (`populationYear` 2022), not the 2023 file, which lacks 34 cities.
+> - **Not done:** no neighbourhood names (option 3 in §3.6, inherited through the key, was left out). The key and the
+>   readme stay gitignored.
+> - **Numbers that differ from the earlier estimates below:** "171 no data" was the 142 census cities only; with the 3
+>   locality-only cities it is 182. "Not published but has a data row" is 0 when SAs are matched through
+>   `StatAreaCmb`.
 
 ### 3.1 What is published (verified)
 
@@ -763,7 +782,7 @@ level. New wording is needed for dataset titles, measures and the points feature
 | `cbs-census-2022/summary_geo_units_census2022_he.xlsx` | 7,829,964 | 75a00c88f636 |
 | `cbs-census-2022/mifkad-2022.xlsx` | 1,140,766 | 84d0a48b75c8 (**used, committed**) |
 | `cbs-census-2022/combined_statistical_areas.xlsx` | 44,217 | c89b5b42a2a3 |
-| `cbs-census-2022/sa_not_published_census2022.xlsx` | 50,505 | c0982c770e74 |
+| `cbs-census-2022/sa_not_published_census2022.xlsx` | 50,505 | c0982c770e74 (**used, committed**) |
 | `cbs-census-2022/` other files (§3.2) | | |
 | `datagov-census-2022/*.csv` (3 files) | 25 KB – 949 KB | |
 | `cbs-population-sa2022-2023/population_by_locality_sa_age_end2023.xlsx` | 1,405,937 | 1f13c72f4f65 |

@@ -29,10 +29,15 @@ describe('terminology', () => {
     expect(() => assertTerminology(m)).not.toThrow();
   });
 
-  it('resolves a future vintage to the same wording', () => {
+  it('resolves another vintage to the same wording, with its year in the official term', () => {
     expect(levelKind('statistical-areas-2022')).toBe('statistical-areas');
-    expect(termsFor('statistical-areas-2022')).toEqual(termsFor('statistical-areas-2011'));
+    const { officialTerm: o22, ...t22 } = termsFor('statistical-areas-2022');
+    const { officialTerm: o11, ...t11 } = termsFor('statistical-areas-2011');
+    expect(t22).toEqual(t11);
+    expect([o11.en, o22.en]).toEqual(['CBS statistical areas, 2011 division', 'CBS statistical areas, 2022 division']);
+    expect([o11.he, o22.ru]).toEqual(['אזורים סטטיסטיים של הלמ"ס, חלוקת 2011', 'статистические районы ЦСБ, деление 2022 года']);
     expect(levelKind('rc-localities-2030')).toBe('rc-localities');
+    expect(termsFor('rc-localities-2030')).toEqual(termsFor('rc-localities-2011'));
   });
 
   it('refuses level ids without a known kind or vintage', () => {
@@ -85,7 +90,11 @@ describe('approved wording', () => {
       ['קיבוצים, מושבים ויישובים', 'Kibbutzim, moshavim & villages', 'Кибуцы, мошавы и посёлки'],
       ['יישובים במועצות אזוריות', 'Localities in regional councils', 'населённые пункты в региональных советах'],
     ],
-    ['statistical-areas', ['שכונות', 'Neighborhoods', 'Кварталы'], ['אזורים סטטיסטיים של הלמ"ס', 'CBS statistical areas', 'статистические районы ЦСБ']],
+    [
+      'statistical-areas',
+      ['שכונות', 'Neighborhoods', 'Кварталы'],
+      ['אזורים סטטיסטיים של הלמ"ס, חלוקת {vintage}', 'CBS statistical areas, {vintage} division', 'статистические районы ЦСБ, деление {vintage} года'],
+    ],
     ['localities', ['יישובים', 'Localities', 'Населённые пункты'], null],
   ] as const)('%s', (kind, title, official) => {
     const t = TERMINOLOGY[kind];
@@ -119,6 +128,8 @@ describe('approved wording', () => {
   it('counts a place\'s parts with a phrase for every plural category of every language', () => {
     const sa = manifest().levels['statistical-areas-2011'];
     expect(sa.countForms).toEqual(TERMINOLOGY['statistical-areas'].countForms);
+    expect(manifest().levels['statistical-areas-2022'].countForms).toEqual(sa.countForms);
+    expect(manifest().levels['statistical-areas-2022'].extraFields).toBeUndefined();
     for (const lang of LANGS) for (const c of pluralCategories(lang)) expect(sa.countForms![lang][c], `${lang} ${c}`).toBeTruthy();
     expect(pluralCategories('ru').sort()).toEqual(['few', 'many', 'one']);
     expect(sa.extraFields?.find((f) => f.searchable)?.searchTerm).toEqual({ he: 'שכונה', en: 'neighborhood', ru: 'квартал' });

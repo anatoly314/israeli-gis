@@ -1,6 +1,7 @@
 // User-facing wording for every geometry level, in one place. The build applies it to each level by its kind
 // (the level id without the vintage), so a new vintage such as `statistical-areas-2022` or a new dataset picks
-// up the same names without any string edits. To change wording: edit this file, `npm run build:data`,
+// up the same names without any string edits; `{vintage}` in an official term becomes the level's year. To change
+// wording: edit this file, `npm run build:data`,
 // `npm run build:viewer`.
 import { z } from 'zod';
 import { CountForms, I18n, LevelKind, type DatasetInfo, type LevelId } from './lib/contract.ts';
@@ -68,8 +69,14 @@ export const TERMINOLOGY: Record<LevelKind, LevelTerms> = Terminology.parse({
   },
   'statistical-areas': {
     title: { he: 'שכונות', en: 'Neighborhoods', ru: 'Кварталы' },
-    // The Russian CBS term is "статистические районы" everywhere (official term, sources, attribution).
-    officialTerm: { he: 'אזורים סטטיסטיים של הלמ"ס', en: 'CBS statistical areas', ru: 'статистические районы ЦСБ' },
+    // The Russian CBS term is "статистические районы" everywhere (official term, sources, attribution). Two SA
+    // vintages ship (2011 under the socio-economic index, 2022 under the census) with different boundaries and
+    // numbering, so the official term names the division; `{vintage}` is the year from the level id.
+    officialTerm: {
+      he: 'אזורים סטטיסטיים של הלמ"ס, חלוקת {vintage}',
+      en: 'CBS statistical areas, {vintage} division',
+      ru: 'статистические районы ЦСБ, деление {vintage} года',
+    },
     // One feature is an area, which may hold several named neighbourhoods (neighborhoods_he).
     featureType: { he: 'אזור', en: 'Area', ru: 'Участок' },
     // {name} is the parent city's name, {sa} the area number.
@@ -99,12 +106,18 @@ export function levelKind(id: LevelId | string): LevelKind {
   return kind.data;
 }
 
-/** Terminology for a level id; throws when its kind has no complete entry, so a new kind can't ship unnamed. */
+/**
+ * Terminology for a level id, with `{vintage}` in the official term replaced by the id's year; throws when its kind
+ * has no complete entry, so a new kind can't ship unnamed.
+ */
 export function termsFor(id: LevelId | string): LevelTerms {
   const kind = levelKind(id);
   const terms = TERMINOLOGY[kind];
   if (!terms) throw new Error(`No terminology for level kind "${kind}" (add it to pipeline/terminology.ts)`);
-  return LevelTerms.parse(terms);
+  const vintage = id.slice(kind.length + 1);
+  const o = terms.officialTerm;
+  const officialTerm = { he: o.he.replace('{vintage}', vintage), en: o.en.replace('{vintage}', vintage), ru: o.ru.replace('{vintage}', vintage) };
+  return LevelTerms.parse({ ...terms, officialTerm });
 }
 
 /** Separator between dataset and level in layer titles (grouping uses `manifest.datasets`, not the title). */
@@ -216,6 +229,26 @@ const NO_CENSUS_LOCALITY: I18n = {
   en: 'CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).',
   ru: 'ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки).',
 };
+const NO_CENSUS_SA: I18n = {
+  he: 'הלמ"ס אינה מפרסמת נתון מפקד לאזור זה: שטח פתוח, אזור תעשייה או מוסדות; עיר שפורסמה רק ברמת היישוב (דיר חנא, כאבול, מג\'דל שמס); או שאין אומדן אמין לנתון זה.',
+  en: 'CBS publishes no census figure for this area: open land, industry or institutions; a city published at locality level only (Deir Hanna, Kabul, Majdal Shams); or no reliable estimate for this figure.',
+  ru: 'ЦСБ не публикует этот показатель переписи для участка: открытая местность, промзона или учреждения; город, опубликованный только целиком (Дейр-Ханна, Кабуль, Мадждаль-Шамс); или нет надёжной оценки.',
+};
+/**
+ * Popup note on an SA whose census row CBS published jointly with neighbouring SAs; `n` is the group size, this SA
+ * included (2–6). Russian "для N участков" takes the genitive: plural "участков" except after numbers ending in 1
+ * (21, 31…: "участка"), which Intl's `one` category marks.
+ */
+export function combinedSaNote(n: number): I18n {
+  if (!Number.isInteger(n) || n < 2) throw new Error(`combinedSaNote: a group has 2+ areas, got ${n}`);
+  const ru = new Intl.PluralRules('ru').select(n) === 'one' ? 'участка' : 'участков';
+  return {
+    he: `נתונים שפורסמו במשותף ל-${n} אזורים (כולל זה); האוכלוסייה היא סך כולם`,
+    en: `Figures published jointly for ${n} areas (incl. this one); population is their combined total.`,
+    ru: `Данные опубликованы совместно для ${n} ${ru} (включая этот); население — их общая сумма`,
+  };
+}
+
 const NO_POPULATION_AUTHORITY: I18n = {
   he: 'אין אוכלוסייה לרשות זו (מועצה מקומית תעשייתית).',
   en: 'This authority has no residents (an industrial local council).',
@@ -386,9 +419,9 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
     title: { he: 'מפקד האוכלוסין 2022', en: 'Census 2022', ru: 'Перепись населения 2022' },
     shortTitle: { he: 'מפקד 2022', en: 'Census 2022', ru: 'Перепись 2022' },
     description: {
-      he: 'מפקד האוכלוסין והדיור 2022 של הלמ"ס, ברמת היישוב. נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. הפזורה הבדואית בדרום אינה על המפה.',
-      en: 'CBS Population and Housing Census 2022, by locality. Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. The southern Bedouin dispersion is not on the map.',
-      ru: 'Перепись населения и жилья ЦСБ 2022 года по населённым пунктам. Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Бедуинского рассеянного населения на юге на карте нет.',
+      he: 'מפקד האוכלוסין והדיור 2022 של הלמ"ס, לפי יישוב ולפי אזור סטטיסטי (חלוקת 2022, שונה מחלוקת 2011 של המדד החברתי-כלכלי). נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. אזורים קטנים פורסמו לעיתים יחד עם אזור שכן, ואז מוצג הנתון המשותף בכל אחד מהם. הפזורה הבדואית בדרום אינה על המפה.',
+      en: "CBS Population and Housing Census 2022, by locality and by statistical area (2022 division, which differs from the socio-economic index's 2011 one). Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. Small areas were sometimes published together with a neighbouring one; each then shows the shared figure. The southern Bedouin dispersion is not on the map.",
+      ru: 'Перепись населения и жилья ЦСБ 2022 года по населённым пунктам и статистическим районам (деление 2022 года, отличается от деления 2011 года в социально-экономическом индексе). Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Малые участки иногда опубликованы вместе с соседним; тогда у каждого показаны общие данные. Бедуинского рассеянного населения на юге на карте нет.',
     },
     attribution: { he: 'מפקד האוכלוסין 2022: הלמ"ס', en: 'Census 2022: CBS Israel', ru: 'Перепись 2022: ЦСБ Израиля' },
     fields: {
@@ -404,17 +437,17 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
       'median-age': {
         title: { he: 'גיל חציוני', en: 'Median age', ru: 'Медианный возраст' },
         note: { he: 'בשנים; מחצית מהתושבים צעירים יותר', en: 'Years; half of the residents are younger', ru: 'Лет; половина жителей моложе' },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
       },
       'aged-65': {
         title: { he: 'בני 65 ומעלה', en: 'Aged 65+', ru: '65 лет и старше' },
         note: { he: '% מהתושבים', en: '% of residents', ru: '% жителей' },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
       },
       academic: {
         title: { he: 'בעלי תואר אקדמי', en: 'Academic degree', ru: 'С высшим образованием' },
         note: { he: '% מבני 15 ומעלה; אומדן מדגמי', en: '% of residents aged 15+; sample estimate', ru: '% жителей от 15 лет; выборочная оценка' },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
       },
       wage: {
         title: { he: 'שכר חציוני של שכירים', en: 'Median employee wage', ru: 'Медианная зарплата наёмных работников' },
@@ -423,23 +456,23 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
           en: 'Median annual income from work, ₪; sample estimate',
           ru: 'Медианный годовой доход от работы, ₪; выборочная оценка',
         },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
       },
       renting: {
         title: { he: 'גרים בשכירות', en: 'Renting', ru: 'Снимают жильё' },
         note: { he: '% ממשקי הבית; אומדן מדגמי', en: '% of households; sample estimate', ru: '% домохозяйств; выборочная оценка' },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
       },
       religiosity: {
         title: { he: 'רמת דתיות של משק הבית', en: 'Household religiosity', ru: 'Религиозность домохозяйства' },
         // Title kept as "רמת דתיות" rather than CBS's "אורח חיים עיקרי למשק בית": "lifestyle" alone doesn't say that
         // religious observance is what is measured. The note names the CBS variable, so both terms are on screen.
         note: {
-          he: 'הרמה השכיחה ביותר במשקי הבית ביישוב, בדיווח עצמי ("אורח חיים עיקרי למשק בית" בלמ"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.',
-          en: "The most common level among the locality's households, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
-          ru: 'Самый частый уровень среди домохозяйств населённого пункта, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка.',
+          he: 'הרמה השכיחה ביותר במשקי הבית ביישוב או באזור, בדיווח עצמי ("אורח חיים עיקרי למשק בית" בלמ"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.',
+          en: "The most common level among the households of the locality or area, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
+          ru: 'Самый частый уровень среди домохозяйств населённого пункта или участка, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка.',
         },
-        missing: { localities: NO_CENSUS_LOCALITY },
+        missing: { localities: NO_CENSUS_LOCALITY, 'statistical-areas': NO_CENSUS_SA },
         classes: {
           1: { he: 'חילוני', en: 'Secular', ru: 'Светские' },
           2: { he: 'מסורתי', en: 'Traditional', ru: 'Традиционные' },

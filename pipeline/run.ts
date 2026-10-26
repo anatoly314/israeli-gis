@@ -11,8 +11,8 @@ import {
   type NameStats,
 } from './boundaries/index.ts';
 import { datasets } from './datasets/index.ts';
-import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, PointsData, manifestJsonSchema, type CountForms, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
-import { unexpectedUnmatched, type JoinReport } from './lib/dataset.ts';
+import { DatasetValues, LANGS, LEVEL_IDS, Manifest, PLURAL_CATEGORIES, PointsData, manifestJsonSchema, type CountForms, type I18n, type Lang, type Layer, type Level, type LevelId } from './lib/contract.ts';
+import { unexpectedUnmatched, type DatasetOutput, type JoinReport } from './lib/dataset.ts';
 import { verifyRawFile } from './lib/download.ts';
 import { assertDatumShift, invalidGeometries } from './lib/gdal.ts';
 import { writeOut, writeOutJson, type WrittenFile } from './lib/io.ts';
@@ -156,8 +156,10 @@ export async function buildAll(outDir: string): Promise<BuildReport> {
   const joins: JoinReport[] = [];
   const datasetCodes = new Map<string, string[]>();
   const notes: string[] = [];
+  const featureNotes = new Map<string, NonNullable<DatasetOutput['featureNotes']>>();
   for (const d of datasets) {
     const out = await d.build({ geometryCodes });
+    if (out.featureNotes) featureNotes.set(d.id, out.featureNotes);
     const pointsFiles = new Set(out.layers.filter((l) => l.kind === 'points').map((l) => l.data));
     for (const [path, data] of Object.entries(out.files)) {
       if (pointsFiles.has(path)) {
@@ -194,7 +196,19 @@ export async function buildAll(outDir: string): Promise<BuildReport> {
     throw new Error(`Unexpected join result:\n${unmatched.map(([label, p]) => `  ${label}: ${p.join('; ')}`).join('\n')}`);
   }
 
-  const datasetInfo = Object.fromEntries(datasets.map((d) => [d.id, d.info]));
+  const datasetInfo = Object.fromEntries(
+    datasets.map((d) => {
+      const computed = featureNotes.get(d.id);
+      if (!computed) return [d.id, d.info];
+      const merged = { ...d.info.notes };
+      for (const [level, byCode] of Object.entries(computed) as [LevelId, Record<string, I18n>][]) {
+        const clash = Object.keys(byCode).filter((c) => merged[level]?.[c]);
+        if (clash.length) throw new Error(`${d.id}: computed and fixed notes both for ${level} ${clash.join(', ')}`);
+        merged[level] = { ...merged[level], ...byCode };
+      }
+      return [d.id, { ...d.info, notes: merged }];
+    }),
+  );
   const manifest = Manifest.parse({ version: 1, levels, datasets: datasetInfo, layers, attribution, sources } satisfies Manifest);
   assertTerminology(manifest);
   // A per-feature note must point at a feature the dataset actually maps.

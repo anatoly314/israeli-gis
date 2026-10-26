@@ -847,6 +847,12 @@ details.dataset:not([open]) > summary {
   color: var(--muted);
 }
 
+/* The dataset's note on a feature: under the type line, before the figures it qualifies. */
+.popup .feature-note {
+  margin: -4px 0 8px;
+  line-height: 1.35;
+}
+
 /* Several points at one location (a campus has up to 15 schools): a scrolling list, one school per item. */
 .spot-list {
   list-style: none;

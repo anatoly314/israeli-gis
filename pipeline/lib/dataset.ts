@@ -1,4 +1,4 @@
-import type { DatasetInfo, Layer, LevelId } from './contract.ts';
+import type { DatasetInfo, I18n, Layer, LevelId } from './contract.ts';
 import type { RawFile } from './download.ts';
 
 export interface JoinCount {
@@ -33,6 +33,11 @@ export interface DatasetOutput {
   joins: JoinReport[];
   /** Extra lines for the build report (counts the joins don't show, e.g. points dropped for bad coordinates). */
   notes?: string[];
+  /**
+   * Per-feature notes computed from the data (level → code → text), merged into `manifest.datasets[id].notes` next
+   * to the fixed ones from the terminology.
+   */
+  featureNotes?: Partial<Record<LevelId, Record<string, I18n>>>;
 }
 
 export interface BuildContext {

@@ -11,8 +11,12 @@ const slug = z.string().regex(/^[a-z0-9-]+$/);
 export const I18n = z.strictObject({ he: text, en: text, ru: text });
 export type I18n = z.infer<typeof I18n>;
 
-/** Level ids carry the boundary vintage: everything here derives from the CBS 2011 statistical-areas layer. */
-export const LevelId = z.enum(['local-authorities-2011', 'localities-2011', 'rc-localities-2011', 'statistical-areas-2011']);
+/**
+ * Level ids carry the boundary vintage: the `-2011` levels derive from the CBS 2011 statistical-areas layer,
+ * `statistical-areas-2022` from the 2022 one. SA codes use the same composition in both vintages, so one code can
+ * name different areas on the two SA levels; codes are only meaningful together with their level.
+ */
+export const LevelId = z.enum(['local-authorities-2011', 'localities-2011', 'rc-localities-2011', 'statistical-areas-2011', 'statistical-areas-2022']);
 export type LevelId = z.infer<typeof LevelId>;
 export const LEVEL_IDS = LevelId.options;
 

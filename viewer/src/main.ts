@@ -249,6 +249,7 @@ async function prepare(layer: Layer) {
   const entry = { ...joined, byCode, level, ...(!isChoropleth(layer) && { spots: colocated(level) }) };
   layerData.set(layer.id, entry);
   levelData.set(levelKeyOf(layer), level);
+  addToIndex(levelKeyOf(layer), level);
   return entry;
 }
 
@@ -448,37 +449,63 @@ map.on('click', (e) => {
   showPopup(state.layerId, code, at);
 });
 
+/** Level and points keys in the index. */
+const indexedKeys = new Set<string>();
+
+/** Adds a source's entries once the index exists (a level or points file the map loaded later). */
+function addToIndex(key: string, data: LevelData) {
+  if (!indexing || indexedKeys.has(key)) return;
+  indexedKeys.add(key);
+  entries = [...entries, ...buildEntries(key, levelByKey(key), data)];
+  searchBox.refresh();
+}
+
 /**
- * Search indexes places per level (names, bbox, size): geometry only, no dataset values. Points files (6.6k schools,
- * ~170 KB) don't hold up the first answer: unless the map already loaded them, they are indexed after the places, in
- * the background, and an open result list is refreshed then.
+ * Another vintage of a level kind indexed already (statistical-areas-2022 after -2011): the same cities, its parts
+ * unnamed, so it adds nothing a first search needs. Its 400 KB geometry is indexed only once the map loads it.
+ */
+const laterVintage = (key: string) => {
+  const kind = levelByKey(key)?.kind;
+  return Boolean(kind) && Object.keys(manifest.levels).find((k) => levelByKey(k)!.kind === kind && sourceInUse(k)) !== key;
+};
+const sourceInUse = (key: string) => manifest.layers.some((l) => levelKeyOf(l) === key);
+
+/**
+ * Search indexes places per level (names, bbox, size): geometry only, no dataset values. What the first answer waits
+ * for: every level in use, except later vintages of a kind (see `laterVintage`), plus whatever the map already
+ * loaded. Points files (6.6k schools, ~170 KB) follow in the background and refresh an open result list; later
+ * vintages join when their layer is shown.
  */
 function ensureIndex(): Promise<void> {
   // Focus or typing before the manifest arrived: build the index once it does, so that query is answered too.
   if (!manifest) return manifestReady.then(ensureIndex);
   indexing ??= (async () => {
     const keys = [...new Set(manifest.layers.map(levelKeyOf))];
-    const index = async (key: string) => {
+    const load = async (key: string) => {
       let data = levelData.get(key);
       if (!data) {
         const level = levelByKey(key);
         data = level ? await loadLevel(base, level) : (await loadLayerSource(base, manifest, manifest.layers.find((l) => levelKeyOf(l) === key)!)).level;
         levelData.set(key, data);
       }
-      return buildEntries(key, levelByKey(key), data);
+      return data;
     };
-    const now = keys.filter((k) => levelByKey(k) || levelData.has(k));
-    entries = (await Promise.all(now.map(index))).flat();
-    for (const key of keys.filter((k) => !now.includes(k))) {
-      index(key)
-        .then((more) => {
-          entries = [...entries, ...more];
-          searchBox.refresh();
-        })
+    const now = keys.filter((k) => levelData.has(k) || (levelByKey(k) && !laterVintage(k)));
+    for (const k of now) indexedKeys.add(k);
+    const built = await Promise.all(now.map(async (k) => buildEntries(k, levelByKey(k), await load(k))));
+    // Kept: entries a layer shown meanwhile added.
+    entries = [...entries, ...built.flat()];
+    for (const key of keys.filter((k) => !now.includes(k) && !levelByKey(k))) {
+      load(key)
+        .then((data) => addToIndex(key, data))
         .catch((err) => console.error(err));
     }
   })();
-  indexing.catch(() => (indexing = null));
+  indexing.catch(() => {
+    indexing = null;
+    indexedKeys.clear();
+    entries = [];
+  });
   return indexing;
 }
 

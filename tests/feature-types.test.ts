@@ -31,7 +31,7 @@ describe('feature types', () => {
   });
 
   it('carries residents (year in populationYear), summed over each feature, on every level', () => {
-    for (const id of LEVEL_IDS) expect(manifest().levels[id].populationYear).toBe(2020);
+    for (const id of LEVEL_IDS) expect(manifest().levels[id].populationYear).toBe(id === 'statistical-areas-2022' ? 2022 : 2020);
     const total = (id: (typeof LEVEL_IDS)[number]) => levelFeatures(id).features.reduce((s, f) => s + (f.properties.population as number), 0);
     for (const id of LEVEL_IDS) expect(levelFeatures(id).features.every((f) => Number.isInteger(f.properties.population))).toBe(true);
     expect(total('localities-2011')).toBe(9_217_568);
@@ -44,8 +44,9 @@ describe('feature types', () => {
 
   it('marks statistical areas as parts of their city', () => {
     const m = manifest();
-    expect(m.levels['statistical-areas-2011'].parentCode).toBe('locality_code');
-    for (const id of LEVEL_IDS.filter((l) => l !== 'statistical-areas-2011')) expect(m.levels[id].parentCode).toBeUndefined();
+    const saLevels: string[] = ['statistical-areas-2011', 'statistical-areas-2022'];
+    for (const id of saLevels) expect(m.levels[id as (typeof LEVEL_IDS)[number]].parentCode).toBe('locality_code');
+    for (const id of LEVEL_IDS.filter((l) => !saLevels.includes(l))) expect(m.levels[id].parentCode).toBeUndefined();
     const sa = byCode('statistical-areas-2011').get('50000437')!.properties;
     expect([sa.locality_code, sa.name_en]).toEqual(['5000', 'Tel Aviv - Yafo']);
   });

@@ -1,12 +1,13 @@
 import { describe, expect, inject, it } from 'vitest';
 import { LANGS, type ChoroplethLayer } from '../pipeline/lib/contract.ts';
 import { colorbrewer, OKABE_ITO } from '../pipeline/lib/palettes.ts';
-import { BREAKS, RELIGIOSITY_COLORS } from '../pipeline/datasets/census-2022/index.ts';
-import { datasetTerms } from '../pipeline/terminology.ts';
+import { BREAKS, LOCALITY_ROWS_ONLY, RELIGIOSITY_COLORS } from '../pipeline/datasets/census-2022/index.ts';
+import { combinedSaNote, datasetTerms } from '../pipeline/terminology.ts';
 import { contrast, textOn } from '../viewer/src/classify.ts';
-import { dataset, manifest } from './dist.ts';
+import { byCode, dataset, manifest } from './dist.ts';
 
 const ID = 'census-2022';
+const SA = 'statistical-areas-2022';
 const values = () => dataset(`datasets/${ID}/localities-2011.json`);
 const layer = (id: string) => manifest().layers.find((l) => l.id === id) as ChoroplethLayer;
 
@@ -99,11 +100,85 @@ describe('census 2022: wording and popup', () => {
     expect(note.ru).toMatch(/Относится ко всем религиям/);
   });
 
-  it('gives all six layers the same seven-row popup', () => {
-    const layers = manifest().layers.filter((l) => l.dataset === ID);
-    expect(layers).toHaveLength(6);
+  it('gives all twelve layers (localities and SA-2022) the same seven-row popup', () => {
+    const layers = manifest().layers.filter((l): l is ChoroplethLayer => l.dataset === ID && l.kind === 'choropleth');
+    expect(layers.map((l) => l.level)).toEqual([...Array(6).fill('localities-2011'), ...Array(6).fill(SA)]);
     for (const l of layers) {
       expect(l.popup.map((p) => p.field)).toEqual(['population', 'age_median', 'age65_pct', 'academic_pct', 'wage_median', 'rent_pct', 'religiosity']);
     }
+  });
+});
+
+describe('census 2022: statistical areas (2022 division)', () => {
+  const saValues = () => dataset(`datasets/${ID}/${SA}.json`);
+
+  it('places every SA row on its SA-2022 polygon, and copies combined rows onto the SAs folded into them', () => {
+    const j = inject('buildReport').joins.find((r) => r.label === 'census: SA rows')!;
+    expect([j.level, j.matched, j.rows, j.unmatched, j.geometryWithoutData]).toEqual([SA, 2433, 2433, [], 182]);
+    expect(j.breakdown.map((b) => [b.label, b.matched, b.rows])).toEqual([
+      ['own rows', 2193, 2193],
+      ['folded into a combined row', 240, 240],
+    ]);
+    expect(Object.keys(saValues())).toHaveLength(2433);
+    expect(inject('buildReport').notes.join()).toMatch(
+      /2193 rows \(193 combined, covering 240 more SAs\); 182 of 2615 polygons without data: 179 on CBS's not-published list, 3 more in cities with locality rows only/,
+    );
+  });
+
+  it.each([
+    // Even Yehuda SA 3, StatAreaCmb "3+1"
+    ['1820003', { population: 3560, age_median: 35, age65_pct: 16.1, academic_pct: 33, wage_median: 111900, rent_pct: 27.8, religiosity: 1 }],
+    // Jerusalem SA 2312, StatAreaCmb "2311+2312"
+    ['30002312', { population: 20450, age_median: 21, age65_pct: 2.6, academic_pct: 7.4, wage_median: 71600, rent_pct: 36.3, religiosity: 2 }],
+    // Abu Snan SA 1, a city SES leaves blank at SA level
+    ['4730001', { population: 5100, age_median: 29, age65_pct: 7.6, academic_pct: 15.1, wage_median: 85500, rent_pct: 7.4, religiosity: 2 }],
+  ])('SA %s equals its raw row', (code, expected) => {
+    expect(saValues()[code]).toEqual(expected);
+  });
+
+  it('gives both SAs of a "3+1" row the same record and a note, and the feature population only to the row\'s own SA', () => {
+    const own = saValues()['1820003'];
+    expect(saValues()['1820001']).toEqual(own);
+    const notes = manifest().datasets[ID].notes?.[SA] ?? {};
+    expect(notes['1820003']).toEqual(notes['1820001']);
+    expect(notes['1820003']).toEqual({
+      he: 'נתונים שפורסמו במשותף ל-2 אזורים (כולל זה); האוכלוסייה היא סך כולם',
+      en: 'Figures published jointly for 2 areas (incl. this one); population is their combined total.',
+      ru: 'Данные опубликованы совместно для 2 участков (включая этот); население — их общая сумма',
+    });
+    expect(byCode(SA).get('1820003')?.properties.population).toBe(own.population);
+    expect(byCode(SA).get('1820001')?.properties.population).toBe(0);
+    // StatAreaCmb does not always list the row's own SA first: Jerusalem's "2311+2312" sits on SA 2312.
+    expect(saValues()['30002311']).toEqual(saValues()['30002312']);
+  });
+
+  it('notes exactly the 433 SAs in combined groups (sizes 2–6), with Russian genitive plurals', () => {
+    const notes = manifest().datasets[ID].notes?.[SA] ?? {};
+    expect(Object.keys(notes)).toHaveLength(433);
+    const sizes = Object.values(notes).map((n) => Number(/для (\d+) участков /.exec(n.ru)?.[1]));
+    expect(new Set(sizes)).toEqual(new Set([2, 3, 4, 5, 6]));
+    expect(manifest().datasets[ID].notes?.['localities-2011']).toBeUndefined();
+    expect(combinedSaNote(5).ru).toMatch(/для 5 участков/);
+    expect(combinedSaNote(21).ru).toMatch(/для 21 участка /);
+    expect(() => combinedSaNote(1)).toThrow();
+  });
+
+  it('leaves not-published SAs and the three locality-only cities without a record (no data, not zero)', () => {
+    for (const code of [...byCode(SA).keys()].filter((c) => ['492', '504', '4201'].includes(c.slice(0, -4)))) expect(saValues()[code]).toBeUndefined();
+    expect(Object.keys(LOCALITY_ROWS_ONLY)).toEqual(['492', '504', '4201']);
+    expect(saValues()['1820002']).toBeUndefined(); // Even Yehuda SA 2, on CBS's not-published list
+    const c = layer('census-2022-median-age-statistical-areas').classification;
+    expect(c.missing.description.en).toMatch(/open land, industry or institutions; a city published at locality level only \(Deir Hanna, Kabul, Majdal Shams\)/);
+  });
+
+  it('uses the locality layers\' breaks and colours on the SA layers', () => {
+    for (const m of Object.keys(BREAKS)) {
+      expect(layer(`census-2022-${m}-statistical-areas`).classification).toEqual({
+        ...layer(`census-2022-${m}-localities`).classification,
+        missing: layer(`census-2022-${m}-statistical-areas`).classification.missing,
+      });
+    }
+    const rel = Object.values(saValues()).map((r) => r.religiosity);
+    expect(new Set(rel)).toEqual(new Set([1, 2, 3, 4]));
   });
 });

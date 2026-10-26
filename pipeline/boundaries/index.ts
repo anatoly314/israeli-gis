@@ -9,9 +9,12 @@ import { addPointObject, toTopoJSON, type Topology } from '../lib/topology.ts';
 import { labelsMatch, pickItem, readLocalitiesFile, readWikidataItems, regionalCouncilHe } from './names.ts';
 import { placeholderCentre } from './placeholders.ts';
 import { readSaNames } from './sa-names.ts';
+import { FILE as CENSUS_FILE } from '../datasets/census-2022/index.ts';
+import { parseCensusSas } from '../datasets/census-2022/parse.ts';
 import { levelKind, termsFor } from '../terminology.ts';
 
 const SA_ZIP = 'cbs-statistical-areas-2011-demography-2020/statisticalareas_2020_demography.gdb.zip';
+const SA22_ZIP = 'cbs-statistical-areas-2022/ezorim_statistiim_2022.gdb.zip';
 const LOCALITIES_FILE = 'cbs-localities-file/bycode2021.xlsx';
 const WD_ITEMS = 'wikidata-p3466/p3466_items.csv';
 const WD_COUNCILS = 'wikidata-p3466/regional_councils_Q1022469.csv';
@@ -28,6 +31,13 @@ export const rawFiles: RawFile[] = [
     url: 'https://www.cbs.gov.il/he/Documents/statisticalareas_2020_demography.gdb.zip',
     sha256: 'ef0bb63fc504dd58d6bd088d4b79d93a8211997278d9a3fe3e3a8cf998b94b62',
     manual: 'Linked from https://www.cbs.gov.il/he/Pages/geo-layers.aspx (statistical areas 2011, demography 2020).',
+  },
+  {
+    // Media release 026/2022 ("statistical areas 2022"); the layer has no population, so the level takes it from the
+    // census (CENSUS_FILE).
+    path: SA22_ZIP,
+    url: 'https://www.cbs.gov.il/he/mediarelease/DocLib/2022/026/ezorim_statistiim_2022.gdb.zip',
+    sha256: '55b995363be99c438a69603e5f1a89d3fc92fa11cedf922e137592a8551edf27',
   },
   {
     path: LOCALITIES_FILE,
@@ -119,6 +129,20 @@ export const sources: Source[] = [
   },
   {
     name: {
+      he: 'הלמ"ס, שכבת אזורים סטטיסטיים 2022',
+      en: 'CBS, Statistical Areas 2022 layer',
+      ru: 'ЦСБ, слой статистических районов 2022',
+    },
+    url: 'https://www.cbs.gov.il/he/mediarelease/DocLib/2022/026/ezorim_statistiim_2022.gdb.zip',
+    license: 'CBS open licence',
+    licenseUrl: 'https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
+    citation:
+      'הלשכה המרכזית לסטטיסטיקה (הלמ"ס), שכבת אזורים סטטיסטיים 2022, (נשלף 24.10.2026), ' +
+      'זמין ב: https://www.cbs.gov.il/he/mediarelease/DocLib/2022/026/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ"ס ' +
+      'בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx',
+  },
+  {
+    name: {
       he: 'הלמ"ס, רחובות עיקריים ושכונות לפי אזור סטטיסטי (חלוקת 2011)',
       en: 'CBS, main streets and neighborhoods by statistical area (2011 division)',
       ru: 'ЦСБ, главные улицы и кварталы по статистическим районам (деление 2011 года)',
@@ -141,9 +165,9 @@ export const sources: Source[] = [
 ];
 
 export const attribution: I18n = {
-  he: 'גבולות: הלמ"ס (אזורים סטטיסטיים 2011) · שמות ברוסית: ויקינתונים',
-  en: 'Boundaries: CBS Israel (Statistical Areas 2011) · Russian names: Wikidata',
-  ru: 'Границы: ЦСБ Израиля (статистические районы 2011) · Названия на русском: Викиданные',
+  he: 'גבולות: הלמ"ס (אזורים סטטיסטיים 2011, 2022) · שמות ברוסית: ויקינתונים',
+  en: 'Boundaries: CBS Israel (Statistical Areas 2011, 2022) · Russian names: Wikidata',
+  ru: 'Границы: ЦСБ Израиля (статистические районы 2011, 2022) · Названия на русском: Викиданные',
 };
 
 type Geom = Polygon | MultiPolygon;
@@ -157,6 +181,16 @@ interface SaProps {
   Pop_Total: number | null;
 }
 
+interface Sa22Props {
+  SEMEL_YISHUV: number;
+  STAT_2022: number | null;
+  YISHUV_STAT_2022: number;
+  SHEM_YISHUV: string | null;
+  SHEM_YISHUV_ENGLISH: string | null;
+}
+
+type NameProps = Pick<SaProps, 'SHEM_YISHUV' | 'SHEM_YISHUV_ENGLISH'>;
+
 type LevelMeta = Omit<Level, 'featureCount' | 'placeholderCount'>;
 
 export interface LevelBuild {
@@ -166,6 +200,7 @@ export interface LevelBuild {
   points: { coordinates: [number, number]; properties: { code: string } }[];
   copyFields: string[];
   simplify: string;
+  snapInterval?: number;
   /** Properties added to the output features by code after topology building (lists don't go through mapshaper). */
   extraProps?: Map<string, Record<string, string[]>>;
 }
@@ -190,8 +225,10 @@ export interface Boundaries {
   companions: CompanionJoin[];
 }
 
-/** The SA layer's demography edition: the year of every feature's `population`. */
+/** The SA-2011 layer's demography edition: the year of the `-2011` levels' `population`. */
 const POPULATION_YEAR = 2020;
+/** SA-2022 `population` is the census 2022 count (`pop_approx`), the only figure covering every published SA-2022. */
+const SA22_POPULATION_YEAR = 2022;
 
 export type AuthorityType = 'city' | 'local-council' | 'regional-council';
 
@@ -201,7 +238,12 @@ export type AuthorityType = 'city' | 'local-council' | 'regional-council';
  */
 function level(
   id: LevelId,
-  extra: { parentCode?: string; typeProperty?: string; extraFields?: Omit<ExtraField, 'label' | 'shortLabel' | 'searchTerm'>[] } = {},
+  extra: {
+    parentCode?: string;
+    typeProperty?: string;
+    extraFields?: Omit<ExtraField, 'label' | 'shortLabel' | 'searchTerm'>[];
+    populationYear?: number;
+  } = {},
 ): LevelMeta {
   const terms = termsFor(id);
   if (extra.typeProperty && !terms.featureTypes) throw new Error(`${id}: terminology has no featureTypes for ${extra.typeProperty}`);
@@ -219,7 +261,7 @@ function level(
     object: id,
     placeholderObject: `${id}-placeholders`,
     idProperty: 'code',
-    populationYear: POPULATION_YEAR,
+    populationYear: extra.populationYear ?? POPULATION_YEAR,
     featureType: terms.featureType,
     ...(terms.countForms && { countForms: terms.countForms }),
     ...(terms.featureLabel && { featureLabel: terms.featureLabel }),
@@ -240,6 +282,8 @@ const LEVEL_META: Record<LevelId, LevelMeta> = {
       { property: 'streets_he', kind: 'list', textLang: 'he', searchable: false },
     ],
   }),
+  // No neighbourhood or street names: CBS publishes none for the 2022 division (docs/data-sources-2.md §3.6).
+  'statistical-areas-2022': level('statistical-areas-2022', { parentCode: 'locality_code', populationYear: SA22_POPULATION_YEAR }),
 };
 
 /** Share of SA-2011 polygons that must find a row in the streets/neighbourhoods file, or the build fails. */
@@ -272,6 +316,7 @@ const COPY = ['name_he', 'name_en', 'name_ru', 'placeholder'];
 /** Level-specific properties carried through the dissolve, besides COPY. */
 const EXTRA_FIELDS: Partial<Record<LevelId, string[]>> = {
   'statistical-areas-2011': ['locality_code', 'sa'],
+  'statistical-areas-2022': ['locality_code', 'sa'],
   'local-authorities-2011': ['authority_type'],
 };
 const HEBREW = /[\u{5D0}-\u{5EA}]/u;
@@ -299,13 +344,13 @@ export async function buildBoundaries(): Promise<Boundaries> {
     if (isRegionalCouncilCode(loc)) openLand.set(loc, f.properties);
   }
 
-  const gdbEn = (p?: SaProps) =>
+  const gdbEn = (p?: NameProps) =>
     p?.SHEM_YISHUV_ENGLISH && !/^no name$/i.test(p.SHEM_YISHUV_ENGLISH.trim()) ? cleanEn(p.SHEM_YISHUV_ENGLISH) : '';
 
   // he/en: CBS first (localities file, then the layer itself); Wikidata only fills gaps. ru: Wikidata, else en.
   const review: string[] = [];
   const namesCache = new Map<number, Record<'name_he' | 'name_en' | 'name_ru', string> & { ruFallback: boolean }>();
-  const namesOf = (code: number, p?: SaProps) => {
+  const namesOf = (code: number, p?: NameProps) => {
     const cached = namesCache.get(code);
     if (cached) return cached;
     let he: string;
@@ -335,12 +380,14 @@ export async function buildBoundaries(): Promise<Boundaries> {
     return names;
   };
 
-  type Draft = { code: string; nameCode: number; props: Record<string, unknown>; f: Feature<Geom, SaProps> };
+  /** `population`: residents of this polygon in the level's `populationYear`. */
+  type Draft = { code: string; nameCode: number; props: Record<string, unknown>; population: number; f: Feature<Geom, NameProps> };
   const drafts: Record<LevelId, Draft[]> = {
     'local-authorities-2011': [],
     'localities-2011': [],
     'rc-localities-2011': [],
     'statistical-areas-2011': [],
+    'statistical-areas-2022': [],
   };
   const dropped = { noJurisdiction: 0, noStatus: 0 };
 
@@ -349,20 +396,22 @@ export async function buildBoundaries(): Promise<Boundaries> {
     const loc = p.SEMEL_YISHUV;
     const info = localities.get(loc);
     const status = info?.status ?? null;
+    // Residents in POPULATION_YEAR (SA layer Pop_Total), summed by the dissolve; lets the viewer rank places by size.
+    const population = Math.round(p.Pop_Total ?? 0);
 
     // Statistical areas: every polygon of the 117 localities that are subdivided into SAs.
     if ((polygonsPerLocality.get(loc) ?? 0) > 1) {
       if (p.STAT11 == null) throw new Error(`SA polygon without STAT11 in locality ${loc}`);
       const code = saKey(loc, p.STAT11);
       if (code !== String(p.YISHUV_STAT11)) throw new Error(`YISHUV_STAT11 ${p.YISHUV_STAT11} != ${code}`);
-      drafts['statistical-areas-2011'].push({ code, nameCode: loc, props: { locality_code: String(loc), sa: p.STAT11 }, f });
+      drafts['statistical-areas-2011'].push({ code, nameCode: loc, props: { locality_code: String(loc), sa: p.STAT11 }, population, f });
     }
 
     // All localities: every polygon of a place in the CBS localities file (excludes 55xx open land, 99xx).
-    if (info) drafts['localities-2011'].push({ code: String(loc), nameCode: loc, props: {}, f });
+    if (info) drafts['localities-2011'].push({ code: String(loc), nameCode: loc, props: {}, population, f });
 
     // Localities in regional councils, per the CBS localities file.
-    if (isRegionalCouncilStatus(status)) drafts['rc-localities-2011'].push({ code: String(loc), nameCode: loc, props: {}, f });
+    if (isRegionalCouncilStatus(status)) drafts['rc-localities-2011'].push({ code: String(loc), nameCode: loc, props: {}, population, f });
 
     // Local authorities: municipalities and local councils as themselves; RC member localities plus the RC's
     // open land (55xx) merged into 5500+n. No-jurisdiction areas (99xx) and status-less places belong to none.
@@ -372,11 +421,42 @@ export async function buildBoundaries(): Promise<Boundaries> {
     else if (!info) dropped.noJurisdiction++;
     else dropped.noStatus++;
     if (code != null) {
-      drafts['local-authorities-2011'].push({ code, nameCode: Number(code), props: { authority_type: authorityType(status, loc) }, f });
+      drafts['local-authorities-2011'].push({ code, nameCode: Number(code), props: { authority_type: authorityType(status, loc) }, population, f });
     }
   }
 
-  const centres = new Map(sa.features.map((f) => [f, placeholderCentre(f.geometry)]));
+  // Statistical areas, 2022 division: every polygon of the 145 localities divided into SAs (single-SA localities
+  // carry STAT_2022 1 there, so "divided" means more than one polygon, as for 2011). Same reprojection as SA-2011.
+  const sa22 = await toWgs84<FeatureCollection<Geom, Sa22Props>>(raw(SA22_ZIP), {
+    zipped: true,
+    multiPolygon: true,
+    select: ['SEMEL_YISHUV', 'STAT_2022', 'YISHUV_STAT_2022', 'SHEM_YISHUV', 'SHEM_YISHUV_ENGLISH'],
+  });
+  const sa22PerLocality = new Map<number, number>();
+  for (const f of sa22.features) sa22PerLocality.set(f.properties.SEMEL_YISHUV, (sa22PerLocality.get(f.properties.SEMEL_YISHUV) ?? 0) + 1);
+  // Census rows: a combined row's population goes to its own SA only, so a city's SAs still sum to the city.
+  const census = new Map((await parseCensusSas(raw(CENSUS_FILE))).map((r) => [r.code, r.population]));
+  for (const f of sa22.features) {
+    const p = f.properties;
+    const loc = p.SEMEL_YISHUV;
+    if ((sa22PerLocality.get(loc) ?? 0) < 2) continue;
+    const type = (f.geometry as Geometry | null)?.type;
+    if (type !== 'MultiPolygon' && type !== 'Polygon') throw new Error(`Non-polygon geometry (${type}) for SA-2022 ${p.YISHUV_STAT_2022}`);
+    if (p.STAT_2022 == null) throw new Error(`SA-2022 polygon without STAT_2022 in locality ${loc}`);
+    const code = saKey(loc, p.STAT_2022);
+    if (code !== String(p.YISHUV_STAT_2022)) throw new Error(`YISHUV_STAT_2022 ${p.YISHUV_STAT_2022} != ${code}`);
+    drafts['statistical-areas-2022'].push({
+      code,
+      nameCode: loc,
+      props: { locality_code: String(loc), sa: p.STAT_2022 },
+      population: census.get(code) ?? 0,
+      f,
+    });
+  }
+
+  const centres = new Map<Feature<Geom, NameProps>, [number, number] | null>(
+    [...sa.features, ...drafts['statistical-areas-2022'].map((d) => d.f)].map((f) => [f, placeholderCentre(f.geometry)]),
+  );
   const names = {} as Record<LevelId, NameStats>;
   const levels = {} as Record<LevelId, LevelBuild>;
   const simplify: Record<LevelId, string> = {
@@ -384,6 +464,7 @@ export async function buildBoundaries(): Promise<Boundaries> {
     'localities-2011': '15%',
     'rc-localities-2011': '15%',
     'statistical-areas-2011': '20%',
+    'statistical-areas-2022': '20%',
   };
 
   for (const id of Object.keys(drafts) as LevelId[]) {
@@ -409,8 +490,7 @@ export async function buildBoundaries(): Promise<Boundaries> {
           ...d.props,
           ...n,
           placeholder: allPlaceholder.get(d.code)!,
-          // Residents in POPULATION_YEAR (SA layer Pop_Total), summed by the dissolve; lets the viewer rank places by size.
-          population: Math.round(d.f.properties.Pop_Total ?? 0),
+          population: d.population,
         },
       };
     });
@@ -424,6 +504,7 @@ export async function buildBoundaries(): Promise<Boundaries> {
       }),
       copyFields: [...(EXTRA_FIELDS[id] ?? []), ...COPY],
       simplify: simplify[id],
+      ...(SNAP_INTERVAL[id] && { snapInterval: SNAP_INTERVAL[id] }),
     };
   }
 
@@ -467,6 +548,14 @@ export async function buildBoundaries(): Promise<Boundaries> {
 // 1e5 left 21 invalid and 1e6 costs ~40% more bytes. The build re-checks validity either way.
 export const QUANTIZATION = 200_000;
 
+/**
+ * SA-2022 has four sub-metre necks (Jerusalem 2221 and 2913, Tel Aviv 916, Ness Ziona 12) that simplification or
+ * the grid pinches into self-touching rings, invalid under GEOS; 2913 and 916 stay pinched even unsimplified at 1e6.
+ * Snapping vertices within 1e-5° (~1 m, about one grid step) before `-clean` lets mapshaper rebuild those rings as
+ * separate parts. The 2011 levels keep mapshaper's default, so their output is unchanged.
+ */
+const SNAP_INTERVAL: Partial<Record<LevelId, number>> = { 'statistical-areas-2022': 0.00001 };
+
 /** Simplified TopoJSON for one level, with its placeholder points as a second object. */
 export async function levelTopology(level: LevelBuild): Promise<Topology> {
   const topo = await toTopoJSON(
@@ -478,6 +567,7 @@ export async function levelTopology(level: LevelBuild): Promise<Topology> {
       sumFields: ['population'],
       simplify: level.simplify,
       quantization: QUANTIZATION,
+      ...(level.snapInterval && { snapInterval: level.snapInterval }),
     },
   );
   if (level.extraProps) {

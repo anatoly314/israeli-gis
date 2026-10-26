@@ -30,7 +30,7 @@ describe('layer grouping', () => {
     expect(groups[0].items.map((i) => i.label.en)).toEqual(['Municipalities', 'Kibbutzim, moshavim & villages', 'Neighborhoods']);
     expect(groups[0].items.map((i) => i.label.he)).toEqual(['רשויות מקומיות', 'קיבוצים, מושבים ויישובים', 'שכונות']);
     expect(groups[0].items.map((i) => i.label.ru)).toEqual(['Муниципалитеты', 'Кибуцы, мошавы и посёлки', 'Кварталы']);
-    expect(groups[0].items[2].official?.en).toBe('CBS statistical areas');
+    expect(groups[0].items[2].official?.en).toBe('CBS statistical areas, 2011 division');
   });
 
   it('heads groups with datasets[id].title (and description), never with text taken from layer titles', () => {
@@ -95,6 +95,11 @@ describe('layer grouping', () => {
     expect(layerForMeasure(group, on('population-2024-size-local-authorities')).id).toBe('population-2024-group-localities');
     expect(layerForMeasure(size, on('population-2024-type-localities')).id).toBe('population-2024-size-localities');
     expect(layerForMeasure(size, on('ses-2021-statistical-areas')).id).toBe('population-2024-size-local-authorities');
+    // Neighborhoods stay neighborhoods across divisions: SES (2011) → census (2022).
+    const census = groupLayers(m).find((g) => g.dataset === 'census-2022')!.measures!;
+    expect(layerForMeasure(census[0], on('ses-2021-statistical-areas')).id).toBe('census-2022-median-age-statistical-areas');
+    expect(layerForMeasure(census[1], on('census-2022-median-age-statistical-areas')).id).toBe('census-2022-aged-65-statistical-areas');
+    expect(layerForMeasure(census[0], on('ses-2021-localities')).id).toBe('census-2022-median-age-localities');
   });
 });
 

@@ -109,7 +109,11 @@ describe('per-feature notes and the popup official term', () => {
       const l = joined(id);
       const note = featureNote(m, l.layer, '3779'); // Kokhav Ya'akov, with Tel Zion
       expect(note?.en).toMatch(/Tel Zion/);
-      expect(popupHtml(l.layer, l.level, l.props('3779'), 'en', note)).toContain(`<p class="popup-note feature-note">${note!.en.replace(/'/g, '&#39;')}</p>`);
+      const html = popupHtml(l.layer, l.level, l.props('3779'), 'en', note);
+      expect(html).toContain(`<p class="popup-note feature-note">${note!.en.replace(/'/g, '&#39;')}</p>`);
+      // Under the title and type line, before the figures.
+      expect(html.indexOf('feature-note')).toBeLessThan(html.indexOf('<dl>'));
+      expect(html.indexOf('feature-note')).toBeGreaterThan(html.indexOf('popup-type'));
     }
     const a = layer('population-2024-size-local-authorities').layer;
     expect(featureNote(m, a, '5526')?.he).toMatch(/צור הדסה/); // Mateh Yehuda

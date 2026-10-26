@@ -51,14 +51,18 @@ describe('search over the shipped levels', () => {
   const LA = 'local-authorities-2011';
   const SA = 'statistical-areas-2011';
   const RC = 'rc-localities-2011';
-  // The current layer's level ranks first, the rest in manifest order.
-  const rankFor = (current: string) => (lvl: string) => (lvl === current ? 0 : [LA, RC, SA, 'localities-2011'].indexOf(lvl) + 1);
+  const SA22 = 'statistical-areas-2022';
+  // The current layer's level ranks first, the rest in manifest order (every level listed: an unlisted level
+  // would rank like the current one).
+  const order = [LA, RC, SA, 'localities-2011', SA22];
+  const rankFor = (current: string) => (lvl: string) => (lvl === current ? 0 : order.indexOf(lvl) + 1);
   const find = (q: string, current = LA) => search(entries, q, { levelRank: rankFor(current) });
 
   beforeAll(() => {
     // One index per level, as main.ts builds it: two datasets on one level share its entries.
     // One layer per level (the first), as the viewer indexes each level once whatever datasets use it.
-    // Polygon levels only; points layers are indexed (and tested) on their own below.
+    // Polygon levels only; points layers are indexed (and tested) on their own below. Both SA divisions are in: the
+    // viewer adds the 2022 one once its layer was shown, the case where city groups could repeat.
     const layers = manifest().layers.filter(isChoropleth);
     const byLevel = new Map<string, (typeof layers)[number]>();
     for (const l of layers) if (!byLevel.has(l.level)) byLevel.set(l.level, l);
@@ -129,6 +133,19 @@ describe('search over the shipped levels', () => {
     expect(first.code).toBeNull();
     expect(first.codes.length).toBeGreaterThan(100);
     expect(find('tel aviv').filter((e) => e.level === SA)).toHaveLength(1);
+  });
+
+  it('lists a city\'s neighborhoods once across both SA divisions: the current one, else 2011', () => {
+    expect(new Set(order).size).toBe(new Set(entries.map((e) => e.level)).size);
+    const groups = (current: string) => find('tel aviv', current).filter((e) => e.code == null);
+    expect(groups(LA).map((e) => e.level)).toEqual([SA]);
+    expect(groups(SA22).map((e) => e.level)).toEqual([SA22]);
+    expect(find('tel aviv', SA22)[0].level).toBe(SA22);
+    // The 2022 group's larger (census) population never outranks the authority on another level.
+    expect(find('tel aviv', LA)[0].level).toBe(LA);
+    // Single areas are not merged: code 50000611 is a different area in each division; the current one first.
+    const sa611 = find('tel aviv 611', SA22).filter((e) => e.code === '50000611');
+    expect(sa611.map((e) => e.level)).toEqual([SA22, SA]);
   });
 
   it('finds a single statistical area when a number is typed', () => {

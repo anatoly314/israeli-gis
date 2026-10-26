@@ -14,6 +14,8 @@ export interface TopologyOptions {
   simplify: string;
   /** Grid size per axis over the bounding box. */
   quantization: number;
+  /** `-clean snap-interval` in degrees: snap vertices this close before repair (default: mapshaper's tiny one). */
+  snapInterval?: number;
 }
 
 export interface Topology {
@@ -29,7 +31,7 @@ export async function toTopoJSON(fc: FeatureCollection, o: TopologyOptions): Pro
     `-i in.json name=${o.object} encoding=utf8`,
     `-dissolve ${o.dissolve} copy-fields=${o.copyFields.join(',')}${o.sumFields?.length ? ` sum-fields=${o.sumFields.join(',')}` : ''}`,
     `-simplify ${o.simplify} keep-shapes`,
-    '-clean',
+    `-clean${o.snapInterval ? ` snap-interval=${o.snapInterval}` : ''}`,
     // fix-geometry reverts segments that quantization made intersect; those arcs keep a few decimal deltas.
     `-o out.json format=topojson quantization=${o.quantization} fix-geometry`,
   ].join(' ');
