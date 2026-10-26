@@ -1,12 +1,12 @@
 // Population 2024 (docs/data-sources-2.md §2): CBS localities file end-2024 on the 2011 geometry, four measures on
 // localities-2011 (size, growth, population group, locality type) and two on local-authorities-2011 (size, growth).
-import type { ChoroplethLayer, Classification, I18n, PopupField, PopupFormat, Source } from '../../lib/contract.ts';
+import type { Classification, PopupField, PopupFormat, Source } from '../../lib/contract.ts';
 import { join, type DatasetModule } from '../../lib/dataset.ts';
 import { authorityCode } from '../../lib/keys.ts';
 import { colorbrewer, OKABE_ITO } from '../../lib/palettes.ts';
 import { raw } from '../../lib/paths.ts';
-import { datasetInfo, datasetTerms, layerTitle, levelKind, NO_DATA, type MeasureTerms } from '../../terminology.ts';
-import { MISSING_COLOR } from '../cluster-index.ts';
+import { datasetInfo } from '../../terminology.ts';
+import { measureKit } from '../measures.ts';
 import { parseLocalities2022, parseLocalities2024, type Locality2024 } from './parse.ts';
 
 const ID = 'population-2024';
@@ -76,19 +76,25 @@ export function localityTypeGroup(code: number): number {
   if (code === 191 || code === 192 || code === 310 || code === 320) return 3; // moshav, cooperative moshav (any size)
   if (code === 193 || code === 330) return 4; // kibbutz (any size)
   if (code === 370) return 5; // community settlement
-  if ([340, 350, 440, 450].includes(code)) return 6; // institutional and other rural
+  if ([340, 350, 440].includes(code)) return 6; // institutional and other rural
+  if (code === 450) return 7; // the 26 Arab, Druze, Circassian and Bedouin villages in regional councils
   throw new Error(`population-2024: unexpected locality type code ${code}`);
 }
 
-/** Okabe-Ito colours; the same group gets the same colour in both nominal layers (Jewish blue, non-Jewish orange). */
+/**
+ * Okabe-Ito colours. Jewish/mixed is blue and Arab/non-Jewish orange in both nominal layers; the non-Jewish villages
+ * (type 7) take vermillion, the warm neighbour of orange that Okabe-Ito keeps distinguishable from it, so kibbutz
+ * moved to reddish purple. Black, the eighth Okabe-Ito colour, stays unused: it reads as a border.
+ */
 const GROUP_COLORS: Record<number, string> = { 1: OKABE_ITO.blue, 2: OKABE_ITO.orange, 4: OKABE_ITO.reddishPurple };
 const TYPE_COLORS: Record<number, string> = {
   1: OKABE_ITO.blue,
   2: OKABE_ITO.orange,
   3: OKABE_ITO.bluishGreen,
-  4: OKABE_ITO.vermillion,
+  4: OKABE_ITO.reddishPurple,
   5: OKABE_ITO.skyBlue,
   6: OKABE_ITO.yellow,
+  7: OKABE_ITO.vermillion,
 };
 
 const round1 = (v: number) => Math.round(v * 10) / 10;
@@ -112,51 +118,12 @@ const source: Source = {
 };
 
 type PopLevel = 'localities-2011' | 'local-authorities-2011';
-type Categorical = Extract<Classification, { type: 'categorical' }>;
-type Stepped = Extract<Classification, { type: 'stepped' }>;
-const LEVEL_SHORT: Record<PopLevel, string> = { 'localities-2011': 'localities', 'local-authorities-2011': 'local-authorities' };
 const dataPath = (level: PopLevel) => `datasets/${ID}/${level}.json`;
 
-const terms = datasetTerms(ID);
-const measureTerms = (id: string): MeasureTerms => {
-  const m = terms.measures?.[id];
-  if (!m) throw new Error(`${ID}: no wording for measure "${id}" in pipeline/terminology.ts`);
-  return m;
-};
-
-function missing(measure: string, level: PopLevel) {
-  const description = measureTerms(measure).missing[levelKind(level)];
-  if (!description) throw new Error(`${ID}/${measure}: no "no data" wording for ${level} in pipeline/terminology.ts`);
-  return { color: MISSING_COLOR, label: NO_DATA, description };
-}
-
-function stepped(measure: string, level: PopLevel, breaks: number[], colors: string[]): Stepped {
-  return { type: 'stepped', breaks, colors, missing: missing(measure, level), note: measureTerms(measure).note };
-}
-
-function nominal(measure: string, level: PopLevel, colors: Record<number, string>): Categorical {
-  const labels = measureTerms(measure).classes ?? {};
-  return {
-    type: 'categorical',
-    classes: Object.entries(colors).map(([value, color]) => {
-      const label = labels[value];
-      if (!label) throw new Error(`${ID}/${measure}: no label for class ${value} in pipeline/terminology.ts`);
-      return { value: Number(value), label, color };
-    }),
-    ordered: false,
-    missing: missing(measure, level),
-    note: measureTerms(measure).note,
-  };
-}
+const { stepped, nominal, classLabels, popup: popupFields, layer: measureLayer } = measureKit(ID, source);
 
 /** Popup fields are per level, the same for every measure: any one layer shows the place's whole profile. */
 function popup(level: PopLevel): PopupField[] {
-  const label = (field: string): I18n => {
-    const l = terms.fields[field];
-    if (!l) throw new Error(`${ID}: no popup label for "${field}" in pipeline/terminology.ts`);
-    return l;
-  };
-  const classLabels = (measure: string) => measureTerms(measure).classes ?? {};
   const fields: [string, PopupFormat][] = [
     ['population', { type: 'integer' }],
     ['israelis', { type: 'integer' }],
@@ -171,25 +138,11 @@ function popup(level: PopLevel): PopupField[] {
     ['jews_others_pct', { type: 'percent', decimals: 1 }],
     ['arabs_pct', { type: 'percent', decimals: 1 }],
   ];
-  return fields.map(([field, format]) => ({ field, format, label: label(field) }));
+  return popupFields(fields);
 }
 
-function layer(level: PopLevel, measure: string, valueField: string, classification: Categorical | Stepped): ChoroplethLayer {
-  return {
-    id: `${ID}-${measure}-${LEVEL_SHORT[level]}`,
-    dataset: ID,
-    measure,
-    kind: 'choropleth',
-    level,
-    title: layerTitle(terms.title, level, measureTerms(measure).title),
-    data: dataPath(level),
-    valueField,
-    classification,
-    popup: popup(level),
-    attribution: terms.attribution,
-    source,
-  };
-}
+const layer = (level: PopLevel, measure: string, valueField: string, classification: Classification) =>
+  measureLayer(level, measure, valueField, classification, popup(level));
 
 const populationModule: DatasetModule = {
   id: ID,

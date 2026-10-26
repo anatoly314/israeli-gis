@@ -242,7 +242,7 @@ CBS localities file, end of 2024 (`bycode2024.xlsx`), with `bycode2022.xlsx` as 
 | `population-2024-size-localities` | `localities-2011` | `population` | stepped 500/2k/5k/10k/20k/50k/100k/200k, BuPu (9 stops) |
 | `population-2024-growth-localities` | `localities-2011` | `growth_pct` | same as authorities |
 | `population-2024-group-localities` | `localities-2011` | `group` | **nominal** (`ordered: false`), Okabe-Ito: 1 Jewish, 2 non-Jewish (Arab, Druze, Circassian), 4 mixed locality |
-| `population-2024-type-localities` | `localities-2011` | `type` | **nominal**, Okabe-Ito: 1 town or city – Jewish or mixed, 2 Arab, Druze or Circassian town, 3 moshav, 4 kibbutz, 5 community settlement, 6 other rural (incl. Arab and Bedouin villages) or institutional |
+| `population-2024-type-localities` | `localities-2011` | `type` | **nominal**, Okabe-Ito: 1 town or city – Jewish or mixed (blue), 2 Arab, Druze or Circassian town (orange), 3 moshav, 4 kibbutz, 5 community settlement, 6 other rural or institutional, 7 Arab, Druze, Circassian or Bedouin village (CBS code 450, 26 villages; vermillion) |
 
 Record fields: `population` is the 2024 total including foreigners, and `israelis` is the 2024 Israeli residents.
 `israelis_2022` is the 2022 total; it is census-based and excluded foreigners then.
@@ -272,6 +272,43 @@ Reassignments onto the 2011 geometry, which the dataset `description` also state
 - growth (`percent`, signed)
 - group and type (`category`, localities only)
 - the two shares (`percent`)
+
+### `census-2022`
+
+CBS Population and Housing Census 2022 at locality level, on `localities-2011` only. The statistical-area level
+needs the SA-2022 geometry, which is a later step.
+
+**Source:** CBS `mifkad-2022.xlsx`, "selected data by localities and statistical areas" (60 columns, 1.1 MB), using
+its 1,185 locality rows. I chose it over the 7.9 MB summary file because it has every chosen measure for every
+locality, comes from CBS directly, and keeps the repo small; the summary file would add only the per-class religiosity
+shares. In this file, as in the data.gov.il CSV, the headers of the religiosity code and name columns are swapped; the
+parser takes whichever column holds numbers.
+
+| Layer (measure) | `valueField` | Classification |
+|---|---|---|
+| `census-2022-median-age-localities` | `age_median` (years) | stepped 20/25/30/35/40 |
+| `census-2022-aged-65-localities` | `age65_pct` | stepped 5/10/15/20/25 % |
+| `census-2022-academic-localities` | `academic_pct` (of 15+) | stepped 10/20/30/40/50 % |
+| `census-2022-wage-localities` | `wage_median` (annual ₪, employees) | stepped 80k/100k/120k/140k/160k |
+| `census-2022-renting-localities` | `rent_pct` (of households) | stepped 10/20/30/40/50 % |
+| `census-2022-religiosity-localities` | `religiosity` | **nominal**: 1 secular, 2 traditional, 3 religious or very religious, 4 Haredi, 6 other |
+
+- **Breaks** are round numbers near the locality deciles. For example, median age p10/p50/p90 is 19/32/38, and wage is
+  80.6k/118.7k/167.3k. They match the report's SA-level proposals where those fit, so the step-6 SA layers can share
+  legends.
+- **Stepped palette:** a 6-stop YlOrBr ramp sampled from d3 `interpolateYlOrBr` over t = 0.15…1. It is warm, unlike
+  BuPu (population) and YlGn (peripherality).
+- **Religiosity** uses Okabe-Ito. It is CBS's own "main household religiosity" category for the locality, a nominal
+  "most common" layer. I chose that over stepped "% Haredi" / "% secular" layers: it is the published variable, it
+  reads at a glance, and the shares would need the 7.9 MB summary file.
+- **Missing values:** suppressed or unreliable estimates are empty in the source, so the field is absent from the
+  record and the layer shows "no data" for that place. That affects 14 of 1,184 localities for 65+, 10 for renting,
+  3 for academic degree, and 2 each for wage and religiosity.
+- **No polygon:** 1997, "residents outside localities, Southern District" (the Bedouin dispersion), is a population
+  group, not a place. It is declared in `expectedUnmatched`.
+- **Popup:** all six layers show the same seven rows, in reading order: population, median age, 65+, academic
+  degree, wage, renting, religiosity.
+- **Caveat:** the dataset `description` states the ~20% sample basis and the rounding.
 
 ## Names
 
@@ -386,7 +423,8 @@ interface PopupField {
   field: string; label: I18n;
   format: { type: 'integer' } | { type: 'decimal'; decimals: number } | { type: 'rank'; total: number }
         | { type: 'percent'; decimals: number; signed?: true }  // value already in %: 2.5 → "2.5%"; signed → "+2.5%"
-        | { type: 'category'; labels: Record<string, I18n> };   // value is a code: show labels[String(value)]
+        | { type: 'category'; labels: Record<string, I18n> }    // value is a code: show labels[String(value)]
+        | { type: 'currency'; currency: string; decimals: number };   // ISO 4217 ("ILS"): Intl currency style
 }
 interface Source { name: I18n; url: string; license: string; licenseUrl: string; citation: string }
 ```
@@ -398,6 +436,7 @@ Popup formats:
 - `percent`: the number with that many decimals and a locale percent sign (`Intl.NumberFormat(lang, {style:
   'percent'})` on value / 100). With `signed`, positive values get "+" (`signDisplay: 'exceptZero'`).
 - `category`: `labels[String(value)][lang]`.
+- `currency`: `Intl.NumberFormat(lang, { style: 'currency', currency, maximumFractionDigits: decimals })` (₪135,000).
 - **Absent fields:** if a record has no value for a popup field (e.g. no `growth_pct` for small localities), leave
   that row out of the popup.
 
@@ -412,6 +451,7 @@ Popup formats:
 | `peripherality-2020-localities` | `localities-2011` | `datasets/peripherality-2020/localities-2011.json` |
 | `population-2024-{size,growth}-local-authorities` | `local-authorities-2011` | `datasets/population-2024/local-authorities-2011.json` |
 | `population-2024-{size,growth,group,type}-localities` | `localities-2011` | `datasets/population-2024/localities-2011.json` |
+| `census-2022-{median-age,aged-65,academic,wage,renting,religiosity}-localities` | `localities-2011` | `datasets/census-2022/localities-2011.json` |
 
 The paragraph below describes the three SES layers. The two peripherality layers are described in
 [`peripherality-2020`](#peripherality-2020).
@@ -707,3 +747,31 @@ and build the search placeholder from the searchable fields' `searchTerm`s.
 3. **Short title:** use `shortTitle ?? title` wherever the full dataset title doesn't fit (the compact sheet header).
 4. **Strings:** tests pinned to the old size-measure title ("Population") or the old locality-type labels need
    updating.
+
+### Changes for census 2022 and locality-type class 7 (additive, still `version: 1`)
+
+- New dataset `census-2022`: six measures on `localities-2011` (see [`census-2022`](#census-2022)). It uses only
+  features the contract already has: measures, stepped, nominal, `percent` / `category` popups, `expectedUnmatched`,
+  `shortTitle` and `description`.
+- `population-2024` locality type gets **class 7**, "Arab, Druze, Circassian or Bedouin village" (CBS code 450, 26
+  villages, vermillion). Class 6 is back to "Other rural or institutional", and kibbutz moves from vermillion to
+  reddish purple.
+
+**The viewer must know:** no code change is needed. Tests that pin the number of dataset groups (now four) or the
+number of locality-type classes (now seven) need updating.
+
+### Changes for the census fix round (additive, still `version: 1`)
+
+- New popup format `currency { currency, decimals }`, used for `wage_median` (`ILS`, 0 decimals). The wage label no
+  longer says "(₪)".
+- The religiosity legend note now says the scale applies to all religions: in Arab and Druze localities it measures
+  Muslim, Christian or Druze observance. It also names CBS's variable, "אורח חיים עיקרי למשק בית".
+- The census join is labelled "census: coded locality rows". The source has 1,186 rows without a statistical area:
+  the 1,185 localities plus the national total ("כלל ארצי", no code), which the parser skips.
+
+**The viewer must know:**
+1. Implement the `currency` popup format with `Intl.NumberFormat(lang, { style: 'currency', currency,
+   maximumFractionDigits: decimals })`.
+2. When the layer's `valueField` has a `currency` (or `percent`) popup format, use that formatter for the legend bin
+   labels and the slider too, so the wage legend reads "₪80,000 – ₪100,000". This is the generic unit rule: the
+   legend's unit is the valueField's popup format.

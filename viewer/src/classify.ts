@@ -1,6 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Classification, PopupField } from '../../pipeline/lib/contract.ts';
-import { formatBound, formatNumber, ltr, rangeLabel, spanLabel } from './format.ts';
+import { formatBound, formatNumber, ltr, rangeLabel, spanLabel, type Unit } from './format.ts';
 import type { Lang } from './i18n.ts';
 
 /** Feature property the viewer writes with the class key, so styling is the same for every classification. */
@@ -38,17 +38,20 @@ export function colorOf(c: Classification, key: string): string {
 }
 
 /** Legend text of one stepped bin (all numbers bidi-isolated, see format.ts). */
-const binLabel = (breaks: number[], i: number, lang: Lang, unit: string) => rangeLabel(breaks[i - 1], breaks[i], lang, unit);
+const binLabel = (breaks: number[], i: number, lang: Lang, unit: Unit) => rangeLabel(breaks[i - 1], breaks[i], lang, unit);
 
 /**
  * Unit of a layer's values for scale labels, taken from the popup format of its `valueField`: "%" for `percent`,
- * none otherwise. Nothing dataset-specific: a new percent measure gets "%" too.
+ * the currency for `currency` (₪), none otherwise. Nothing dataset-specific: a new percent or money measure gets it.
  */
-export function layerUnit(layer: { valueField: string; popup: PopupField[] }): string {
-  return layer.popup.find((f) => f.field === layer.valueField)?.format.type === 'percent' ? '%' : '';
+export function layerUnit(layer: { valueField: string; popup: PopupField[] }): Unit {
+  const format = layer.popup.find((f) => f.field === layer.valueField)?.format;
+  if (format?.type === 'percent') return '%';
+  if (format?.type === 'currency') return { currency: format.currency, decimals: format.decimals };
+  return '';
 }
 
-export function legendEntries(c: Classification, lang: Lang, unit = ''): { classes: ClassEntry[]; missing: ClassEntry } {
+export function legendEntries(c: Classification, lang: Lang, unit: Unit = ''): { classes: ClassEntry[]; missing: ClassEntry } {
   const missing = { key: MISSING, color: c.missing.color, label: c.missing.label[lang], short: '', description: c.missing.description[lang] };
   if (c.type === 'categorical') {
     return {
@@ -67,7 +70,7 @@ export function legendEntries(c: Classification, lang: Lang, unit = ''): { class
 }
 
 /** Label of a class key, e.g. "Cluster 7", "5 – 10" or "0 – 2%". */
-export function classLabel(c: Classification, key: string, lang: Lang, unit = ''): string {
+export function classLabel(c: Classification, key: string, lang: Lang, unit: Unit = ''): string {
   const { classes, missing } = legendEntries(c, lang, unit);
   return classes.find((x) => x.key === key)?.label ?? missing.label;
 }
@@ -108,7 +111,7 @@ export function textOn(hex: string): '#000000' | '#ffffff' {
  * Text for a run of classes from `first` to `last` (keys, scale order): "4–7" or "4" for clusters; the covered
  * values for stepped bins ("< 5", "0 – 10", "≥ 5"). Bidi-isolated.
  */
-export function spanText(c: Classification, first: string, last: string, lang: Lang, unit = ''): string {
+export function spanText(c: Classification, first: string, last: string, lang: Lang, unit: Unit = ''): string {
   if (c.type === 'categorical') return first === last ? formatNumber(Number(first), lang) : spanLabel(Number(first), Number(last), lang);
   const lo = c.breaks[Number(first.slice(1)) - 1];
   const hi = c.breaks[Number(last.slice(1))];

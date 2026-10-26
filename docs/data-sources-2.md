@@ -325,6 +325,11 @@ Extremes run from −77% to +138%. These are small localities, and probably also
 
 ## 3. Census 2022 by statistical area (2022 vintage)
 
+> **Used at locality level (step 4, 2026-10-25):** dataset `census-2022` (`pipeline/datasets/census-2022/`) reads
+> the locality rows of `mifkad-2022.xlsx` (1184/1185 on `localities-2011`; 1997 is the Bedouin dispersion group). The
+> measures are median age, 65+, academic degree, median employee wage, renting and main household religiosity. The
+> SA level (§3.4–3.6) is still to come.
+
 ### 3.1 What is published (verified)
 
 - **Media release 218/2024 (2024-07-15)** launched the Census-2022 dashboard (`https://census.cbs.gov.il/`, Looker).
@@ -742,7 +747,7 @@ level. New wording is needed for dataset titles, measures and the points feature
 | `cbs-localities-file/index2024.xlsx`, `changes-1948-2024.xlsx`, `change2024-2023Araii-2023Sofi.xlsx`, `intro.pdf` | 27–302 KB | |
 | `cbs-census-2022/summary_geo_units_census2022_en.xlsx` | 7,863,230 | 2db3c5bc0cf1 |
 | `cbs-census-2022/summary_geo_units_census2022_he.xlsx` | 7,829,964 | 75a00c88f636 |
-| `cbs-census-2022/mifkad-2022.xlsx` | 1,140,766 | 84d0a48b75c8 |
+| `cbs-census-2022/mifkad-2022.xlsx` | 1,140,766 | 84d0a48b75c8 (**used, committed**) |
 | `cbs-census-2022/combined_statistical_areas.xlsx` | 44,217 | c89b5b42a2a3 |
 | `cbs-census-2022/sa_not_published_census2022.xlsx` | 50,505 | c0982c770e74 |
 | `cbs-census-2022/` other files (§3.2) | | |

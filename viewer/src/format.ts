@@ -27,20 +27,44 @@ export const formatNumber = (v: number, lang: Lang, decimals?: number) => ltr(pl
 export const formatPercent = (v: number, lang: Lang, decimals: number, signed = false) => ltr(`${plain(v, lang, decimals, signed)}%`);
 
 /**
- * A bin of a stepped scale: "< hi", "lo – hi" or "≥ lo", isolated as a whole so "<" never mirrors. A `unit` ("%")
- * is written once, after the last number: "< -5%", "0 – 2%", "≥ 10%".
+ * A bin of a stepped scale: "< hi", "lo – hi" or "≥ lo", isolated as a whole so "<" never mirrors. A suffix unit
+ * ("%") is written once, after the last number ("< -5%", "0 – 2%", "≥ 10%"); a currency on every bound
+ * ("₪80,000 – ₪100,000").
  */
-export function rangeLabel(lo: number | undefined, hi: number | undefined, lang: Lang, unit = ''): string {
-  if (lo == null && hi != null) return ltr(`< ${plain(hi, lang)}${unit}`);
-  if (hi == null && lo != null) return ltr(`≥ ${plain(lo, lang)}${unit}`);
-  return ltr(`${plain(lo!, lang)} – ${plain(hi!, lang)}${unit}`);
+export function rangeLabel(lo: number | undefined, hi: number | undefined, lang: Lang, unit: Unit = ''): string {
+  if (lo == null && hi != null) return ltr(`< ${bound(hi, lang, unit)}${suffix(unit)}`);
+  if (hi == null && lo != null) return ltr(`≥ ${bound(lo, lang, unit)}${suffix(unit)}`);
+  return ltr(`${bound(lo!, lang, unit)} – ${bound(hi!, lang, unit)}${suffix(unit)}`);
 }
+
+/** A money amount as the locale writes it ("₪135,000", "135 000 ₪"), without Intl's bidi marks. */
+function money(v: number, lang: Lang, currency: string, decimals: number, compact = false) {
+  const opts: Intl.NumberFormatOptions = compact
+    ? { style: 'currency', currency, notation: 'compact' }
+    : { style: 'currency', currency, minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+  return new Intl.NumberFormat(lang, opts).format(v).replace(/[‎‏؜]/g, '');
+}
+
+/** A money amount, isolated left-to-right like every number ("₪135,000"). */
+export const formatCurrency = (v: number, lang: Lang, currency: string, decimals: number) => ltr(money(v, lang, currency, decimals));
+
+/**
+ * The unit of a scale's numbers: a suffix written once after the last number ("%"), or a currency every bound is
+ * written in ("₪80,000 – ₪100,000"). '' for plain numbers.
+ */
+export type Unit = string | { currency: string; decimals: number };
+
+function bound(v: number, lang: Lang, unit: Unit) {
+  return typeof unit === 'string' ? plain(v, lang) : money(v, lang, unit.currency, unit.decimals);
+}
+const suffix = (unit: Unit) => (typeof unit === 'string' ? unit : '');
 
 /**
  * A bound with its unit ("-5%"), for compact scales (the colour strip): thousands in the locale's compact notation
  * ("20K", "20 тыс."), so they fit a narrow cell.
  */
-export function formatBound(v: number, lang: Lang, unit = ''): string {
+export function formatBound(v: number, lang: Lang, unit: Unit = ''): string {
+  if (typeof unit !== 'string') return ltr(money(v, lang, unit.currency, unit.decimals, Math.abs(v) >= 1000).replace(/ /g, ' '));
   // A plain space before "тыс." lets a narrow cell break the line there.
   const n =
     Math.abs(v) >= 1000

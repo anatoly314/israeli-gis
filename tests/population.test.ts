@@ -93,7 +93,7 @@ describe('population 2024: size', () => {
 describe('population 2024: nominal classes', () => {
   it('maps CBS locality-type codes to six groups', () => {
     expect([120, 130, 190, 250, 290, 191, 310, 320, 193, 330, 370, 340, 350, 440, 450].map(localityTypeGroup)).toEqual([
-      1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 6, 6,
+      1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 6, 7,
     ]);
     expect(() => localityTypeGroup(460)).toThrow();
   });
@@ -115,7 +115,8 @@ describe('population 2024: nominal classes', () => {
       'Moshav',
       'Kibbutz',
       'Community settlement',
-      'Other rural (incl. Arab and Bedouin villages) or institutional',
+      'Other rural or institutional',
+      'Arab, Druze, Circassian or Bedouin village',
     ]);
     expect(type.classes.map((c) => c.label.he)).toEqual([
       'יישוב עירוני – יהודי או מעורב',
@@ -123,7 +124,8 @@ describe('population 2024: nominal classes', () => {
       'מושב',
       'קיבוץ',
       'יישוב קהילתי',
-      'יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי',
+      'יישוב כפרי אחר או מוסדי',
+      "כפר ערבי, דרוזי, צ'רקסי או בדואי",
     ]);
     expect(type.classes.slice(0, 2).map((c) => c.label.ru)).toEqual(['Город (еврейский или смешанный)', 'Арабский, друзский или черкесский город']);
     // The mixed cities are type 1 and group "mixed" without the type label contradicting it.
@@ -135,13 +137,33 @@ describe('population 2024: nominal classes', () => {
     expect(new Set(values.map((r) => r.type))).toEqual(new Set(type.classes.map((c) => c.value)));
   });
 
+  it('gives the 26 CBS code-450 villages their own class 7, in vermillion next to the Arab towns\' orange', () => {
+    const type = layer('population-2024-type-localities').classification;
+    if (type.type !== 'categorical') throw new Error('categorical expected');
+    expect(type.classes.map((c) => [c.value, c.color])).toEqual([
+      [1, OKABE_ITO.blue],
+      [2, OKABE_ITO.orange],
+      [3, OKABE_ITO.bluishGreen],
+      [4, OKABE_ITO.reddishPurple],
+      [5, OKABE_ITO.skyBlue],
+      [6, OKABE_ITO.yellow],
+      [7, OKABE_ITO.vermillion],
+    ]);
+    const counts: Record<number, number> = {};
+    for (const r of Object.values(loc())) counts[r.type] = (counts[r.type] ?? 0) + 1;
+    expect(counts[7]).toBe(26);
+    // Druze Ein al-Asad, Circassian Rihaniya, Bedouin Tarabin a-Sana, Arab al-Aramshe, Arab Ein Rafa.
+    for (const code of ['546', '540', '1346', '1246', '514']) expect(loc()[code].type).toBe(7);
+    expect(loc()['546'].group).toBe(2);
+  });
+
   it('gives every nominal and stepped colour legend text with ≥ 4.5:1 contrast', () => {
     const colours = [...Object.values(OKABE_ITO), ...colorbrewer('BuPu9'), ...colorbrewer('BuPu7'), ...colorbrewer('BrBG8')];
     for (const c of colours) expect(contrast(c, textOn(c)), c).toBeGreaterThanOrEqual(4.5);
   });
 
   it('leaves the cluster indices ordered (no `ordered` key)', () => {
-    for (const l of manifest().layers.filter((x) => x.dataset !== ID)) expect('ordered' in l.classification).toBe(false);
+    for (const l of manifest().layers.filter((x) => x.valueField === 'cluster')) expect('ordered' in l.classification).toBe(false);
   });
 });
 
@@ -167,7 +189,7 @@ describe('measures in the contract', () => {
       const measure = m.datasets[ID].measures!.find((x) => x.id === l.measure)!.title;
       expect(l.title).toEqual(layerTitle(m.datasets[ID].title, l.level, measure));
     }
-    for (const l of m.layers.filter((x) => x.dataset !== ID)) expect('measure' in l).toBe(false);
+    for (const l of m.layers.filter((x) => !m.datasets[x.dataset].measures)) expect('measure' in l).toBe(false);
   });
 
   it('rejects a layer without a measure in a measured dataset, an unknown measure, and duplicates', () => {

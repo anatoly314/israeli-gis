@@ -67,6 +67,12 @@ describe('built outputs', () => {
       'population-2024-growth-localities': 1216,
       'population-2024-group-localities': 1216,
       'population-2024-type-localities': 1216,
+      'census-2022-median-age-localities': 1184,
+      'census-2022-aged-65-localities': 1184,
+      'census-2022-academic-localities': 1184,
+      'census-2022-wage-localities': 1184,
+      'census-2022-renting-localities': 1184,
+      'census-2022-religiosity-localities': 1184,
     };
     expect(manifest().layers.map((l) => l.id)).toEqual(Object.keys(expected));
     for (const layer of manifest().layers as ChoroplethLayer[]) {

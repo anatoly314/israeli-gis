@@ -1,7 +1,7 @@
 import type { PopupField } from '../../pipeline/lib/contract.ts';
 import { CLASS_PROP, MISSING, classLabel, colorOf, layerUnit } from './classify.ts';
 import type { Props } from './data.ts';
-import { formatNumber, formatPercent } from './format.ts';
+import { formatCurrency, formatNumber, formatPercent } from './format.ts';
 import { extraFieldsHtml, extraTooltipHtml } from './extras.ts';
 import { esc, swatch } from './html.ts';
 import { featureName, fillTemplate, t, type I18n, type Lang } from './i18n.ts';
@@ -20,6 +20,8 @@ export function formatField(f: PopupField, v: number, lang: Lang): string {
       return formatPercent(v, lang, format.decimals, format.signed);
     case 'category':
       return format.labels[String(v)]?.[lang] ?? formatNumber(v, lang);
+    case 'currency':
+      return formatCurrency(v, lang, format.currency, format.decimals);
   }
 }
 

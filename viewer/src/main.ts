@@ -33,6 +33,11 @@ const state = {
   lang: detectLang(initial.lang, navigator.languages),
   layerId: initial.layer ?? '',
   hl: initial.hl,
+  /**
+   * The highlight as of the last finished change. `hl` also follows a slider drag frame by frame; the URL is written
+   * from this one, so nothing that syncs the URL mid-drag (a map move, a resize) can publish an in-between state.
+   */
+  committedHl: initial.hl,
   selected: null as null | { layerId: string; codes: string[] },
   embed: initial.embed,
   compact: false,
@@ -55,6 +60,14 @@ const searchBox = createSearchBox($('search'), {
 const slider = createSlider($('range'), (keys, done) => setClasses(keys, done));
 
 let manifest: Manifest;
+let resolveManifest: () => void;
+let rejectManifest: (err: unknown) => void;
+const manifestReady = new Promise<void>((resolve, reject) => {
+  resolveManifest = resolve;
+  rejectManifest = reject;
+});
+// Only search waits on it; a failed load is reported by boot().
+manifestReady.catch(() => {});
 let base: URL;
 const layerData = new Map<string, LayerData & { byCode: Map<string, Props>; level: LevelData }>();
 /** Decoded geometry per search level key (level id, or `layer:<id>` for a points layer). */
@@ -81,7 +94,7 @@ function status(text: string | null) {
 /** `hl` for the URL: runs of classes compacted to "4-7". */
 function hlTokens() {
   const layer = manifest && layerById(state.layerId);
-  return layer ? compactHl(state.hl, classKeys(layer.classification), isOrdered(layer.classification)) : state.hl;
+  return layer ? compactHl(state.committedHl, classKeys(layer.classification), isOrdered(layer.classification)) : state.committedHl;
 }
 
 function syncUrl() {
@@ -108,9 +121,15 @@ function applyLayout() {
   state.compact = state.embed || narrow.matches;
   document.body.classList.toggle('compact', state.compact);
   document.body.classList.toggle('embed', state.embed);
-  // The slider sits under the legend on desktop and right under the colour strip in the compact sheet.
-  if (state.compact) $('strip').after($('range'));
-  else $('legend-title').after($('range'));
+  // The slider sits under the legend on desktop and right under the colour strip in the compact sheet. The legend
+  // (a nominal layer's list, notes) opens the compact sheet's body, above the dataset list, instead of following it.
+  if (state.compact) {
+    $('strip').after($('range'));
+    $('sheet-body').prepend($('legend'));
+  } else {
+    $('legend-title').after($('range'));
+    $('range').after($('legend'));
+  }
   if (manifest) refreshControls();
 }
 
@@ -188,6 +207,7 @@ function setClasses(keys: string[], final = true) {
   state.hl = layer ? normalizeSelection(keys, classKeys(layer.classification)) : keys;
   if (layer) setHighlight(map, layer, state.hl);
   if (!final) return markSelection();
+  state.committedHl = state.hl;
   renderSelection();
   syncUrl();
 }
@@ -218,6 +238,7 @@ async function switchLayer(id: string, opts: { fit?: boolean } = {}) {
   if (before && (before.dataset !== layer.dataset || before.measure !== layer.measure)) state.hl = [];
   // Accepts URL tokens ("4-7", "1,5,9", "na") as well as keys already expanded for another layer.
   state.hl = expandHl(state.hl, classKeys(layer.classification), isOrdered(layer.classification));
+  state.committedHl = state.hl;
   if (previous !== layer.id) clearSelection();
   renderChrome();
   syncUrl();
@@ -363,7 +384,8 @@ map.on('click', (e) => {
 
 /** Search indexes places per level (names, bbox, size): geometry only, no dataset values. */
 function ensureIndex(): Promise<void> {
-  if (!manifest) return Promise.resolve();
+  // Focus or typing before the manifest arrived: build the index once it does, so that query is answered too.
+  if (!manifest) return manifestReady.then(ensureIndex);
   indexing ??= (async () => {
     const keys = [...new Set(manifest.layers.map(levelKeyOf))];
     const built = await Promise.all(
@@ -526,9 +548,11 @@ async function boot() {
   status(t('loading', state.lang));
   try {
     ({ manifest, base } = await loadManifest(MANIFEST_URL));
+    resolveManifest();
   } catch (err) {
     console.error(err);
     status(t('loadError', state.lang));
+    rejectManifest(err);
     return;
   }
   applyLayout();

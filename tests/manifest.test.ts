@@ -23,7 +23,7 @@ describe('layers.json', () => {
       ['ses-2021-localities', 'rc-localities-2011'],
       ['ses-2021-statistical-areas', 'statistical-areas-2011'],
     ]);
-    expect([...new Set(m.layers.map((l) => l.dataset))]).toEqual(['ses-2021', 'peripherality-2020', 'population-2024']);
+    expect([...new Set(m.layers.map((l) => l.dataset))]).toEqual(['ses-2021', 'peripherality-2020', 'population-2024', 'census-2022']);
     for (const l of ses) {
       expect(l.kind).toBe('choropleth');
       expect(l.valueField).toBe('cluster');

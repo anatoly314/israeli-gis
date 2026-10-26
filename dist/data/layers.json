@@ -276,6 +276,73 @@
           }
         }
       }
+    },
+    "census-2022": {
+      "title": {
+        "he": "מפקד האוכלוסין 2022",
+        "en": "Census 2022",
+        "ru": "Перепись населения 2022"
+      },
+      "shortTitle": {
+        "he": "מפקד 2022",
+        "en": "Census 2022",
+        "ru": "Перепись 2022"
+      },
+      "description": {
+        "he": "מפקד האוכלוסין והדיור 2022 של הלמ\"ס, ברמת היישוב. נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. הפזורה הבדואית בדרום אינה על המפה.",
+        "en": "CBS Population and Housing Census 2022, by locality. Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. The southern Bedouin dispersion is not on the map.",
+        "ru": "Перепись населения и жилья ЦСБ 2022 года по населённым пунктам. Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Бедуинского рассеянного населения на юге на карте нет."
+      },
+      "measures": [
+        {
+          "id": "median-age",
+          "title": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          }
+        },
+        {
+          "id": "aged-65",
+          "title": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          }
+        },
+        {
+          "id": "academic",
+          "title": {
+            "he": "בעלי תואר אקדמי",
+            "en": "Academic degree",
+            "ru": "С высшим образованием"
+          }
+        },
+        {
+          "id": "wage",
+          "title": {
+            "he": "שכר חציוני של שכירים",
+            "en": "Median employee wage",
+            "ru": "Медианная зарплата наёмных работников"
+          }
+        },
+        {
+          "id": "renting",
+          "title": {
+            "he": "גרים בשכירות",
+            "en": "Renting",
+            "ru": "Снимают жильё"
+          }
+        },
+        {
+          "id": "religiosity",
+          "title": {
+            "he": "רמת דתיות של משק הבית",
+            "en": "Household religiosity",
+            "ru": "Религиозность домохозяйства"
+          }
+        }
+      ]
     }
   },
   "layers": [
@@ -1683,9 +1750,14 @@
                 "ru": "Общинное поселение"
               },
               "6": {
-                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
-                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
-                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+                "he": "יישוב כפרי אחר או מוסדי",
+                "en": "Other rural or institutional",
+                "ru": "Другое сельское поселение или учреждение"
+              },
+              "7": {
+                "he": "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+                "en": "Arab, Druze, Circassian or Bedouin village",
+                "ru": "Арабская, друзская, черкесская или бедуинская деревня"
               }
             }
           }
@@ -1892,9 +1964,14 @@
                 "ru": "Общинное поселение"
               },
               "6": {
-                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
-                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
-                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+                "he": "יישוב כפרי אחר או מוסדי",
+                "en": "Other rural or institutional",
+                "ru": "Другое сельское поселение или учреждение"
+              },
+              "7": {
+                "he": "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+                "en": "Arab, Druze, Circassian or Bedouin village",
+                "ru": "Арабская, друзская, черкесская или бедуинская деревня"
               }
             }
           }
@@ -2116,9 +2193,14 @@
                 "ru": "Общинное поселение"
               },
               "6": {
-                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
-                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
-                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+                "he": "יישוב כפרי אחר או מוסדי",
+                "en": "Other rural or institutional",
+                "ru": "Другое сельское поселение или учреждение"
+              },
+              "7": {
+                "he": "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+                "en": "Arab, Druze, Circassian or Bedouin village",
+                "ru": "Арабская, друзская, черкесская или бедуинская деревня"
               }
             }
           }
@@ -2215,7 +2297,7 @@
               "en": "Kibbutz",
               "ru": "Кибуц"
             },
-            "color": "#d55e00"
+            "color": "#cc79a7"
           },
           {
             "value": 5,
@@ -2229,11 +2311,20 @@
           {
             "value": 6,
             "label": {
-              "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
-              "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
-              "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+              "he": "יישוב כפרי אחר או מוסדי",
+              "en": "Other rural or institutional",
+              "ru": "Другое сельское поселение или учреждение"
             },
             "color": "#f0e442"
+          },
+          {
+            "value": 7,
+            "label": {
+              "he": "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+              "en": "Arab, Druze, Circassian or Bedouin village",
+              "ru": "Арабская, друзская, черкесская или бедуинская деревня"
+            },
+            "color": "#d55e00"
           }
         ],
         "ordered": false,
@@ -2367,9 +2458,14 @@
                 "ru": "Общинное поселение"
               },
               "6": {
-                "he": "יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי",
-                "en": "Other rural (incl. Arab and Bedouin villages) or institutional",
-                "ru": "Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение"
+                "he": "יישוב כפרי אחר או מוסדי",
+                "en": "Other rural or institutional",
+                "ru": "Другое сельское поселение или учреждение"
+              },
+              "7": {
+                "he": "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+                "en": "Arab, Druze, Circassian or Bedouin village",
+                "ru": "Арабская, друзская, черкесская или бедуинская деревня"
               }
             }
           }
@@ -2414,6 +2510,1101 @@
         "license": "CBS open licence",
         "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
         "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), קובץ היישובים 2024 וקובץ היישובים 2022, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/DocLib/2019/ishuvim/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-median-age-localities",
+      "dataset": "census-2022",
+      "measure": "median-age",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – גיל חציוני – יישובים",
+        "en": "Census 2022 – Median age – Localities",
+        "ru": "Перепись населения 2022 – Медианный возраст – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "age_median",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          20,
+          25,
+          30,
+          35,
+          40
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "בשנים; מחצית מהתושבים צעירים יותר",
+          "en": "Years; half of the residents are younger",
+          "ru": "Лет; половина жителей моложе"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-aged-65-localities",
+      "dataset": "census-2022",
+      "measure": "aged-65",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – בני 65 ומעלה – יישובים",
+        "en": "Census 2022 – Aged 65+ – Localities",
+        "ru": "Перепись населения 2022 – 65 лет и старше – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "age65_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          5,
+          10,
+          15,
+          20,
+          25
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% מהתושבים",
+          "en": "% of residents",
+          "ru": "% жителей"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-academic-localities",
+      "dataset": "census-2022",
+      "measure": "academic",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – בעלי תואר אקדמי – יישובים",
+        "en": "Census 2022 – Academic degree – Localities",
+        "ru": "Перепись населения 2022 – С высшим образованием – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "academic_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% מבני 15 ומעלה; אומדן מדגמי",
+          "en": "% of residents aged 15+; sample estimate",
+          "ru": "% жителей от 15 лет; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-wage-localities",
+      "dataset": "census-2022",
+      "measure": "wage",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – שכר חציוני של שכירים – יישובים",
+        "en": "Census 2022 – Median employee wage – Localities",
+        "ru": "Перепись населения 2022 – Медианная зарплата наёмных работников – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "wage_median",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          80000,
+          100000,
+          120000,
+          140000,
+          160000
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "הכנסה שנתית חציונית מעבודה, ₪; אומדן מדגמי",
+          "en": "Median annual income from work, ₪; sample estimate",
+          "ru": "Медианный годовой доход от работы, ₪; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-renting-localities",
+      "dataset": "census-2022",
+      "measure": "renting",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – גרים בשכירות – יישובים",
+        "en": "Census 2022 – Renting – Localities",
+        "ru": "Перепись населения 2022 – Снимают жильё – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "rent_pct",
+      "classification": {
+        "type": "stepped",
+        "breaks": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "colors": [
+          "#fff2b3",
+          "#fed16d",
+          "#fc9d2e",
+          "#e2660f",
+          "#ab3d03",
+          "#662506"
+        ],
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "% ממשקי הבית; אומדן מדגמי",
+          "en": "% of households; sample estimate",
+          "ru": "% домохозяйств; выборочная оценка"
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
+      },
+      "kind": "choropleth",
+      "level": "localities-2011"
+    },
+    {
+      "id": "census-2022-religiosity-localities",
+      "dataset": "census-2022",
+      "measure": "religiosity",
+      "title": {
+        "he": "מפקד האוכלוסין 2022 – רמת דתיות של משק הבית – יישובים",
+        "en": "Census 2022 – Household religiosity – Localities",
+        "ru": "Перепись населения 2022 – Религиозность домохозяйства – Населённые пункты"
+      },
+      "data": "datasets/census-2022/localities-2011.json",
+      "valueField": "religiosity",
+      "classification": {
+        "type": "categorical",
+        "classes": [
+          {
+            "value": 1,
+            "label": {
+              "he": "חילוני",
+              "en": "Secular",
+              "ru": "Светские"
+            },
+            "color": "#56b4e9"
+          },
+          {
+            "value": 2,
+            "label": {
+              "he": "מסורתי",
+              "en": "Traditional",
+              "ru": "Традиционные"
+            },
+            "color": "#f0e442"
+          },
+          {
+            "value": 3,
+            "label": {
+              "he": "דתי או דתי מאוד",
+              "en": "Religious or very religious",
+              "ru": "Религиозные или очень религиозные"
+            },
+            "color": "#009e73"
+          },
+          {
+            "value": 4,
+            "label": {
+              "he": "חרדי",
+              "en": "Haredi",
+              "ru": "Харедим (ультраортодоксы)"
+            },
+            "color": "#cc79a7"
+          },
+          {
+            "value": 6,
+            "label": {
+              "he": "אחר",
+              "en": "Other",
+              "ru": "Другое"
+            },
+            "color": "#e69f00"
+          }
+        ],
+        "ordered": false,
+        "missing": {
+          "label": {
+            "he": "אין נתון",
+            "en": "No data",
+            "ru": "Нет данных"
+          },
+          "description": {
+            "he": "הלמ\"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).",
+            "en": "CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).",
+            "ru": "ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки)."
+          },
+          "color": "#c8c8c8"
+        },
+        "note": {
+          "he": "הרמה השכיחה ביותר במשקי הבית ביישוב, בדיווח עצמי (\"אורח חיים עיקרי למשק בית\" בלמ\"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.",
+          "en": "The most common level among the locality's households, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
+          "ru": "Самый частый уровень среди домохозяйств населённого пункта, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка."
+        }
+      },
+      "popup": [
+        {
+          "field": "population",
+          "label": {
+            "he": "אוכלוסייה (מפקד 2022)",
+            "en": "Population (census 2022)",
+            "ru": "Население (перепись 2022)"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age_median",
+          "label": {
+            "he": "גיל חציוני",
+            "en": "Median age",
+            "ru": "Медианный возраст"
+          },
+          "format": {
+            "type": "integer"
+          }
+        },
+        {
+          "field": "age65_pct",
+          "label": {
+            "he": "בני 65 ומעלה",
+            "en": "Aged 65+",
+            "ru": "65 лет и старше"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "academic_pct",
+          "label": {
+            "he": "בעלי תואר אקדמי (בני 15+)",
+            "en": "Academic degree (aged 15+)",
+            "ru": "С высшим образованием (15+ лет)"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "wage_median",
+          "label": {
+            "he": "שכר שנתי חציוני של שכירים",
+            "en": "Median annual wage of employees",
+            "ru": "Медианная годовая зарплата наёмных работников"
+          },
+          "format": {
+            "type": "currency",
+            "currency": "ILS",
+            "decimals": 0
+          }
+        },
+        {
+          "field": "rent_pct",
+          "label": {
+            "he": "משקי בית בשכירות",
+            "en": "Households renting",
+            "ru": "Домохозяйства, снимающие жильё"
+          },
+          "format": {
+            "type": "percent",
+            "decimals": 1
+          }
+        },
+        {
+          "field": "religiosity",
+          "label": {
+            "he": "רמת דתיות עיקרית של משקי הבית",
+            "en": "Main household religiosity",
+            "ru": "Преобладающая религиозность домохозяйств"
+          },
+          "format": {
+            "type": "category",
+            "labels": {
+              "1": {
+                "he": "חילוני",
+                "en": "Secular",
+                "ru": "Светские"
+              },
+              "2": {
+                "he": "מסורתי",
+                "en": "Traditional",
+                "ru": "Традиционные"
+              },
+              "3": {
+                "he": "דתי או דתי מאוד",
+                "en": "Religious or very religious",
+                "ru": "Религиозные или очень религиозные"
+              },
+              "4": {
+                "he": "חרדי",
+                "en": "Haredi",
+                "ru": "Харедим (ультраортодоксы)"
+              },
+              "6": {
+                "he": "אחר",
+                "en": "Other",
+                "ru": "Другое"
+              }
+            }
+          }
+        }
+      ],
+      "attribution": {
+        "he": "מפקד האוכלוסין 2022: הלמ\"ס",
+        "en": "Census 2022: CBS Israel",
+        "ru": "Перепись 2022: ЦСБ Израиля"
+      },
+      "source": {
+        "name": {
+          "he": "הלמ\"ס, מפקד האוכלוסין והדיור 2022 – נתונים נבחרים לפי יישובים ואזורים סטטיסטיים",
+          "en": "CBS, Population and Housing Census 2022 – selected data by localities and statistical areas",
+          "ru": "ЦСБ, перепись населения и жилья 2022 – избранные данные по населённым пунктам и статистическим районам"
+        },
+        "url": "https://www.cbs.gov.il/he/publications/LochutTlushim/2024/%D7%9E%D7%A4%D7%A7%D7%93-2022.xlsx",
+        "license": "CBS open licence",
+        "licenseUrl": "https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx",
+        "citation": "הלשכה המרכזית לסטטיסטיקה (הלמ\"ס), מפקד האוכלוסין והדיור 2022 – נתונים נבחרים, לפי יישובים ואזורים סטטיסטיים, (נשלף 25.10.2026), זמין ב: https://www.cbs.gov.il/he/publications/LochutTlushim/2024/, הועתק והופץ כמות שהוא בהתאם לרישיון השימוש של הלמ\"ס בכתובת https://www.cbs.gov.il/he/Pages/רישיון-שימוש.aspx"
       },
       "kind": "choropleth",
       "level": "localities-2011"

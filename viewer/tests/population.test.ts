@@ -141,7 +141,8 @@ describe('nominal classes (ordered: false)', () => {
   it('list one swatch per class with its label and no number', () => {
     const { classes, missing } = legendEntries(c, 'en');
     expect(classes.map((x) => x.label)).toEqual(c.type === 'categorical' ? c.classes.map((k) => k.label.en) : []);
-    expect(classes).toHaveLength(6);
+    expect(classes.length).toBeGreaterThan(1);
+    expect(new Set(classes.map((x) => x.color)).size).toBe(classes.length); // every class its own colour
     expect(classes.every((x) => x.short === '')).toBe(true);
     expect(missing.label).toBe('No data');
   });

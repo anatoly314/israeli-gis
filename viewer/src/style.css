@@ -351,6 +351,11 @@ details.dataset:not([open]) > summary {
   font-size: 11px;
 }
 
+.dataset-level {
+  margin: 0 0 2px;
+  padding-inline-start: 6px;
+}
+
 /* Multi-measure datasets: a radio per measure; the selected one shows its levels as a segmented choice. */
 .measure .levels {
   display: flex;
@@ -1053,9 +1058,15 @@ details.dataset:not([open]) > summary {
   order: 3;
 }
 
-.compact #legend-title,
-.compact .legend-list {
+/* Compact: the strip stands in for the legend list, except for nominal classes, whose cells have no text: their
+   swatch + label list shows in the open sheet. */
+.compact .legend-section,
+.compact .legend-list:not(.nominal) {
   display: none;
+}
+
+.compact .legend-list.nominal button {
+  min-height: 34px;
 }
 
 .compact .strip {

@@ -35,7 +35,9 @@ data/raw/cbs-localities-file/bycode2023Sofi.xlsx
 data/raw/cbs-localities-file/change2024-2023Araii-2023Sofi.xlsx
 data/raw/cbs-localities-file/changes-1948-2024.xlsx
 data/raw/cbs-localities-file/index2024.xlsx
-data/raw/cbs-census-2022/
+# Census 2022 at locality level reads only the 60-column CBS file.
+data/raw/cbs-census-2022/*
+!data/raw/cbs-census-2022/mifkad-2022.xlsx
 data/raw/cbs-local-authorities-2022-publication-1957/
 data/raw/cbs-population-sa2022-2023/
 data/raw/datagov-census-2022/

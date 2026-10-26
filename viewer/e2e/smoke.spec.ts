@@ -120,6 +120,37 @@ test('loads, switches layers, searches in three scripts, flips direction', async
   expect(errors).toEqual([]);
 });
 
+test('a search typed right after the box lost focus keeps its results (no stale close)', async ({ page }) => {
+  await page.goto('./?lang=en');
+  await ready(page, 'ses-2021-local-authorities');
+  const box = page.getByRole('combobox');
+  await box.fill('Haifa');
+  await expect(page.getByRole('option').first()).toContainText('Haifa');
+  // Leave the box and come straight back with a new query, inside the 150 ms close delay of the first blur
+  // (what a busy main thread turns a pick + language switch into).
+  await page.evaluate(() => {
+    const q = document.getElementById('q') as HTMLInputElement;
+    q.blur();
+    q.focus();
+    q.value = 'Tel Aviv';
+    q.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForTimeout(400); // past the old timer
+  await expect(page.getByRole('option').first()).toContainText('Tel Aviv');
+});
+
+test('search says the data failed to load instead of "Loading…" forever when the manifest is missing', async ({ page }) => {
+  // Uncaught exceptions and unhandled rejections; the logged load error itself is expected.
+  const uncaught: string[] = [];
+  page.on('pageerror', (e) => uncaught.push(String(e)));
+  await page.route('**/data/layers.json', (r) => r.fulfill({ status: 404, body: 'not found' }));
+  await page.goto('./?lang=en');
+  await expect(page.locator('#status')).toHaveText('Could not load the data');
+  await page.getByRole('combobox').fill('Tel');
+  await expect(page.locator('#results .empty')).toHaveText('Could not load the data');
+  expect(uncaught).toEqual([]);
+});
+
 test('keyboard: search → pick → Escape closes the popup and returns to the search box', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('./?lang=en');
@@ -422,12 +453,72 @@ test('population growth: % on every bin label (legend, slider, strip)', async ({
   await expect(page.locator('#strip [data-key="s2"]')).toHaveText(/^⁦?0%⁩?$/);
 });
 
+const manifestJson = () => JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8'));
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`nominal legends read on a 390 px phone and in a 358×650 embed (${lang}): religiosity and locality type`, async ({ browser }) => {
+    const setups = [
+      { width: 390, height: 844, query: '', touch: true },
+      { width: 358, height: 650, query: '&embed=1', touch: false },
+    ];
+    for (const { width, height, query, touch } of setups) {
+      const context = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+      const page = await context.newPage();
+      for (const id of ['census-2022-religiosity-localities', 'population-2024-type-localities']) {
+        await page.goto(`./?lang=${lang}&layer=${id}${query}`);
+        await ready(page, id);
+        if (touch) await page.locator('#sheet-toggle').tap();
+        else await page.locator('#sheet-toggle').click();
+        const list = page.locator('#legend .legend-list');
+        await expect(list).toBeVisible();
+        // Right under the strip, not after the dataset list: the first class is on screen without scrolling.
+        const first = (await list.locator('li button').first().boundingBox())!;
+        expect(first.y, `first legend item top at ${width}×${height}`).toBeGreaterThanOrEqual(0);
+        expect(first.y + first.height, `first legend item bottom at ${width}×${height}`).toBeLessThanOrEqual(height);
+        const classes = manifestJson().layers.find((l: { id: string }) => l.id === id).classification.classes;
+        const labels = await list.locator('li:not(:last-child) button > span:last-child').allTextContents();
+        expect(labels).toEqual(classes.map((c: { label: Record<string, string> }) => c.label[lang]));
+        for (const b of await list.locator('li button').all()) {
+          const box = (await b.boundingBox())!;
+          expect(box.x).toBeGreaterThanOrEqual(0);
+          expect(box.x + box.width).toBeLessThanOrEqual(width);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+      }
+      // Ordered scales keep only the strip in the sheet.
+      await page.goto(`./?lang=${lang}&layer=census-2022-wage-localities${query}`);
+      await ready(page, 'census-2022-wage-localities');
+      if (touch) await page.locator('#sheet-toggle').tap();
+      else await page.locator('#sheet-toggle').click();
+      await expect(page.locator('#legend .legend-list')).toBeHidden();
+      await context.close();
+    }
+  });
+}
+
+test('census: one level named once, wages in ₪ everywhere the bins show', async ({ page }) => {
+  await page.goto('./?lang=en&layer=census-2022-wage-localities');
+  await ready(page, 'census-2022-wage-localities');
+  const census = page.locator('details.dataset[data-dataset="census-2022"]');
+  await expect(census.locator('.dataset-level')).toHaveCount(1);
+  await expect(census.locator('.measure .official')).toHaveCount(0);
+  const labels = (await page.locator('#legend .legend-list li:not(:last-child) span:last-child').allTextContents()).map(bare);
+  expect(labels.every((l) => l.includes('₪'))).toBe(true);
+  expect(bare(await page.locator('#range output').textContent())).toMatch(/^< ₪[\d,]+ … ≥ ₪[\d,]+ · all$/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#strip [data-key="s1"]')).toContainText('₪');
+});
+
 test('population: nominal classes toggle as a set, listed in the URL, with no slider or low/high', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('./?lang=en&layer=population-2024-type-localities');
   await ready(page, 'population-2024-type-localities');
   await expect(page.locator('#range')).toBeHidden();
-  await expect(page.locator('#legend .legend-list li')).toHaveCount(7); // 6 types + no data
+  // One entry per locality type in the manifest, plus "no data".
+  const typeClasses = JSON.parse(fs.readFileSync(path.join(DATA, 'layers.json'), 'utf8')).layers.find(
+    (l: { id: string }) => l.id === 'population-2024-type-localities',
+  ).classification.classes;
+  await expect(page.locator('#legend .legend-list li')).toHaveCount(typeClasses.length + 1);
   for (const k of ['1', '2', '4']) await page.locator(`#legend [data-key="${k}"]`).click();
   await expect(page).toHaveURL(/hl=1,2,4(&|#|$)/); // never "1-2,4"
   await page.locator('#legend [data-key="2"]').click();
@@ -613,6 +704,34 @@ test('statistical-area tooltip shows the first neighborhoods on a second line', 
   await expect(tip.locator('.tip-extra')).toHaveText(/שכ פלורנטין/);
   await expect(tip.locator('.tip-extra')).toHaveAttribute('lang', 'he');
   expect(errors).toEqual([]);
+});
+
+test('a slider drag publishes its highlight to the URL only when the handle is released', async ({ page }) => {
+  await page.goto('./?lang=en');
+  await ready(page, 'ses-2021-local-authorities');
+  const from = await thumbX(page, 9, 10);
+  const to = await thumbX(page, 4, 10);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  // Mid-drag the map and legend follow the handle…
+  await expect(page.locator('#legend .legend-list [aria-pressed=true]')).toHaveCount(5);
+  // …but a URL sync in between must not publish the in-between state: resizing the viewport resizes the map, whose
+  // `moveend` writes the URL (this is what made the phone test flaky under load).
+  await page.evaluate(() => {
+    const w = window as unknown as { urlWrites: number };
+    w.urlWrites = 0;
+    const replace = history.replaceState.bind(history);
+    history.replaceState = (...args: Parameters<History['replaceState']>) => {
+      w.urlWrites++;
+      replace(...args);
+    };
+  });
+  await page.setViewportSize({ width: 1240, height: 800 });
+  await expect.poll(() => page.evaluate(() => (window as unknown as { urlWrites: number }).urlWrites)).toBeGreaterThan(0);
+  expect(page.url()).not.toMatch(/hl=/);
+  await page.mouse.up();
+  await expect(page).toHaveURL(/hl=1-5(&|#|$)/);
 });
 
 test('embed mode is compact and links to the full map', async ({ page }) => {

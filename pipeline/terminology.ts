@@ -192,6 +192,11 @@ const NO_POPULATION_LOCALITY: I18n = {
   en: 'CBS publishes no population for this place (uninhabited, an industrial zone or a Bedouin tribe).',
   ru: 'ЦСБ не публикует численность для этого места (незаселённое, промзона или бедуинское племя).',
 };
+const NO_CENSUS_LOCALITY: I18n = {
+  he: 'הלמ"ס אינה מפרסמת נתון מפקד למקום זה (שטח לא מיושב, יישוב מוסדי, או אומדן לא אמין).',
+  en: 'CBS publishes no census figure for this place (uninhabited, institutional, or no reliable estimate).',
+  ru: 'ЦСБ не публикует данные переписи для этого места (незаселённое, учреждение или нет надёжной оценки).',
+};
 const NO_POPULATION_AUTHORITY: I18n = {
   he: 'אין אוכלוסייה לרשות זו (מועצה מקומית תעשייתית).',
   en: 'This authority has no residents (an industrial local council).',
@@ -346,13 +351,82 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
           3: { he: 'מושב', en: 'Moshav', ru: 'Мошав' },
           4: { he: 'קיבוץ', en: 'Kibbutz', ru: 'Кибуц' },
           5: { he: 'יישוב קהילתי', en: 'Community settlement', ru: 'Общинное поселение' },
-          // Code 450 (26 villages in regional councils) is Arab and Bedouin villages plus Circassian Rihaniya, not only
-          // Bedouin ones; the label says so.
-          6: {
-            he: 'יישוב כפרי אחר (כולל כפרים ערביים ובדואיים) או מוסדי',
-            en: 'Other rural (incl. Arab and Bedouin villages) or institutional',
-            ru: 'Другое сельское поселение (включая арабские и бедуинские деревни) или учреждение',
+          6: { he: 'יישוב כפרי אחר או מוסדי', en: 'Other rural or institutional', ru: 'Другое сельское поселение или учреждение' },
+          // CBS code 450: 26 villages in regional councils, Arab and Bedouin plus Druze Ein al-Asad and Circassian
+          // Rihaniya.
+          7: {
+            he: "כפר ערבי, דרוזי, צ'רקסי או בדואי",
+            en: 'Arab, Druze, Circassian or Bedouin village',
+            ru: 'Арабская, друзская, черкесская или бедуинская деревня',
           },
+        },
+      },
+    },
+  },
+  'census-2022': {
+    title: { he: 'מפקד האוכלוסין 2022', en: 'Census 2022', ru: 'Перепись населения 2022' },
+    shortTitle: { he: 'מפקד 2022', en: 'Census 2022', ru: 'Перепись 2022' },
+    description: {
+      he: 'מפקד האוכלוסין והדיור 2022 של הלמ"ס, ברמת היישוב. נתוני השכלה, שכר, דיור ודתיות הם אומדנים על בסיס מדגם של כ-20% מהאוכלוסייה; אחוזים מעוגלים לעשירית. הפזורה הבדואית בדרום אינה על המפה.',
+      en: 'CBS Population and Housing Census 2022, by locality. Education, wage, housing and religiosity figures are estimates based on a ~20% sample; percentages are rounded to 0.1. The southern Bedouin dispersion is not on the map.',
+      ru: 'Перепись населения и жилья ЦСБ 2022 года по населённым пунктам. Данные об образовании, зарплате, жилье и религиозности — оценки по выборке около 20% населения; проценты округлены до 0,1. Бедуинского рассеянного населения на юге на карте нет.',
+    },
+    attribution: { he: 'מפקד האוכלוסין 2022: הלמ"ס', en: 'Census 2022: CBS Israel', ru: 'Перепись 2022: ЦСБ Израиля' },
+    fields: {
+      population: { he: 'אוכלוסייה (מפקד 2022)', en: 'Population (census 2022)', ru: 'Население (перепись 2022)' },
+      age_median: { he: 'גיל חציוני', en: 'Median age', ru: 'Медианный возраст' },
+      age65_pct: { he: 'בני 65 ומעלה', en: 'Aged 65+', ru: '65 лет и старше' },
+      academic_pct: { he: 'בעלי תואר אקדמי (בני 15+)', en: 'Academic degree (aged 15+)', ru: 'С высшим образованием (15+ лет)' },
+      wage_median: { he: 'שכר שנתי חציוני של שכירים', en: 'Median annual wage of employees', ru: 'Медианная годовая зарплата наёмных работников' },
+      rent_pct: { he: 'משקי בית בשכירות', en: 'Households renting', ru: 'Домохозяйства, снимающие жильё' },
+      religiosity: { he: 'רמת דתיות עיקרית של משקי הבית', en: 'Main household religiosity', ru: 'Преобладающая религиозность домохозяйств' },
+    },
+    measures: {
+      'median-age': {
+        title: { he: 'גיל חציוני', en: 'Median age', ru: 'Медианный возраст' },
+        note: { he: 'בשנים; מחצית מהתושבים צעירים יותר', en: 'Years; half of the residents are younger', ru: 'Лет; половина жителей моложе' },
+        missing: { localities: NO_CENSUS_LOCALITY },
+      },
+      'aged-65': {
+        title: { he: 'בני 65 ומעלה', en: 'Aged 65+', ru: '65 лет и старше' },
+        note: { he: '% מהתושבים', en: '% of residents', ru: '% жителей' },
+        missing: { localities: NO_CENSUS_LOCALITY },
+      },
+      academic: {
+        title: { he: 'בעלי תואר אקדמי', en: 'Academic degree', ru: 'С высшим образованием' },
+        note: { he: '% מבני 15 ומעלה; אומדן מדגמי', en: '% of residents aged 15+; sample estimate', ru: '% жителей от 15 лет; выборочная оценка' },
+        missing: { localities: NO_CENSUS_LOCALITY },
+      },
+      wage: {
+        title: { he: 'שכר חציוני של שכירים', en: 'Median employee wage', ru: 'Медианная зарплата наёмных работников' },
+        note: {
+          he: 'הכנסה שנתית חציונית מעבודה, ₪; אומדן מדגמי',
+          en: 'Median annual income from work, ₪; sample estimate',
+          ru: 'Медианный годовой доход от работы, ₪; выборочная оценка',
+        },
+        missing: { localities: NO_CENSUS_LOCALITY },
+      },
+      renting: {
+        title: { he: 'גרים בשכירות', en: 'Renting', ru: 'Снимают жильё' },
+        note: { he: '% ממשקי הבית; אומדן מדגמי', en: '% of households; sample estimate', ru: '% домохозяйств; выборочная оценка' },
+        missing: { localities: NO_CENSUS_LOCALITY },
+      },
+      religiosity: {
+        title: { he: 'רמת דתיות של משק הבית', en: 'Household religiosity', ru: 'Религиозность домохозяйства' },
+        // Title kept as "רמת דתיות" rather than CBS's "אורח חיים עיקרי למשק בית": "lifestyle" alone doesn't say that
+        // religious observance is what is measured. The note names the CBS variable, so both terms are on screen.
+        note: {
+          he: 'הרמה השכיחה ביותר במשקי הבית ביישוב, בדיווח עצמי ("אורח חיים עיקרי למשק בית" בלמ"ס). חלה על כל הדתות: ביישובים ערביים ודרוזיים זו מידת השמירה על הדת המוסלמית, הנוצרית או הדרוזית, באותו סולם. אומדן מדגמי.',
+          en: "The most common level among the locality's households, self-reported (CBS \"main household lifestyle\"). It covers all religions: in Arab and Druze localities it is Muslim, Christian or Druze observance on the same scale. Sample estimate.",
+          ru: 'Самый частый уровень среди домохозяйств населённого пункта, по самоопределению (в ЦСБ — «основной образ жизни домохозяйства»). Относится ко всем религиям: в арабских и друзских населённых пунктах это соблюдение мусульманской, христианской или друзской традиции по той же шкале. Выборочная оценка.',
+        },
+        missing: { localities: NO_CENSUS_LOCALITY },
+        classes: {
+          1: { he: 'חילוני', en: 'Secular', ru: 'Светские' },
+          2: { he: 'מסורתי', en: 'Traditional', ru: 'Традиционные' },
+          3: { he: 'דתי או דתי מאוד', en: 'Religious or very religious', ru: 'Религиозные или очень религиозные' },
+          4: { he: 'חרדי', en: 'Haredi', ru: 'Харедим (ультраортодоксы)' },
+          6: { he: 'אחר', en: 'Other', ru: 'Другое' },
         },
       },
     },

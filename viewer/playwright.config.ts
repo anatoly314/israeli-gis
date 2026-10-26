@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Serves the production bundle (dist/site) under a sub-path, the way the Hugo site will.
-export const BASE_PATH = '/maps/israel/';
+// Serves the production bundle (dist/site) under the sub-path GitHub Pages uses (anatoly.dev/israeli-gis/).
+export const BASE_PATH = '/israeli-gis/';
 // E2E_PORT lets parallel runs (several worktrees or agents) use different ports; the preview server and the tests
 // both read it.
 const PORT = Number(process.env.E2E_PORT) || 4179;

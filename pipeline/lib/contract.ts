@@ -146,6 +146,11 @@ export const PopupFormat = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('percent'), decimals: z.number().int().nonnegative(), signed: z.literal(true).optional() }),
   /** The value is a category code; show `labels[String(value)]`. */
   z.strictObject({ type: z.literal('category'), labels: z.record(z.string(), I18n) }),
+  /**
+   * A money amount (ISO 4217 code, e.g. "ILS"): `Intl.NumberFormat(lang, { style: 'currency', currency })`. When it
+   * formats the layer's `valueField`, the legend's bin labels use it too ("₪80,000 – ₪100,000").
+   */
+  z.strictObject({ type: z.literal('currency'), currency: z.string().regex(/^[A-Z]{3}$/), decimals: z.number().int().nonnegative() }),
 ]);
 
 export type PopupFormat = z.infer<typeof PopupFormat>;

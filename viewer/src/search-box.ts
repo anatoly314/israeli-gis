@@ -30,6 +30,9 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
   let results: SearchEntry[] = [];
   let active = -1;
   let loading = false;
+  /** The last index build failed: say so instead of "no matches". */
+  let failed = false;
+  let blurTimer: ReturnType<typeof setTimeout> | undefined;
 
   root.innerHTML =
     `<label class="sr-only" for="q"></label>` +
@@ -54,8 +57,8 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
       return;
     }
     if (!results.length) {
-      const msg = t(loading ? 'searching' : 'noResults', lang);
-      const hint = loading ? '' : (o.hint?.(lang) ?? '');
+      const msg = t(loading ? 'searching' : failed ? 'loadError' : 'noResults', lang);
+      const hint = loading || failed ? '' : (o.hint?.(lang) ?? '');
       list.innerHTML = `<li class="empty" role="presentation">${esc(msg)}${hint ? `<span class="empty-hint">${esc(hint)}</span>` : ''}</li>`;
       live.textContent = msg;
       open(true);
@@ -94,9 +97,14 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
     loading = true;
     try {
       await o.ensureIndex();
+      failed = false;
+    } catch (err) {
+      failed = true;
+      console.error(err);
     } finally {
       loading = false;
-      if (input.value.trim()) update();
+      // Re-run what was typed while the index loaded (only while the box still has focus: no list popping up later).
+      if (input.value.trim() && document.activeElement === input) update();
     }
   }
 
@@ -109,7 +117,10 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
     o.onSelect(e);
   }
 
-  input.addEventListener('focus', () => void warm());
+  input.addEventListener('focus', () => {
+    clearTimeout(blurTimer);
+    void warm();
+  });
   input.addEventListener('input', () => {
     void warm();
     update();
@@ -130,7 +141,15 @@ export function createSearchBox(root: HTMLElement, o: SearchBoxOptions) {
       else input.value = '';
     }
   });
-  input.addEventListener('blur', () => setTimeout(() => open(false), 150));
+  // Close shortly after the box loses focus (a click on a result lands first). The timer is cancelled when focus
+  // comes back, and checks focus again: a late timer must never close the list of a newer search (a busy main
+  // thread can delay it past the next focus and input, which hid fresh results).
+  input.addEventListener('blur', () => {
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
+      if (document.activeElement !== input) open(false);
+    }, 150);
+  });
   // Keep focus in the input on press; pick on click, so the click can't fall through to the map once the list closes.
   list.addEventListener('pointerdown', (ev) => ev.preventDefault());
   list.addEventListener('click', (ev) => {

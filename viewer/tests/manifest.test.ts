@@ -18,7 +18,12 @@ function inside([x, y]: number[], ring: number[][]): boolean {
 describe('layer grouping', () => {
   it('groups the shipped layers by dataset, items by level title with the official term', () => {
     const groups = groupLayers(manifest());
-    expect(groups.map((g) => g.dataset)).toEqual(['ses-2021', 'peripherality-2020', 'population-2024']);
+    // One group per dataset, in order of the datasets' first layers in the manifest (derived, so a new dataset
+    // can't break this); SES comes first, as the pipeline lists it.
+    const datasets = [...new Set(manifest().layers.map((l) => l.dataset))];
+    expect(groups.map((g) => g.dataset)).toEqual(datasets);
+    expect(datasets[0]).toBe('ses-2021');
+    expect(groups.every((g) => g.items.length > 0 && g.title.en === manifest().datasets[g.dataset].title.en)).toBe(true);
     // Single-measure datasets keep one row per level.
     expect(groups[0].measures).toBeUndefined();
     expect(groups[0].title).toEqual({ he: 'מדד חברתי-כלכלי 2021', en: 'Socio-economic index 2021', ru: 'Социально-экономический индекс 2021' });
@@ -52,7 +57,8 @@ describe('layer grouping', () => {
     const datasets = { ...m.datasets, 'crime-2024': { title: { he: 'פשיעה 2024', en: 'Crime 2024', ru: 'Преступность 2024' } } };
     const extended: Manifest = { ...m, datasets, layers: [crime, ...m.layers] };
     const groups = groupLayers(extended);
-    expect(groups.map((g) => g.dataset)).toEqual(['crime-2024', 'ses-2021', 'peripherality-2020', 'population-2024']);
+    // The new dataset leads (its layer comes first), the shipped ones follow in their own order.
+    expect(groups.map((g) => g.dataset)).toEqual(['crime-2024', ...new Set(m.layers.map((l) => l.dataset))]);
     expect(groups[0].title.en).toBe('Crime 2024');
     expect(groups[0].items[0].label.en).toBe('Localities');
   });

@@ -52,6 +52,7 @@ describe('terminology', () => {
       'ses-2021': expect.objectContaining({ title: DATASET_TITLE }),
       'peripherality-2020': expect.objectContaining({ title: { he: 'מדד פריפריאליות 2020', en: 'Peripherality index 2020', ru: 'Индекс периферийности 2020' } }),
       'population-2024': expect.objectContaining({ title: { he: 'אוכלוסייה 2024', en: 'Population 2024', ru: 'Население 2024' } }),
+      'census-2022': expect.objectContaining({ title: { he: 'מפקד האוכלוסין 2022', en: 'Census 2022', ru: 'Перепись населения 2022' } }),
     });
     for (const layer of m.layers) expect(m.datasets[layer.dataset]).toBeDefined();
     const broken = structuredClone(m) as Manifest;

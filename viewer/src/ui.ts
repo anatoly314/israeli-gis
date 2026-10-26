@@ -1,7 +1,7 @@
 import { basemap } from './config.ts';
 import { isOrdered, layerUnit, legendEntries, textOn } from './classify.ts';
 import { LANGS, t, type Lang } from './i18n.ts';
-import { layerForMeasure, type Layer, type LayerGroup, type LayerItem, type Manifest } from './manifest.ts';
+import { isChoropleth, layerForMeasure, type Layer, type LayerGroup, type LayerItem, type Manifest } from './manifest.ts';
 import { esc, swatch } from './html.ts';
 import type { Source } from '../../pipeline/lib/contract.ts';
 
@@ -40,7 +40,13 @@ const radio = (value: string, checked: boolean, body: string) =>
  * and under the selected measure its levels as a small segmented choice (or the one level's name, if it has one).
  */
 function measuresHtml(g: LayerGroup, current: Layer | undefined, lang: Lang): string {
-  return g
+  // Every measure on the same single level (census on localities): name the level once, not under each measure.
+  const levelIds = new Set(g.measures!.flatMap((m) => m.items.map((i) => (isChoropleth(i.layer) ? i.layer.level : i.layer.id))));
+  const oneLevel = levelIds.size === 1 && g.measures!.every((m) => m.items.length === 1);
+  const header = oneLevel ? `<p class="official dataset-level">${esc(g.measures![0].items[0].label[lang])}</p>` : '';
+  return (
+    header +
+    g
     .measures!.map((m) => {
       const active = m.items.some((i) => i.layer.id === current?.id);
       const target = layerForMeasure(m, current).id;
@@ -57,10 +63,11 @@ function measuresHtml(g: LayerGroup, current: Layer | undefined, lang: Lang): st
             .join('') +
           `</div>`;
       }
-      const only = m.items.length === 1 ? `<small class="official">${esc(m.items[0].label[lang])}</small>` : '';
+      const only = m.items.length === 1 && !oneLevel ? `<small class="official">${esc(m.items[0].label[lang])}</small>` : '';
       return `<div class="measure${active ? ' active' : ''}">${radio(target, active, `<span>${esc(m.title[lang])}</span>${only}`)}${levels}</div>`;
     })
-    .join('');
+    .join('')
+  );
 }
 
 /** Dataset sections the user opened by hand; the current layer's dataset is always open. */
@@ -116,7 +123,8 @@ export function renderLegend(el: HTMLElement, strip: HTMLElement, layer: Layer, 
   const ordered = isOrdered(c);
   el.innerHTML =
     (c.note ? `<p class="note">${esc(c.note[lang])}</p>` : '') +
-    `<ul class="legend-list${hl.length ? ' filtering' : ''}">${classes.map((e) => item(e)).join('')}${item(missing, true)}</ul>` +
+    // Nominal swatches carry no text on the strip, so the compact sheet shows this list for them (CSS).
+    `<ul class="legend-list${hl.length ? ' filtering' : ''}${ordered ? '' : ' nominal'}">${classes.map((e) => item(e)).join('')}${item(missing, true)}</ul>` +
     // Nominal classes have no range slider, which holds "Clear": it sits here instead.
     (ordered ? '' : `<div class="legend-actions"><button type="button" class="range-clear" data-clear ${hl.length ? '' : 'disabled'}>${esc(t('clear', lang))}</button></div>`) +
     `<p class="hint">${esc(t(ordered ? 'legendHint' : 'legendHintNominal', lang))}</p>`;

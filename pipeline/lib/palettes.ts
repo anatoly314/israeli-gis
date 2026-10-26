@@ -42,6 +42,12 @@ const COLORBREWER = {
    */
   BuPu7: ['#d9e6f1', '#b4cbe2', '#96aad0', '#8c7cb9', '#894ca1', '#7d197f', '#4d004b'],
   BuPu9: ['#d9e6f1', '#bdd2e6', '#a3bcda', '#929fcb', '#8c7cb9', '#8a58a8', '#863292', '#751073', '#4d004b'],
+  /**
+   * Sequential yellow → orange → brown, colourblind-safe, for census 2022 measures; warm, so unlike the cool BuPu and
+   * YlGn. Sampled like BuPu: d3-scale-chromatic 3.0.0 `interpolateYlOrBr` evenly over t = 0.15…1 (the published 6-class
+   * scheme starts at near-white #ffffd4).
+   */
+  YlOrBr6: ['#fff2b3', '#fed16d', '#fc9d2e', '#e2660f', '#ab3d03', '#662506'],
   /** Diverging brown ↔ teal, colourblind-safe; distinct from RdYlBu's red ↔ blue. */
   BrBG8: ['#8c510a', '#bf812d', '#dfc27d', '#f6e8c3', '#c7eae5', '#80cdc1', '#35978f', '#01665e'],
 } as const;

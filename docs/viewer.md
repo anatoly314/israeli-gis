@@ -204,7 +204,7 @@ Chromium, Firefox and WebKit.
 - `viewer/tests/*.test.ts` (vitest, project `viewer`): bidi-safe formatting, search normalisation and ranking
   against the shipped data, classification and colours (categorical and stepped), i18n and name fallbacks, popup
   formats (stepped values), URL state, layer grouping, join and label points.
-- `viewer/e2e/smoke.spec.ts` (Playwright, Chromium), against `dist/site` served under `/maps/israel/`, each test
+- `viewer/e2e/smoke.spec.ts` (Playwright, Chromium), against `dist/site` served under `/israeli-gis/` (the GitHub Pages path), each test
   failing on any console error:
   - layer switching, search for תל אביב / Tel Aviv / Тель-Авив opening a popup, RTL/LTR, MapLibre UI language
   - keyboard: search → pick → Escape

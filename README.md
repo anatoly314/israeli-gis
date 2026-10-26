@@ -13,6 +13,7 @@ Datasets (one layer group each):
 | `ses-2021`: CBS socio-economic index 2021 | local authorities, localities in regional councils, statistical areas | clusters 1–10, RdYlBu |
 | `peripherality-2020`: CBS peripherality index 2020 | local authorities, all localities (cities included) | clusters 1–10, YlGn |
 | `population-2024`: CBS localities file 2024 | size and growth on local authorities and all localities; population group and locality type on localities | stepped BuPu / BrBG, nominal Okabe-Ito |
+| `census-2022`: CBS Census 2022 | median age, aged 65+, academic degree, median wage, renting, household religiosity on all localities | stepped YlOrBr, nominal Okabe-Ito |
 
 The four geometry levels (local authorities, all localities, localities in regional councils, statistical areas) are
 shared by every dataset.
@@ -48,7 +49,7 @@ npm run build          # both, in that order
 npm run dev            # viewer dev server on http://localhost:5173, serving dist/data at /data/
 npm run preview        # serve the built dist/site
 npm test               # type-check pipeline + viewer, viewer unit tests, rebuild into a temp dir and test that build
-npm run test:e2e       # build the viewer, then Playwright e2e (Chromium; slider specs also Firefox/WebKit) under /maps/israel/
+npm run test:e2e       # build the viewer, then Playwright e2e (Chromium; slider specs also Firefox/WebKit) under /israeli-gis/
 ```
 
 The e2e preview server listens on port 4179; set `E2E_PORT` to run several e2e suites at once
@@ -88,6 +89,8 @@ pipeline/
     ses-2021/                 socio-economic index 2021: parse tables → values + layer definitions
     peripherality-2020/       peripherality index 2020: authorities + all localities
     population-2024/          population 2024: four measures (size, growth, group, type)
+    census-2022/              census 2022, locality level: six measures
+    measures.ts               shared builders for multi-measure datasets (stepped, nominal, popup, layer)
   lib/                        contract (zod), GDAL, mapshaper, spreadsheets, keys, names, download
   terminology.ts              user-facing wording (he/en/ru): levels by kind, datasets by id
 tests/                        vitest (global setup runs the pipeline)
@@ -109,12 +112,20 @@ npm run build:viewer   # → dist/site/
 
 **Deployable folder: `dist/site/`.** It is self-contained: `index.html`, `assets/` (hashed JS/CSS and the MapLibre
 worker) and `data/` (a copy of `dist/data` without the JSON Schema). Every URL in it is relative (`base: './'`), so
-the same folder works at any path and inside an iframe. For the Hugo site, copy it as is:
+the same folder works at any path and inside an iframe.
 
-```sh
-npm ci && npm run build:viewer
-rsync -a --delete dist/site/ ../anatoly.dev/static/maps/israel/
-```
+### Deployment (GitHub Pages)
+
+`.github/workflows/pages.yml` runs on every push to `main` (and by hand from the Actions tab). It runs `npm ci && npm
+run build` on Node 24 and publishes `dist/site` with `actions/upload-pages-artifact` + `actions/deploy-pages`. The repo
+is a project site, so it is served at **https://anatoly.dev/israeli-gis/** under the custom domain of the user site;
+this repo has no `CNAME` of its own.
+
+One-time setup: Settings → Pages → Build and deployment → Source = **GitHub Actions**.
+
+`npm run build` includes `build:data`, so CI rebuilds `dist/data` from the committed `data/raw` (offline, every file
+sha256-checked) and deploys that build rather than the committed copy. Raw files the pipeline reads must be committed,
+or the deploy fails.
 
 The viewer build never writes into `dist/data`: Vite's output directory is `dist/site`, `publicDir` is off, and a small
 plugin copies `dist/data` into `dist/site/data` after bundling (and serves it at `/data/` in dev).
@@ -127,14 +138,14 @@ stays committed because it is the expensive, reviewed part.
 
 ```html
 <iframe
-  src="/maps/israel/?embed=1&lang=he&layer=ses-2021-localities&hl=1,2,3#8/32.1/34.9"
+  src="https://anatoly.dev/israeli-gis/?embed=1&lang=he&layer=ses-2021-localities&hl=1,2,3#8/32.1/34.9"
   title="מדד חברתי-כלכלי 2021"
   width="100%" height="640" style="border:0" loading="lazy"
   allow="fullscreen"></iframe>
 ```
 
-Keep the trailing slash in `/maps/israel/`: the page loads `data/` and `assets/` relative to its own URL, so
-`/maps/israel?embed=1` would look for them under `/maps/`.
+Keep the trailing slash in `/israeli-gis/`: the page loads `data/` and `assets/` relative to its own URL, so
+`/israeli-gis?embed=1` would look for them at the site root.
 
 | Param | Values | Default |
 |---|---|---|
@@ -195,7 +206,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 
 ## Raw data
 
-`.gitignore` keeps only what the pipeline reads, about 10.9 MB. Every file is pinned by sha256 in its `RawFile` entry.
+`.gitignore` keeps only what the pipeline reads, about 12 MB. Every file is pinned by sha256 in its `RawFile` entry.
 
 | Committed | Why |
 |---|---|
@@ -204,6 +215,7 @@ he/en/ru entry. See "Level wording" in `docs/data-contract.md`.
 | `cbs-socioeconomic-2021/streets_neighborhoods_sa2011.xlsx` | Neighborhood and main-street names per statistical area (Hebrew) → `neighborhoods_he`, `streets_he` |
 | `cbs-peripherality-2020/24_22_420t{1,2}.xlsx` | Peripherality index 2020: table 1 (255 authorities), table 2 (1,213 localities) |
 | `cbs-localities-file/bycode2024.xlsx`, `bycode2022.xlsx` | Population 2024, and the 2022 base for growth |
+| `cbs-census-2022/mifkad-2022.xlsx` | Census 2022, selected data by locality (60 columns); the rest of that folder stays ignored |
 | `cbs-localities-file/bycode2021.xlsx` | Locality → municipal status, he/en locality names, he regional-council names |
 | `wikidata-p3466/p3466_items.csv`, `regional_councils_Q1022469.csv` | Russian names and English gap-fillers (SPARQL snapshots, 2026-10-24) |
 | `datagov-municipal-authorities/localauthorities.csv` | Tests cross-check the `5500+n` authority codes against it |
@@ -225,8 +237,8 @@ Ignored:
 
 ## Why `dist/data` is committed
 
-The Hugo site (anatoly.dev) embeds the viewer, and updating it shouldn't require installing this toolchain or running a
-20-second GDAL/WebAssembly build. The output is small (about 3.7 MB raw, 1 MB gzipped across four levels) and
+It is the reviewed form of the data: building the viewer (`npm run dev`, `build:viewer`) needs no 20-second
+GDAL/WebAssembly build, and the Pages deploy rebuilds it from raw only as a check-and-publish step. The output is small (about 3.7 MB raw, 1 MB gzipped across four levels) and
 deterministic. So a diff in `dist/data` means the data actually changed, and code review can see it. The tests enforce
 that the committed copy matches a fresh build.
 
