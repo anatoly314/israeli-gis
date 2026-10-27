@@ -320,6 +320,37 @@ details.dataset[open] > summary::before {
   content: '▾';
 }
 
+/* Embed: "Full map" in the bottom corner the zoom buttons and attribution leave free (map.ts setControls). */
+.maplibregl-ctrl.full-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.1);
+  color: var(--fg);
+  font: 600 12.5px/1 system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Hebrew', Arial, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.maplibregl-ctrl.full-map:hover {
+  background: var(--hover);
+}
+
+/* The arrow points toward the reading direction's end: up-left in Hebrew. */
+[dir='rtl'] .full-map svg {
+  transform: scaleX(-1);
+}
+
+@media (pointer: coarse) {
+  .maplibregl-ctrl.full-map {
+    min-height: 40px;
+  }
+}
+
 /* The open compact sheet covers the map's bottom corner: hide the controls there meanwhile. */
 .compact.sheet-open .maplibregl-ctrl-bottom-left,
 .compact.sheet-open .maplibregl-ctrl-bottom-right {

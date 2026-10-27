@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { fullMapBase } from '../src/config.ts';
-import { fullMapHref, parseUrl, serializeUrl, type UrlState } from '../src/url.ts';
+import { fullMapHref, mapHash, parseUrl, serializeUrl, type UrlState } from '../src/url.ts';
+
+describe('map position hash', () => {
+  it('writes what MapLibre writes: zoom to 2 decimals, coordinates with precision by zoom', () => {
+    // Hashes MapLibre 6.15 wrote for these cameras in the viewer.
+    expect(mapHash(6.5612, 31.58612, 35.15688)).toBe('#6.56/31.586/35.157');
+    expect(mapHash(13, 31.845978, 35.225661)).toBe('#13/31.84598/35.22566');
+    expect(mapHash(11, 32.08, 34.78)).toBe('#11/32.08/34.78');
+  });
+});
 
 describe('"Open full map" link', () => {
   const search = '?lang=he&layer=ses-2021-localities&hl=8-10&f=3000&embed=1';

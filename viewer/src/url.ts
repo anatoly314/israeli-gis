@@ -28,6 +28,16 @@ export function parseUrl(search: string): UrlState {
 }
 
 /**
+ * The map position as MapLibre's `hash: true` writes it ("#zoom/lat/lng", precision by zoom; the viewer has no
+ * rotation or pitch). Built from the camera, so a link can carry it at once: MapLibre writes the address on a delay.
+ */
+export function mapHash(zoom: number, lat: number, lng: number): string {
+  const z = Math.round(zoom * 100) / 100;
+  const m = 10 ** Math.ceil((z * Math.LN2 + Math.log(512 / 360 / 0.5)) / Math.LN10);
+  return `#${z}/${Math.round(lat * m) / m}/${Math.round(lng * m) / m}`;
+}
+
+/**
  * The embed's "Open full map" link: the configured full-map page (`fullMapBase`), or this page's own path when none is
  * set, with the view's query minus `embed`, and the map position hash.
  */

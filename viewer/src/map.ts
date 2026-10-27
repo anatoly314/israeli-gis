@@ -5,6 +5,7 @@ import {
   setWorkerUrl,
   type ExpressionSpecification,
   type FilterSpecification,
+  type IControl,
   type LayerSpecification,
 } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -33,8 +34,13 @@ setWorkerUrl(workerUrl);
 
 const HATCH = 'missing-hatch';
 
+/**
+ * A north-up, flat map: no rotation or pitch by any input (mouse, Shift+arrows, two-finger twist), and none kept from
+ * a link either (a hash's bearing and pitch are undone, its position kept). There is no compass to undo them, and the
+ * "Full map" link's hash carries neither.
+ */
 export function createMap(container: HTMLElement, opts: { cooperative: boolean; lang: Lang }): MlMap {
-  return new MlMap({
+  const map = new MlMap({
     container,
     style: basemap.styleUrl,
     center: initialView.center,
@@ -48,6 +54,15 @@ export function createMap(container: HTMLElement, opts: { cooperative: boolean; 
     maxZoom: 16,
     locale: MAP_LOCALE[opts.lang],
   });
+  map.keyboard.disableRotation();
+  map.touchZoomRotate.disableRotation();
+  // Undone rather than clamped (`maxPitch: 0` would make MapLibre reject such a hash, position and all).
+  const northUp = () => {
+    if (map.getBearing() !== 0 || map.getPitch() !== 0) map.jumpTo({ bearing: 0, pitch: 0 });
+  };
+  northUp();
+  map.on('moveend', northUp);
+  return map;
 }
 
 /**
@@ -88,12 +103,20 @@ export function setBasemapPlaceLabels(map: MlMap, visible: boolean) {
 
 let attribution: AttributionControl | null = null;
 let navigation: NavigationControl | null = null;
+let corner: IControl | null = null;
 
-/** (Re)adds attribution and zoom buttons; in the compact layout the zoom buttons go to the bottom, clear of the search bar. */
-export function setControls(map: MlMap, o: { rtl: boolean; compact: boolean; zoomButtons: boolean; credits: string[] }) {
+/**
+ * (Re)adds attribution and zoom buttons; in the compact layout the zoom buttons go to the bottom, clear of the search
+ * bar. `cornerLink` (the embed's "Full map" link) takes the other bottom corner, which nothing else uses.
+ */
+export function setControls(map: MlMap, o: { rtl: boolean; compact: boolean; zoomButtons: boolean; credits: string[]; cornerLink?: HTMLElement }) {
   if (attribution) map.removeControl(attribution);
   if (navigation) map.removeControl(navigation);
+  if (corner) map.removeControl(corner);
   const side = o.rtl ? 'left' : 'right';
+  const link = o.cornerLink;
+  corner = link ? { onAdd: () => link, onRemove: () => link.remove() } : null;
+  if (corner) map.addControl(corner, `bottom-${o.rtl ? 'right' : 'left'}`);
   navigation = o.zoomButtons ? new NavigationControl({ showCompass: false }) : null;
   if (navigation) map.addControl(navigation, `${o.compact ? 'bottom' : 'top'}-${side}`);
   attribution = new AttributionControl({ compact: o.compact, customAttribution: o.credits });

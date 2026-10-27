@@ -36,8 +36,9 @@ import { compactHl, expandHl, normalizeSelection } from './range.ts';
 import { createSearchBox } from './search-box.ts';
 import { createSlider } from './slider.ts';
 import { buildEntries, search, type SearchEntry } from './search.ts';
+import { esc } from './html.ts';
 import { $, renderAbout, renderLang, renderLayers, renderLegend } from './ui.ts';
-import { fullMapHref, parseUrl, serializeUrl } from './url.ts';
+import { fullMapHref, mapHash, parseUrl, serializeUrl } from './url.ts';
 
 const initial = parseUrl(location.search);
 const state = {
@@ -124,21 +125,26 @@ function syncUrl() {
     location.search,
   );
   history.replaceState(history.state, '', `${location.pathname}${s}${location.hash}`);
-  const full = $<HTMLAnchorElement>('fullscreen');
-  full.hidden = !state.embed;
   if (state.embed) setFullMapHref();
 }
 
 /**
- * The current view on the full map: query (minus `embed`) and hash, read from the address at that moment. The dev
- * server links to itself; builds (preview included) to `fullMapBase`.
+ * The embed's "Full map" link, a map-corner control (`setControls`) so it shows without opening the sheet; the top
+ * page navigates (Back returns to the post).
+ */
+const fullLink = Object.assign(document.createElement('a'), { id: 'fullscreen', className: 'maplibregl-ctrl full-map', target: '_top' });
+
+/**
+ * The current view on the full map: query (minus `embed`) and the camera's position, set on every URL sync (each
+ * move end included) and again when the link is about to be followed. The dev server links to itself; builds
+ * (preview included) to `fullMapBase`.
  */
 const setFullMapHref = () => {
   const base = import.meta.env.DEV ? '' : fullMapBase;
-  $<HTMLAnchorElement>('fullscreen').href = fullMapHref(base, location.pathname, location.search, location.hash);
+  const c = map.getCenter();
+  fullLink.href = fullMapHref(base, location.pathname, location.search, mapHash(map.getZoom(), c.lat, c.lng));
 };
-// MapLibre writes the hash on a short throttle after a move: refresh the link when it is about to be followed too.
-for (const ev of ['pointerdown', 'focus', 'click']) $('fullscreen').addEventListener(ev, setFullMapHref);
+for (const ev of ['pointerdown', 'focus', 'click']) fullLink.addEventListener(ev, setFullMapHref);
 
 /** Camera padding: what the UI covers. In compact mode the map already ends above the sheet. */
 function padding() {
@@ -166,7 +172,13 @@ function applyLayout() {
 function refreshControls() {
   const layer = layerById(state.layerId);
   const credits = [manifest.attribution[state.lang], ...(layer ? [layer.attribution[state.lang]] : [])];
-  setControls(map, { rtl: dirOf(state.lang) === 'rtl', compact: state.compact, zoomButtons: !state.compact || canHover.matches, credits });
+  setControls(map, {
+    rtl: dirOf(state.lang) === 'rtl',
+    compact: state.compact,
+    zoomButtons: !state.compact || canHover.matches,
+    credits,
+    ...(state.embed && { cornerLink: fullLink }),
+  });
 }
 
 function renderChrome() {
@@ -179,7 +191,12 @@ function renderChrome() {
   renderLang($('lang'), lang, setLang);
   searchBox.setLang(lang);
   $('about-open').textContent = t('about', lang);
-  $('fullscreen').textContent = `${t('fullscreen', lang)} ↗`;
+  // An "open" icon and a short label, which is also the accessible name (WCAG 2.5.3, label in name); the full wording
+  // as a tooltip.
+  fullLink.innerHTML =
+    '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M9 2h5v5M14 2 8 8M12 9v5H2V4h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+    `<span>${esc(t('fullMapShort', lang))}</span>`;
+  fullLink.title = t('fullscreen', lang);
   if (!manifest) return;
   const groups = groupLayers(manifest);
   const layer = layerById(state.layerId);
@@ -379,7 +396,12 @@ function keepPopupInView() {
     const margin = 8;
     const top = c.top + (state.compact ? $('top').getBoundingClientRect().bottom - c.top : 0) + margin;
     const dx = r.left < c.left + margin ? r.left - (c.left + margin) : r.right > c.right - margin ? r.right - (c.right - margin) : 0;
-    const dy = r.top < top ? r.top - top : r.bottom > c.bottom - margin ? Math.min(r.bottom - (c.bottom - margin), r.top - top) : 0;
+    // Above the bottom-corner controls it would cover once panned (the embed's "Full map" link, zoom, attribution).
+    const controls = [...map.getContainer().querySelectorAll('.maplibregl-ctrl-bottom-left > *, .maplibregl-ctrl-bottom-right > *')]
+      .map((e) => e.getBoundingClientRect())
+      .filter((b) => b.width > 0 && b.left < r.right - dx && b.right > r.left - dx);
+    const bottom = Math.min(c.bottom, ...controls.map((b) => b.top)) - margin;
+    const dy = r.top < top ? r.top - top : r.bottom > bottom ? Math.min(r.bottom - bottom, r.top - top) : 0;
     if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) map.panBy([Math.round(dx), Math.round(dy)], { duration: reducedMotion.matches ? 0 : 250 });
   });
 }

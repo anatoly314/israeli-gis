@@ -755,9 +755,96 @@ test('embed mode is compact and links to the full map', async ({ page }) => {
   await page.locator('#strip [data-key="1"]').click();
   await expect(full).toHaveAttribute('href', /hl=1,8-10#/);
   await page.evaluate(() => (location.hash = '#11/32.08/34.78'));
-  await full.focus();
   await expect(full).toHaveAttribute('href', /hl=1,8-10#11\/32\.08\/34\.78$/);
   expect(errors).toEqual([]);
+});
+
+const overlaps = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+for (const size of [
+  { width: 358, height: 650, touch: true },
+  { width: 390, height: 844, touch: true },
+  { width: 1000, height: 650, touch: false },
+]) {
+  for (const lang of ['he', 'en', 'ru'] as const) {
+    test(`embed ${size.width}×${size.height} (${lang}): "Full map" shows in a free map corner, clear of every other control and a popup`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport: size, hasTouch: size.touch, isMobile: size.touch });
+      const page = await context.newPage();
+      const errors = collectErrors(page);
+      // An open popup (Tel Aviv on the authorities), to check the popup stays off the link too.
+      await page.goto(`./?embed=1&lang=${lang}&layer=ses-2021-local-authorities&f=5000`);
+      await ready(page, 'ses-2021-local-authorities');
+      const full = page.locator('#fullscreen');
+      await expect(full).toBeVisible();
+      await expect(page.locator('#sheet')).toHaveAttribute('data-open', 'false');
+      await expect(full).toHaveAttribute('target', '_top');
+      // The visible label is the accessible name (label in name); the long wording is the tooltip.
+      await expect(full).toHaveAccessibleName({ he: 'מפה מלאה', en: 'Full map', ru: 'Вся карта' }[lang]);
+      await expect(full).not.toHaveAttribute('aria-label');
+      await expect(full).toHaveAttribute('title', { he: 'פתיחה במסך מלא', en: 'Open full map', ru: 'Открыть всю карту' }[lang]);
+      const flip = await full.locator('svg').evaluate((s) => getComputedStyle(s).transform);
+      expect(flip, 'icon mirrored in RTL').toBe(lang === 'he' ? 'matrix(-1, 0, 0, 1, 0, 0)' : 'none');
+      const link = (await full.boundingBox())!;
+      // The bottom corner on the inline-start side (left in en/ru, right in he), the zoom buttons and attribution on
+      // the other.
+      const rtl = lang === 'he';
+      expect(rtl ? size.width - (link.x + link.width) : link.x).toBeLessThan(20);
+      const others = ['#top', '#sheet', '.maplibregl-ctrl-attrib', '.maplibregl-ctrl-group'];
+      for (const sel of others) {
+        for (const el of await page.locator(sel).all()) {
+          if (!(await el.isVisible())) continue;
+          expect(overlaps(link, (await el.boundingBox())!), `${sel} overlaps the link`).toBe(false);
+        }
+      }
+      const popup = page.locator('.maplibregl-popup');
+      await expect(popup).toBeVisible();
+      await expect.poll(async () => overlaps(link, (await popup.boundingBox())!), { message: 'popup clear of the link', timeout: 10_000 }).toBe(false);
+      await screens(page, `embed-full-map-${size.width}-${lang}.png`);
+      expect(errors).toEqual([]);
+      await context.close();
+    });
+  }
+}
+
+test('the map stays north-up and flat: Shift+arrows do nothing, a link with a bearing or pitch opens unrotated', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto('./?lang=en#9/31.8/35');
+  await ready(page, 'ses-2021-local-authorities');
+  await page.locator('.maplibregl-canvas').focus();
+  for (const key of ['Shift+ArrowRight', 'Shift+ArrowLeft', 'Shift+ArrowUp', 'Shift+ArrowDown']) await page.keyboard.press(key);
+  await page.waitForTimeout(800); // longer than a keyboard ease and MapLibre's hash write
+  await expect(page).toHaveURL(/#9\/31\.8\/35$/);
+  // A shared link with bearing 45 and pitch 30: no rotation is left (the hash has no bearing or pitch part).
+  await page.goto('./?lang=en&embed=1#9/31.8/35/45/30');
+  await ready(page, 'ses-2021-local-authorities');
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#9/31.8/35');
+  await expect(page.locator('#fullscreen')).toHaveAttribute('href', /#9\/31\.8\/35$/);
+  expect(errors).toEqual([]);
+});
+
+test('embed: the "Full map" link carries the live map position after a pan, without touching the link', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 650 });
+  await page.goto('./?embed=1&lang=en#9/31.8/35.0');
+  await ready(page, 'ses-2021-local-authorities');
+  const full = page.locator('#fullscreen');
+  await expect(full).toHaveAttribute('href', /#9\/31\.8\/35$/);
+  const map = (await page.locator('#map').boundingBox())!;
+  const x = map.x + map.width / 2;
+  const y = map.y + map.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - 150, y + 80, { steps: 8 });
+  await page.mouse.up();
+  // Right after the pan the link already has the new camera; MapLibre writes the same hash to the address shortly.
+  await expect(full).not.toHaveAttribute('href', /#9\/31\.8\/35$/);
+  await expect
+    .poll(async () => {
+      const href = (await full.getAttribute('href'))!;
+      const hash = await page.evaluate(() => location.hash);
+      return hash !== '#9/31.8/35' && href.endsWith(hash);
+    })
+    .toBe(true);
 });
 
 const blogPost = (src: string) => {

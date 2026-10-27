@@ -225,8 +225,10 @@ Chromium, Firefox and WebKit.
 - Compact (`embed=1`, or narrower than 720 px): search and language on top; a bottom sheet with an always-visible
   legend strip (tap a class to highlight) and the range slider under it, expanding to the legend (notes, and a
   nominal layer's labelled list right under the strip), the layer list and About. The map ends above the
-  collapsed sheet. In embed mode the map needs two fingers / Ctrl+scroll so the blog page still scrolls, and an
-  "Open full map" link opens the same view (query minus `embed`, and the map hash) at `fullMapBase` in `config.ts`,
+  collapsed sheet. In embed mode the map needs two fingers / Ctrl+scroll so the blog page still scrolls, and a "Full
+  map" control in the free bottom corner of the map (inline start; zoom and attribution are at the end, and a popup
+  is kept above all bottom controls) opens the same view (query minus `embed`, and the camera's position, refreshed
+  on every move end) at `fullMapBase` in `config.ts`,
   the blog's full-page map, in the top window (Back returns to the post). The base is a build-time constant, never a
   URL parameter (no open redirect). On the dev server (`import.meta.env.DEV`), or with an empty base, the link goes to
   this app's own page; `vite preview`, e2e and Pages use the base. Zoom buttons show on desktop, and in a desktop embed

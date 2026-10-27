@@ -53,6 +53,8 @@ const UI = {
   about: { he: 'אודות ומקורות', en: 'About & sources', ru: 'О карте и источники' },
   close: { he: 'סגירה', en: 'Close', ru: 'Закрыть' },
   fullscreen: { he: 'פתיחה במסך מלא', en: 'Open full map', ru: 'Открыть всю карту' },
+  /** Visible label of the embed's map-corner link (its tooltip and accessible name are `fullscreen`). */
+  fullMapShort: { he: 'מפה מלאה', en: 'Full map', ru: 'Вся карта' },
   language: { he: 'שפה', en: 'Language', ru: 'Язык' },
   loading: { he: 'טוען נתונים…', en: 'Loading data…', ru: 'Загрузка данных…' },
   loadError: { he: 'טעינת הנתונים נכשלה', en: 'Could not load the data', ru: 'Не удалось загрузить данные' },
