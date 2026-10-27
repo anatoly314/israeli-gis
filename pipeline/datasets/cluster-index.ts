@@ -23,6 +23,7 @@ export function clusterClassification(dataset: string, level: LevelId, palette: 
 /** cluster, index (3 decimals), rank "N of total", then `extra` fields labelled from the dataset's wording. */
 export function clusterPopup(dataset: string, rankTotal: number, extra: { field: string; format: PopupFormat }[]): PopupField[] {
   const terms = datasetTerms(dataset);
+  if (!terms.scale) throw new Error(`${dataset}: a cluster index needs a scale (low/high) in pipeline/terminology.ts`);
   const own = extra.map(({ field, format }) => {
     const label = terms.fields[field];
     if (!label) throw new Error(`${dataset}: no popup label for "${field}" in pipeline/terminology.ts`);
@@ -31,7 +32,7 @@ export function clusterPopup(dataset: string, rankTotal: number, extra: { field:
   return [
     { field: 'cluster', format: { type: 'integer' }, label: CLUSTER_INDEX.fields.cluster },
     { field: 'index', format: { type: 'decimal', decimals: 3 }, label: CLUSTER_INDEX.fields.index },
-    { field: 'rank', format: { type: 'rank', total: rankTotal }, label: CLUSTER_INDEX.fields.rank },
+    { field: 'rank', format: { type: 'rank', total: rankTotal }, label: CLUSTER_INDEX.rankLabel(terms.scale) },
     ...own,
   ];
 }

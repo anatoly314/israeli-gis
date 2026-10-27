@@ -142,6 +142,13 @@ export function pointsLayerTitle(dataset: I18n, measure?: I18n): I18n {
 // Dataset wording, keyed by dataset id (pipeline/datasets/<id>). Dataset modules read it from here, so every
 // user-facing string still lives in this file.
 
+/**
+ * What cluster 1 and cluster 10 of an index mean. `rankLow` is a shorter `low` for the rank label, when `low` is too
+ * long for a popup label.
+ */
+const Scale = z.strictObject({ low: I18n, high: I18n, rankLow: I18n.optional() });
+type Scale = z.infer<typeof Scale>;
+
 /** Wording shared by the CBS cluster indices (socio-economic, peripherality): clusters 1–10 + index + rank. */
 export const CLUSTER_INDEX = {
   classLabel: (n: number): I18n => ({ he: `אשכול ${n}`, en: `Cluster ${n}`, ru: `Кластер ${n}` }),
@@ -149,14 +156,21 @@ export const CLUSTER_INDEX = {
   fields: {
     cluster: { he: 'אשכול', en: 'Cluster', ru: 'Кластер' },
     index: { he: 'ערך מדד', en: 'Index value', ru: 'Значение индекса' },
-    rank: { he: 'דירוג', en: 'Rank', ru: 'Место' },
   } satisfies Record<string, I18n>,
+  /**
+   * Popup label of CBS's rank, which counts from the bottom (1 = lowest index value). Says what rank 1 means, since
+   * a bare "Rank" / "Место" reads as a competition place where 1 is best. Russian takes "Ранг", not "Место".
+   */
+  rankLabel: (scale: Scale): I18n => {
+    const low = scale.rankLow ?? scale.low;
+    return { he: `דירוג (1 – ${low.he})`, en: `Rank (1 = ${low.en})`, ru: `Ранг (1 — ${low.ru})` };
+  },
   /**
    * Legend note "1 – <low>, 10 – <high>", one style for every cluster index. An en dash rather than "=": it is the
    * usual Hebrew way to gloss a number, and in an RTL paragraph "1 – הכי פריפריאלי" keeps the digit at the start of
    * its phrase (the dash is a neutral between a number and Hebrew letters, so it stays with the phrase).
    */
-  note: (scale: { low: I18n; high: I18n }): I18n => ({
+  note: (scale: Scale): I18n => ({
     he: `1 – ${scale.low.he}, 10 – ${scale.high.he}`,
     en: `1 – ${scale.low.en}, 10 – ${scale.high.en}`,
     ru: `1 – ${scale.low.ru}, 10 – ${scale.high.ru}`,
@@ -193,7 +207,7 @@ export const DatasetTerms = z.strictObject({
   /** Points datasets: "N schools" phrases by plural category (contract `CountForms`), copied to each points layer. */
   countForms: CountForms.optional(),
   /** Cluster indices: what cluster 1 and cluster 10 mean; the legend note is CLUSTER_INDEX.note(scale). */
-  scale: z.strictObject({ low: I18n, high: I18n }).optional(),
+  scale: Scale.optional(),
   /** Single-measure datasets: "not calculated" explanation for each level kind the dataset ships. */
   missing: z.partialRecord(LevelKind, I18n).optional(),
   /** Popup labels of the dataset's own fields (beyond CLUSTER_INDEX.fields), keyed by record field. */
@@ -263,6 +277,7 @@ export const DATASET_TERMS: Record<string, DatasetTerms> = z.record(z.string(), 
     scale: {
       low: { he: 'הרמה החברתית-כלכלית הנמוכה ביותר', en: 'lowest socio-economic level', ru: 'самый низкий социально-экономический уровень' },
       high: { he: 'הגבוהה ביותר', en: 'highest', ru: 'самый высокий' },
+      rankLow: { he: 'הנמוך ביותר', en: 'lowest', ru: 'самый низкий' },
     },
     missing: {
       'local-authorities': NOT_CALCULATED_AUTHORITY,

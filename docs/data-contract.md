@@ -587,7 +587,7 @@ Excerpt:
   "popup": [
     { "field": "cluster", "format": { "type": "integer" }, "label": { "en": "Cluster", "…": "…" } },
     { "field": "index", "format": { "type": "decimal", "decimals": 3 }, "label": { "en": "Index value", "…": "…" } },
-    { "field": "rank", "format": { "type": "rank", "total": 1641 }, "label": { "en": "Rank", "…": "…" } },
+    { "field": "rank", "format": { "type": "rank", "total": 1641 }, "label": { "en": "Rank (1 = lowest)", "…": "…" } },
     { "field": "population", "format": { "type": "integer" }, "label": { "en": "Index population", "…": "…" } }
   ],
   "attribution": { "en": "Socio-Economic Index 2021: CBS Israel", "…": "…" },
