@@ -27,6 +27,14 @@ export function parseUrl(search: string): UrlState {
   };
 }
 
+/**
+ * The embed's "Open full map" link: the configured full-map page (`fullMapBase`), or this page's own path when none is
+ * set, with the view's query minus `embed`, and the map position hash.
+ */
+export function fullMapHref(base: string, path: string, search: string, hash: string): string {
+  return `${base || path}${serializeUrl({ ...parseUrl(search), embed: false }, search)}${hash}`;
+}
+
 /** Query string (with leading "?") for the state; unknown params already in `current` are kept. */
 export function serializeUrl(s: UrlState, current = ''): string {
   const p = new URLSearchParams(current);

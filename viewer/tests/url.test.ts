@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { parseUrl, serializeUrl, type UrlState } from '../src/url.ts';
+import { fullMapBase } from '../src/config.ts';
+import { fullMapHref, parseUrl, serializeUrl, type UrlState } from '../src/url.ts';
+
+describe('"Open full map" link', () => {
+  const search = '?lang=he&layer=ses-2021-localities&hl=8-10&f=3000&embed=1';
+  it('goes to the configured full-map page with the view (minus embed) and the hash', () => {
+    expect(fullMapBase).toBe('https://anatoly.dev/maps/israel/');
+    expect(fullMapHref(fullMapBase, '/israeli-gis/', search, '#9/31.77/35.21')).toBe(
+      'https://anatoly.dev/maps/israel/?lang=he&layer=ses-2021-localities&hl=8-10&f=3000#9/31.77/35.21',
+    );
+  });
+  // The builder only; main.ts passes an empty base on the dev server, `fullMapBase` in builds (preview, e2e, Pages).
+  it('links to this page when given an empty base', () => {
+    expect(fullMapHref('', '/israeli-gis/', search, '')).toBe('/israeli-gis/?lang=he&layer=ses-2021-localities&hl=8-10&f=3000');
+    expect(fullMapHref('', '/', '?embed=1', '#7/31.5/35')).toBe('/#7/31.5/35');
+  });
+});
 
 describe('URL state', () => {
   it('parses every param', () => {

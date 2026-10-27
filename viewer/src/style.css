@@ -243,10 +243,30 @@ h2 {
 
 .sheet-body {
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 12px 14px 10px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  --fade-top: 0px;
+  --fade-bottom: 0px;
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+  /* Focus and scrollIntoView stop clear of the fades (28 px / 40 px below). */
+  scroll-padding-block: 28px 40px;
+}
+
+/* Keyboard users see the whole panel: no fade over a focus ring. */
+.sheet-body:has(:focus-visible) {
+  mask-image: none;
+}
+
+/* More to scroll (main.ts sets data-more): the content fades out at that edge instead of being cut mid-row. */
+.sheet-body[data-more~='above'] {
+  --fade-top: 28px;
+}
+
+.sheet-body[data-more~='below'] {
+  --fade-bottom: 40px;
 }
 
 fieldset {

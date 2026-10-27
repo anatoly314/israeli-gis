@@ -746,9 +746,17 @@ test('embed mode is compact and links to the full map', async ({ page }) => {
   // An old list link still works, and is rewritten in the compact range form.
   await expect(page.locator('#range output')).toHaveText(/8–10/);
   await expect(page).toHaveURL(/hl=8-10/);
+  // "Open full map": the blog's full-page map (config.ts fullMapBase), this view minus embed, the map position, and
+  // a plain navigation of the top page (Back returns to the post).
   const full = page.locator('#fullscreen');
-  await expect(full).toHaveAttribute('href', /layer=ses-2021-localities/);
-  expect(await full.getAttribute('href')).not.toContain('embed');
+  await expect(full).toHaveAttribute('target', '_top');
+  await expect(full).toHaveAttribute('href', /^https:\/\/anatoly\.dev\/maps\/israel\/\?lang=en&layer=ses-2021-localities&hl=8-10#[\d.]+\/[\d.-]+\/[\d.-]+$/);
+  // It follows the view: a new highlight, and the map position after a move.
+  await page.locator('#strip [data-key="1"]').click();
+  await expect(full).toHaveAttribute('href', /hl=1,8-10#/);
+  await page.evaluate(() => (location.hash = '#11/32.08/34.78'));
+  await full.focus();
+  await expect(full).toHaveAttribute('href', /hl=1,8-10#11\/32\.08\/34\.78$/);
   expect(errors).toEqual([]);
 });
 
@@ -758,6 +766,116 @@ const blogPost = (src: string) => {
     body{font:16px/1.6 Georgia,serif;max-width:760px;margin:0 auto;padding:16px} iframe{width:100%;height:650px;border:0;display:block}
   </style></head><body><h1>Post</h1>${para.repeat(3)}<iframe id="m" src="${src}" title="map"></iframe>${para.repeat(8)}</body></html>`;
 };
+
+/** The blog's full-page map (anatoly.dev/maps/israel/): a 60 px site header, the app (not embed) in a 100% iframe. */
+const blogMapPage = (src: string) => `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+  html,body{margin:0;height:100%} header{height:60px;background:#1d1e20;color:#fff;display:flex;align-items:center;padding:0 16px;box-sizing:border-box}
+  .map{height:calc(100% - 60px)} iframe{width:100%;height:100%;border:0;display:block}
+</style></head><body><header>anatoly.dev</header><div class="map"><iframe id="m" src="${src}" title="map"></iframe></div></body></html>`;
+
+async function blogMapFrame(page: Page, src: string) {
+  await page.setContent(blogMapPage(src));
+  return (await (await page.$('#m'))!.contentFrame())!;
+}
+
+for (const [lang, layer] of [
+  ['en', 'ses-2021-localities'],
+  ['he', 'census-2022-religiosity-localities'],
+] as const) {
+  test(`under a site header at 1512×793 (${lang}, ${layer}): the panel scrolls to its last legend item, and shows that it scrolls`, async ({ page, baseURL }) => {
+    await page.setViewportSize({ width: 1512, height: 793 });
+    const frame = await blogMapFrame(page, `${baseURL}?lang=${lang}&layer=${layer}`);
+    await ready(frame, layer);
+    expect(await frame.evaluate(() => [innerWidth, innerHeight])).toEqual([1512, 733]);
+    const body = frame.locator('#sheet-body');
+    // Taller than the frame: the panel scrolls inside itself, and says so with a fade at the bottom.
+    await expect(body).toHaveAttribute('data-more', 'below');
+    const last = frame.locator('#legend .legend-list li').last();
+    await last.scrollIntoViewIfNeeded();
+    const b = (await last.boundingBox())!;
+    const box = (await body.boundingBox())!;
+    // Inside the scroll box, which ends inside the frame (60 px header + 733 px frame).
+    expect(b.y).toBeGreaterThanOrEqual(box.y);
+    expect(b.y + b.height).toBeLessThanOrEqual(box.y + box.height);
+    expect(box.y + box.height).toBeLessThanOrEqual(793);
+    await expect(body).toHaveAttribute('data-more', /above/);
+    await last.locator('button').click();
+    await expect(last.locator('button')).toHaveAttribute('aria-pressed', 'true');
+    await screens(page, `blog-frame-1512-${lang}-${layer}.png`);
+  });
+}
+
+test('under a site header at 1512×793: tabbing through the panel keeps each focused control clear of the fades', async ({ page, baseURL }) => {
+  await page.setViewportSize({ width: 1512, height: 793 });
+  const layer = 'ses-2021-localities';
+  const frame = await blogMapFrame(page, `${baseURL}?lang=en&layer=${layer}`);
+  await ready(frame, layer);
+  await frame.locator('#q').focus();
+  const seen: string[] = [];
+  for (let i = 0; i < 60; i++) {
+    await page.keyboard.press('Tab');
+    const s = await frame.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const body = document.getElementById('sheet-body')!;
+      if (!body.contains(el)) return null;
+      const r = el.getBoundingClientRect();
+      const b = body.getBoundingClientRect();
+      return {
+        what: `${el.tagName}${el.getAttribute('data-key') ? `[${el.getAttribute('data-key')}]` : ''} ${(el.textContent ?? '').trim().slice(0, 20)}`,
+        // Distance to the scroll box's edges, where the 28 px top / 40 px bottom fades are.
+        top: r.top - b.top,
+        bottom: b.bottom - r.bottom,
+        mask: getComputedStyle(body).maskImage,
+        // The fades are drawn only at an edge with more to scroll.
+        above: body.scrollTop > 1,
+        below: body.scrollTop + body.clientHeight < body.scrollHeight - 1,
+      };
+    });
+    if (!s) {
+      if (seen.length) break;
+      continue;
+    }
+    seen.push(s.what);
+    expect(s.mask, s.what).toBe('none');
+    // A focused control is never where a fade would be (at the very end of the content there is none).
+    if (s.above) expect(s.top, `${s.what} top`).toBeGreaterThanOrEqual(26);
+    if (s.below) expect(s.bottom, `${s.what} bottom`).toBeGreaterThanOrEqual(38);
+  }
+  // Down to the legend's last class (cluster 10, then "not calculated").
+  expect(seen.some((w) => w.includes('[10]'))).toBe(true);
+  await screens(page, 'blog-frame-1512-tab.png');
+});
+
+for (const lang of ['he', 'en', 'ru'] as const) {
+  test(`under a site header on a 390×844 phone (${lang}): the bottom sheet opens, lists every class, and closes`, async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    const layer = 'census-2022-religiosity-localities';
+    const frame = await blogMapFrame(page, `${baseURL}?lang=${lang}&layer=${layer}`);
+    await ready(frame, layer);
+    expect(await frame.evaluate(() => innerHeight)).toBe(784);
+    const sheet = frame.locator('#sheet');
+    const closed = (await sheet.boundingBox())!;
+    // The collapsed sheet sits at the bottom of the frame, whole.
+    expect(Math.round(closed.y + closed.height)).toBeLessThanOrEqual(844);
+    expect(closed.y).toBeGreaterThan(60 + 400);
+    await frame.locator('#sheet-toggle').tap();
+    const items = frame.locator('#legend .legend-list li');
+    const count = await items.count();
+    for (let i = 0; i < count; i++) {
+      await items.nth(i).scrollIntoViewIfNeeded();
+      const b = (await items.nth(i).boundingBox())!;
+      expect(b.y, `class ${i} top`).toBeGreaterThanOrEqual(60);
+      expect(b.y + b.height, `class ${i} bottom`).toBeLessThanOrEqual(844);
+    }
+    const open = (await sheet.boundingBox())!;
+    expect(open.y).toBeGreaterThanOrEqual(60);
+    await screens(page, `blog-frame-390-${lang}.png`);
+    await frame.locator('#sheet-toggle').tap();
+    await expect(frame.locator('#sheet')).toHaveAttribute('data-open', 'false');
+    await context.close();
+  });
+}
 
 test('650 px iframe in a blog post: frames Israel, and the wheel scrolls the page', async ({ page, baseURL }) => {
   await page.setViewportSize({ width: 900, height: 900 });
@@ -1146,10 +1264,27 @@ for (const lang of ['he', 'en', 'ru'] as const) {
 const CENSUS_SA = 'census-2022-median-age-statistical-areas';
 const censusNote = (code: string) => manifestJson().datasets['census-2022'].notes['statistical-areas-2022'][code];
 
+/** Waits until the popup stops moving (the map pans it into view after it opens): same box twice, 200 ms apart. */
+async function popupSettled(popup: ReturnType<Page['locator']>) {
+  let last = '';
+  await expect
+    .poll(
+      async () => {
+        const b = JSON.stringify(await popup.boundingBox());
+        const same = b === last;
+        last = b;
+        return same;
+      },
+      { intervals: [200], timeout: 10_000 },
+    )
+    .toBe(true);
+}
+
 /** The dataset's note sits under the title and type line, above the first figure. */
 async function expectNoteAboveFigures(popup: ReturnType<Page['locator']>, text: string) {
   const note = popup.locator('.feature-note');
   await expect(note).toHaveText(text);
+  await popupSettled(popup);
   const n = (await note.boundingBox())!;
   const type = (await popup.locator('.popup-type').boundingBox())!;
   const row = (await popup.locator('dl div').first().locator('dt').boundingBox())!;
@@ -1243,17 +1378,18 @@ for (const lang of ['he', 'en', 'ru'] as const) {
     for (const c of cases) {
       await page.goto(`./?lang=${lang}&layer=${c.layer}&f=${c.code}`);
       await ready(page, c.layer);
+      // The map pans the popup between the search bar and the collapsed sheet, close button included (the pan may
+      // wait for the map to settle, so poll for that end state).
+      const fits = async () => {
+        const b = (await popup.boundingBox())!;
+        const top = (await page.locator('#top').boundingBox())!;
+        const sheet = (await page.locator('#sheet').boundingBox())!;
+        return b.x >= 0 && b.x + b.width <= 390 && b.y >= top.y + top.height && b.y + b.height <= sheet.y;
+      };
+      await expect.poll(fits, { message: `${c.shot} inside the visible map`, timeout: 10_000 }).toBe(true);
       await expectNoteAboveFigures(popup, c.note);
-      await page.waitForTimeout(400); // the pan that keeps the popup in view
       const b = (await popup.boundingBox())!;
-      const top = (await page.locator('#top').boundingBox())!;
-      const sheet = (await page.locator('#sheet').boundingBox())!;
       test.info().annotations.push({ type: `popup height 390 px ${lang} ${c.shot}`, description: String(Math.round(b.height)) });
-      expect(b.x).toBeGreaterThanOrEqual(0);
-      expect(b.x + b.width).toBeLessThanOrEqual(390);
-      // Between the search bar and the collapsed sheet, close button included.
-      expect(b.y).toBeGreaterThanOrEqual(top.y + top.height);
-      expect(b.y + b.height).toBeLessThanOrEqual(sheet.y);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
       await screens(page, `noted-popup-390-${lang}-${c.shot}.png`);
     }

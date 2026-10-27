@@ -1,6 +1,6 @@
 import { Popup, type MapGeoJSONFeature, type PointLike } from 'maplibre-gl';
 import { classKeys, isOrdered } from './classify.ts';
-import { MANIFEST_URL } from './config.ts';
+import { MANIFEST_URL, fullMapBase } from './config.ts';
 import { colocated, joinLayer, loadLayerSource, loadLevel, type BBox, type LayerData, type LevelData, type Props } from './data.ts';
 import type { ExtraField } from '../../pipeline/lib/contract.ts';
 import { countText, formatNumber } from './format.ts';
@@ -37,7 +37,7 @@ import { createSearchBox } from './search-box.ts';
 import { createSlider } from './slider.ts';
 import { buildEntries, search, type SearchEntry } from './search.ts';
 import { $, renderAbout, renderLang, renderLayers, renderLegend } from './ui.ts';
-import { parseUrl, serializeUrl } from './url.ts';
+import { fullMapHref, parseUrl, serializeUrl } from './url.ts';
 
 const initial = parseUrl(location.search);
 const state = {
@@ -126,10 +126,19 @@ function syncUrl() {
   history.replaceState(history.state, '', `${location.pathname}${s}${location.hash}`);
   const full = $<HTMLAnchorElement>('fullscreen');
   full.hidden = !state.embed;
-  if (state.embed) {
-    full.href = `${location.pathname}${serializeUrl({ ...parseUrl(s), embed: false }, s)}${location.hash}`;
-  }
+  if (state.embed) setFullMapHref();
 }
+
+/**
+ * The current view on the full map: query (minus `embed`) and hash, read from the address at that moment. The dev
+ * server links to itself; builds (preview included) to `fullMapBase`.
+ */
+const setFullMapHref = () => {
+  const base = import.meta.env.DEV ? '' : fullMapBase;
+  $<HTMLAnchorElement>('fullscreen').href = fullMapHref(base, location.pathname, location.search, location.hash);
+};
+// MapLibre writes the hash on a short throttle after a move: refresh the link when it is about to be followed too.
+for (const ev of ['pointerdown', 'focus', 'click']) $('fullscreen').addEventListener(ev, setFullMapHref);
 
 /** Camera padding: what the UI covers. In compact mode the map already ends above the sheet. */
 function padding() {
@@ -354,7 +363,8 @@ function parentName(layer: PointsLayer, p: Props): string | undefined {
 
 /**
  * Pans the map so the whole popup, close button included, is inside the visible map (below the compact search bar),
- * once any running camera move has ended.
+ * once any running camera move has ended. Sub-pixel overflow is ignored: such a pan only makes MapLibre re-place
+ * the popup (see `watchAnchor`).
  */
 function keepPopupInView() {
   if (map.isMoving()) {
@@ -370,9 +380,35 @@ function keepPopupInView() {
     const top = c.top + (state.compact ? $('top').getBoundingClientRect().bottom - c.top : 0) + margin;
     const dx = r.left < c.left + margin ? r.left - (c.left + margin) : r.right > c.right - margin ? r.right - (c.right - margin) : 0;
     const dy = r.top < top ? r.top - top : r.bottom > c.bottom - margin ? Math.min(r.bottom - (c.bottom - margin), r.top - top) : 0;
-    if (dx || dy) map.panBy([dx, dy], { duration: reducedMotion.matches ? 0 : 250 });
+    if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) map.panBy([Math.round(dx), Math.round(dy)], { duration: reducedMotion.matches ? 0 : 250 });
   });
 }
+
+/**
+ * MapLibre picks the popup's side of the point on every map move and may flip it (below → above) after the popup was
+ * kept in view, by a move of ours or anything else, which can push it under the search bar or off the screen: check
+ * again on each flip, a few times per popup (two sides that both don't fit must not pan back and forth).
+ */
+function watchAnchor() {
+  const el = popup.getElement();
+  const anchorOf = () => [...el.classList].find((c) => c.startsWith('maplibregl-popup-anchor-'));
+  let anchor = anchorOf();
+  let checks = 0;
+  const observer = new MutationObserver(() => {
+    if (!popup.isOpen()) return observer.disconnect();
+    const now = anchorOf();
+    if (now === anchor) return;
+    anchor = now;
+    if (++checks <= 3) keepPopupInView();
+  });
+  observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+}
+popup.on('open', watchAnchor);
+
+// The map area changes size after a popup opened (the compact sheet's height arrives, a phone rotates): keep it in view.
+map.on('resize', () => {
+  if (popup.isOpen()) keepPopupInView();
+});
 
 popup.on('close', () => {
   popupAt = null;
@@ -652,9 +688,28 @@ function trackSheet() {
   }).observe(sheet);
 }
 
+/**
+ * Marks which ends of the panel's scroll area have more content (`data-more="above below"`), for the fade that shows
+ * it scrolls: overlay scrollbars (macOS) stay hidden, and a short window (the app in an iframe under a site header)
+ * cuts the legend at the card's edge, where it reads as missing rather than scrollable.
+ */
+function trackScrollEnds(el: HTMLElement) {
+  const mark = () => {
+    const more = [el.scrollTop > 1 ? 'above' : '', el.scrollTop + el.clientHeight < el.scrollHeight - 1 ? 'below' : ''];
+    el.dataset.more = more.filter(Boolean).join(' ');
+  };
+  el.addEventListener('scroll', mark, { passive: true });
+  const resized = new ResizeObserver(mark);
+  resized.observe(el);
+  // Content changes (layer switch, a dataset section opened) change the scroll height, not the box.
+  new MutationObserver(() => requestAnimationFrame(mark)).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['open'] });
+  for (const child of el.children) resized.observe(child);
+}
+
 async function boot() {
   applyLayout();
   narrow.addEventListener('change', applyLayout);
+  trackScrollEnds($('sheet-body'));
   setupSheet();
   trackSheet();
   renderChrome();
@@ -672,9 +727,10 @@ async function boot() {
   await switchLayer(layerById(state.layerId) ? state.layerId : manifest.layers[0].id, { fit: !hadHash });
   if (initial.feature && layerData.get(state.layerId)?.byCode.has(initial.feature)) {
     const info = layerData.get(state.layerId)!.level.features.get(initial.feature)!;
+    // Camera first: the popup is then kept in view for the camera it is shown with.
+    if (!hadHash) map.fitBounds(info.bbox, { padding: padding(), maxZoom: isChoropleth(currentLayer()) ? 13 : 15, animate: false });
     select(state.layerId, spotCodes(state.layerId, initial.feature));
     showPopup(state.layerId, initial.feature, info.anchor);
-    if (!hadHash) map.fitBounds(info.bbox, { padding: padding(), maxZoom: isChoropleth(currentLayer()) ? 13 : 15, animate: false });
   }
   map.on('moveend', syncUrl);
 }

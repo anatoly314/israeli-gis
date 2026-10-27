@@ -218,11 +218,18 @@ Chromium, Firefox and WebKit.
 ## Layout
 
 - Desktop: a column of cards at the inline start (left in en/ru, right in he; CSS logical properties throughout).
+  The panel is capped at the page's (or iframe's) height and scrolls inside; a fade at the top or bottom edge shows
+  there is more (`data-more` on `#sheet-body`), since overlay scrollbars stay hidden until scrolled. Keyboard focus
+  scrolls clear of the fades (`scroll-padding-block`), and the fade is off while focus is visible inside. Sizes come from
+  the app's own viewport, so it works the same in the blog's full-page iframe under its 60 px header.
 - Compact (`embed=1`, or narrower than 720 px): search and language on top; a bottom sheet with an always-visible
   legend strip (tap a class to highlight) and the range slider under it, expanding to the legend (notes, and a
   nominal layer's labelled list right under the strip), the layer list and About. The map ends above the
   collapsed sheet. In embed mode the map needs two fingers / Ctrl+scroll so the blog page still scrolls, and an
-  "Open full map" link opens the same view without `embed`. Zoom buttons show on desktop, and in a desktop embed
+  "Open full map" link opens the same view (query minus `embed`, and the map hash) at `fullMapBase` in `config.ts`,
+  the blog's full-page map, in the top window (Back returns to the post). The base is a build-time constant, never a
+  URL parameter (no open redirect). On the dev server (`import.meta.env.DEV`), or with an empty base, the link goes to
+  this app's own page; `vite preview`, e2e and Pages use the base. Zoom buttons show on desktop, and in a desktop embed
   (pointer that can hover); on touch devices pinch is enough. Touch targets are 40–44 px.
 - Keyboard: the panel comes before the map in tab order. Picking a search result moves focus to the popup's close
   button; Escape closes the popup (from anywhere but the search box and dialogs) and returns to the search box.

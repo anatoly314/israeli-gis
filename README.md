@@ -165,7 +165,7 @@ Keep the trailing slash in `/israeli-gis/`: the page loads `data/` and `assets/`
 | `layer` | a layer `id` from `layers.json` | the first layer |
 | `hl` | highlighted classes: a range `4-7`, a list `1,5,9`, or both `1-3,9,na`. Keys are cluster values, `s0…sN` for stepped bins, `na` for "not calculated". The page writes runs as ranges. | none |
 | `f` | a feature code to select and open | none |
-| `embed` | `1`: compact layout for a 600–700 px iframe, map gestures need two fingers / Ctrl+scroll, "Open full map" link | off |
+| `embed` | `1`: compact layout for a 600–700 px iframe, map gestures need two fingers / Ctrl+scroll, "Open full map" link (to `fullMapBase` in `viewer/src/config.ts`, the blog's full-page map) | off |
 | `#zoom/lat/lon` | map position (hash) | fit the layer |
 
 The page keeps the URL in sync as you use it, so any view can be shared by copying the address bar.

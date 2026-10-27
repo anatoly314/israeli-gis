@@ -21,6 +21,12 @@ export interface BasemapConfig {
   isHiddenLabel: (layer: LayerSpecification) => boolean;
 }
 
+/**
+ * Where an embed's "Open full map" link goes (the blog's full-page map, which forwards its query and hash to this
+ * app). Fixed here, never read from the URL, so a link can't send readers elsewhere. Empty: this app's own page.
+ */
+export const fullMapBase = 'https://anatoly.dev/maps/israel/';
+
 const sourceLayer = (l: LayerSpecification) => ('source-layer' in l ? l['source-layer'] : undefined);
 
 export const basemap: BasemapConfig = {
