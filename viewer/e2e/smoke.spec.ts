@@ -823,6 +823,23 @@ test('the map stays north-up and flat: Shift+arrows do nothing, a link with a be
   expect(errors).toEqual([]);
 });
 
+for (const size of [
+  { width: 358, height: 650 },
+  { width: 1000, height: 650 },
+]) {
+  test(`embed ${size.width}×${size.height} with no position in the link: "Full map" carries the fitted camera at once`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await page.goto('./?embed=1&lang=en');
+    await ready(page, 'ses-2021-local-authorities');
+    const full = page.locator('#fullscreen');
+    // The camera after the initial fit to the frame, in the format MapLibre writes once it has settled.
+    await expect.poll(() => page.evaluate(() => location.hash), { timeout: 5000 }).toMatch(/^#[\d.]+\/[\d.]+\/[\d.]+$/);
+    const hash = await page.evaluate(() => location.hash);
+    expect(hash).not.toBe('#6.3/31.4/35'); // initialView in config.ts, before the fit
+    await expect(full).toHaveAttribute('href', new RegExp(`${hash.replace(/[.]/g, '\\.')}$`));
+  });
+}
+
 test('embed: the "Full map" link carries the live map position after a pan, without touching the link', async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 650 });
   await page.goto('./?embed=1&lang=en#9/31.8/35.0');

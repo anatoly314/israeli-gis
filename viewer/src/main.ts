@@ -746,6 +746,9 @@ async function boot() {
     return;
   }
   applyLayout();
+  // Before the first fit: those are instant jumps whose moveend fires at once, and the URL and the embed's "Full
+  // map" link must follow them (MapLibre's own hash listens from the start).
+  map.on('moveend', syncUrl);
   await switchLayer(layerById(state.layerId) ? state.layerId : manifest.layers[0].id, { fit: !hadHash });
   if (initial.feature && layerData.get(state.layerId)?.byCode.has(initial.feature)) {
     const info = layerData.get(state.layerId)!.level.features.get(initial.feature)!;
@@ -754,7 +757,7 @@ async function boot() {
     select(state.layerId, spotCodes(state.layerId, initial.feature));
     showPopup(state.layerId, initial.feature, info.anchor);
   }
-  map.on('moveend', syncUrl);
+  syncUrl();
 }
 
 void boot();
